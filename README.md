@@ -34,6 +34,8 @@ readingpaper/
 | Read Date  | Title                                                        | Year | Venue / Journal                             | Level | DOI                                      |
 | ---------- | ------------------------------------------------------------ | ---- | ------------------------------------------- | ----- | ---------------------------------------- |
 | 2026-03-15 | Snow Removal for LiDAR Point Clouds With Spatio-Temporal Conditional Random Fields | 2023 | IEEE Robotics and Automation Letters (RA-L) | JCR Q1 | https://doi.org/10.1109/LRA.2023.3311360 |
+| 2026-03-16 | 4DenoiseNet: Adverse Weather Denoising From Adjacent Point Clouds | 2023 | IEEE Robotics and Automation Letters (RA-L) | JCR Q1 | https://doi.org/10.1109/LRA.2022.3227863 |
+| 2026-03-16 | A Parametric-Adaptive Filter for Improving LiDAR Performance Under Snowfall Conditions | 2026 | IEEE Transactions on Intelligent Transportation Systems (T-ITS) | JCR Q1 | https://doi.org/10.1109/TITS.2026.3665537 |
 
 
 ------
