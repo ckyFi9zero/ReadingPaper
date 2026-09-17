@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lock Paper Story"
+  short_description: "Freeze a defensible paper story from existing evidence"
+  default_prompt: "Use $lock-paper-story to turn my existing experiments into a bounded, submission-ready story without expanding the experiment scope."

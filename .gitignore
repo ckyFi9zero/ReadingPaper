@@ -1,0 +1,40 @@
+# Local exports and staging directories (rebuild from tracked sources)
+/_site/
+/_site-public/
+/.site-build-*/
+
+# Temporary experiments and withdrawn reading backups — keep local only
+/tmp/
+
+# Reproducible PDF extraction intermediates, not active reading notes
+/paper-cards/*/source_bundle.json
+/paper-cards/*/rendered-pages/
+
+# Python environments and caches
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local configuration and credentials (examples may be shared)
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# Editor / operating-system leftovers
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.log
+
+# Intentionally track the root/paper HTML, assets, notes, and existing PDFs:
+# these are part of the directly browsable repository, not export caches.
