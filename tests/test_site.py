@@ -60,6 +60,73 @@ class SiteTests(unittest.TestCase):
         pages, _ = builder.build([p], write=False)
         self.assertIn('src="../paper-cards/figure.png"', pages['sample-2026/deep-read.html'])
 
+    def test_category_defaults_and_all_values(self):
+        pages, papers = builder.build([self.paper], write=False)
+        self.assertEqual(papers[0]['category'], 'uncategorized')
+        self.assertNotIn('category', self.paper)
+        for key, label in builder.CATEGORIES.items():
+            p = dict(self.paper, category=key)
+            pages, _ = builder.build([p], write=False)
+            self.assertIn(f'data-category="{key}"', pages['index.html'])
+            self.assertIn(f'{label}（1）', pages['index.html'])
+            self.assertIn(f'{label} · 阅读日期', pages['sample-2026/index.html'])
+
+    def test_invalid_category_does_not_write(self):
+        builder.build()
+        before = (self.root/'index.html').read_bytes()
+        for bad in ['outside', '', None, ['in-field']]:
+            with self.assertRaisesRegex(ValueError, 'Invalid category'):
+                builder.build([dict(self.paper, category=bad)])
+        self.assertEqual((self.root/'index.html').read_bytes(), before)
+
+    def test_category_survives_local_and_public_export(self):
+        self.put('papers.json', json.dumps([dict(self.paper, category='out-of-field')]))
+        self.publish()
+        for profile in ['local', 'public']:
+            report = exporter.export(profile)
+            self.assertEqual(report['papers'][0]['category'], 'out-of-field')
+            self.assertEqual(report['papers'][0]['venue'], 'Test')
+            folder = '_site' if profile == 'local' else '_site-public'
+            self.assertIn('data-category="out-of-field"', (self.root/folder/'index.html').read_text())
+            check(self.root/folder)
+
+    def test_checker_detects_wrong_category(self):
+        builder.build()
+        path = self.root/'index.html'
+        self.put('index.html', path.read_text().replace('data-category="uncategorized"', 'data-category="in-field"'))
+        with self.assertRaisesRegex(ValueError, 'Wrong paper category'):
+            check(self.root)
+
+    def test_venue_grouping_and_escaping(self):
+        venue = 'Journal & "Conference"'
+        papers = [dict(self.paper, category='in-field', venue=venue),
+                  dict(self.paper, slug='other-2026', category='out-of-field', venue='  ' + venue + '  ', stages={})]
+        pages, normalized = builder.build(papers, write=False)
+        escaped = 'Journal &amp; &quot;Conference&quot;'
+        self.assertEqual(normalized[1]['venue'], venue)
+        self.assertIn(f'<option value="{escaped}">Journal &amp; &quot;Conference&quot;（2）</option>', pages['index.html'])
+        self.assertEqual(pages['index.html'].count(f'data-venue="{escaped}"'), 2)
+        self.assertIn('data-category="in-field"', pages['index.html'])
+        self.assertIn('data-category="out-of-field"', pages['index.html'])
+
+    def test_venue_validation_and_checker(self):
+        for value in ['', '  ', None, []]:
+            with self.assertRaisesRegex(ValueError, 'Invalid venue'):
+                builder.build([dict(self.paper, venue=value)], write=False)
+        builder.build()
+        path = self.root/'index.html'
+        self.put('index.html', path.read_text().replace('data-venue="Test"', 'data-venue="Wrong"'))
+        with self.assertRaisesRegex(ValueError, 'Wrong publication venue'):
+            check(self.root)
+
+    def test_asset_version_changes_with_script_content(self):
+        first, _ = builder.build(write=False)
+        self.put('assets/app.js', '// updated filters')
+        second, _ = builder.build(write=False)
+        self.assertNotEqual(first['index.html'], second['index.html'])
+        self.assertIn('assets/app.js?v=', second['index.html'])
+        self.assertIn('../assets/app.js?v=', second['sample-2026/index.html'])
+
     def test_late_conflict_leaves_all_files_unchanged(self):
         builder.build()
         original = (self.root/'index.html').read_bytes()

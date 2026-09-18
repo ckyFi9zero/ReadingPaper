@@ -81,6 +81,10 @@ def check(root=ROOT, papers=None):
             card = by_slug.get(paper['slug'])
             if card is None or set(card["data-stages"].split()) != expected:
                 errors.append(f"Wrong reading status: {paper['slug']}")
+            if card is None or card.get('data-category') != paper.get('category', 'uncategorized'):
+                errors.append(f"Wrong paper category: {paper['slug']}")
+            if card is None or card.get('data-venue') != paper.get('venue', '').strip():
+                errors.append(f"Wrong publication venue: {paper['slug']}")
     if errors:
         raise ValueError("\n".join(errors))
     print(f"PASS: {len(pages)} HTML pages, {links} local links/assets/fragments, {len(papers)} paper statuses.")

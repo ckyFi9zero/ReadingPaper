@@ -21,6 +21,18 @@
 
 代码笔记可从 `templates/code.md` 开始，分别写论文表述、代码事实、运行观察和个人理解。代码定位尽量记录完整 commit SHA、路径、函数与行号。静态读过代码并不等于复现成功。
 
+## 领域分类
+
+每篇论文可在 `papers.json` 中设置 `category`：`in-field`（领域内）、`out-of-field`（领域外）、`uncategorized`（未分类，省略字段时默认）。例如 `"category": "out-of-field"`。分类表示与个人研究方向的关系，独立于雨、雪、深度学习等 `tags`，也独立于阅读进度；不会根据关键词自动改变分类。
+
+领域内以用户确认的“恶劣天气下的 3D 激光去噪”为边界，目前 9 篇，含扬尘工况的 LIOR De-Dust 和矿区雾尘雪去噪的 SCFNR；DHE-Net 和 Electric Arc Noise 属于领域外，不因同属点云去噪就默认算作领域内。
+
+期刊／会议筛选直接从 `venue` 字段自动生成，新增发表来源不需要改代码。同一期刊或会议应统一名称（例如始终使用 `IEEE RA-L`），不要混用缩写与全称；arXiv 作为预印本来源保留。该维度与 `category` 独立，同一期刊可同时有领域内和领域外论文，不需要重复登记论文。
+
+首页下拉菜单的数量表示整个当前目录的分类或发表来源总数；下方“n 篇论文”表示领域、发表来源、关键词和阅读阶段共同筛选后的数量。筛选保存在 URL 中（`category` / `venue` / `q` / `stage`），刷新仍保留；“清除筛选”同时重置这四项，保留排序。
+
+分类与标签修改后重新生成并导出即可，不需要移动论文目录，也不需要改正文。公开范围仍由 `publish.json` 单独管理，领域分类不决定是否公开。
+
 ## 生成与检查
 
 ```bash
@@ -28,6 +40,7 @@ python3 -m pip install -r requirements-site.txt
 python3 scripts/build_site.py
 python3 scripts/check_site.py
 python3 -m unittest discover -s tests -v
+node --test tests/test_app.cjs
 ```
 
 生成器先完成所有内容渲染和目标文件冲突检查，再写入页面。源文件缺失或目标是手写内容时，避免出现前几页已更新、后几页尚未更新的情况。这不是针对磁盘故障的完整事务保证。
@@ -84,7 +97,7 @@ python3 scripts/check_site.py --root _site-public
 
 ## GitHub Pages 工作流
 
-`.github/workflows/pages.yml` 使用 GitHub 的静态网站 Actions。先在仓库 Settings → Pages 中选择 GitHub Actions，然后由维护者手动运行工作流。默认 `deploy=false` 仅构建、检查并上传选中内容的网站 artifact；勾选 `deploy=true` 才部署。空公开清单会在上传前失败。没有 push 自动发布触发器。
+`.github/workflows/pages.yml` 使用 GitHub 的静态网站 Actions。先在仓库 Settings → Pages 中选择 GitHub Actions，然后由维护者手动运行工作流。默认 `deploy=false` 仅构建、检查并上传选中内容的网站 artifact；勾选 `deploy=true` 才部署。空公开清单会在上传前失败。没有 push 自动发布触发器，也不在 Actions 中运行 AI 阅读。阅读 HTML 由用户手动上传，并在 `papers.json` 登记。
 
 流程：安装依赖 → 回归测试 → 本地生成/检查 → 公开导出/检查 → 上传 `_site-public` → 可选部署。部署权限只赋予部署 job，不把整个仓库上传作站点。
 

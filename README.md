@@ -11,7 +11,12 @@ For each paper, I record:
 - DOI
 - PDF file stored in this repository
 
-The PDF versions of papers are stored in the `pdf/` folder.
+Existing PDF versions are stored in `pdf/`. New PDFs remain outside this public repository; reading HTML is uploaded manually.
+
+## 手动整理阅读 HTML
+
+阅读完成后，手动将 HTML 放入对应论文目录，并在 `papers.json` 登记阶段。初读用 `first-pass.html`，写作精读用 `deep-read.html`，方法与代码阅读用 `code.html`。新论文同时补充标题、年份、期刊／会议和领域分类，再运行下方生成与检查命令。
+项目不再监听 PDF、不自动调用模型，也没有本机阅读后台服务。新 PDF 不上传；HTML 内嵌的论文图和原文引用仍需在公开前检查。网站发布保留手动 GitHub Pages 工作流，详见 [维护说明](docs/site-workflow.md)。
 
 AI 接续讨论和维护项目时，可先阅读 [PROJECT_CHARTER.md](PROJECT_CHARTER.md)。其中包含当前进度、源文件与生成页面的区别、维护命令、验证边界和研究讨论偏好。
 
@@ -23,7 +28,11 @@ AI 接续讨论和维护项目时，可先阅读 [PROJECT_CHARTER.md](PROJECT_CH
 
 直接用浏览器打开根目录 `index.html`，即可浏览论文、搜索关键词，并在各篇论文的总览、初读、深读和代码阅读之间切换。网页使用相对路径，不需要后端，也不依赖在线 CDN。
 
-当前收录 9 篇：DHE-Net、DSOR 已有初读；深读和代码阅读均为 0 篇。2026-09-17 按用户要求撤下七篇旧深读及其衍生跨论文综述，等待重新整理。旧正文和审计报告可从 `tmp/site-backups/withdrawn-deep-reads-2026-09-17/` 恢复，不应继续作为有效阅读结论。原始 PDF、提取资料和初读保持不变。
+首页支持“领域内 / 领域外 / 未分类”和期刊／会议两项独立筛选，可与搜索和阅读阶段取交集。在 `papers.json` 为论文设置 `"category": "in-field"`（领域内）或 `"category": "out-of-field"`（领域外）；省略时为 `uncategorized`（未分类）。发表来源直接使用 `venue` 字段，例如 `IEEE TII`、`IEEE RA-L`；同一来源请统一命名，arXiv 作为预印本来源单列。分类不需要移动目录或复制论文。
+
+领域内按用户确认的“恶劣天气下的 3D 激光去噪”界定，目前 9 篇（含扬尘工况）；DHE-Net（真实低成本 LiDAR 噪声）和 Electric Arc Noise（电弧噪声）为领域外，共 2 篇，正文和阅读进度均保留。例如可筛选“领域外 + IEEE TII”查看 DHE-Net，或“领域内 + IEEE TITS”查看相关雪天去噪论文。
+
+当前收录 11 篇：DHE-Net、DSOR、LIOR De-Dust 和 SCFNR 已有初读，共 4 篇；DHE-Net 已接入用户提供的第二遍写作精读，代码阅读为 0 篇。该精读聚焦摘要、引言、结论的论证结构和语言，不表示已完成公式推导或代码复现。LIOR、SCFNR 仅导入已有 HTML，不表示本次重新核对了论文结论；二者不上传独立 PDF。2026-09-17 按用户要求撤下的七篇旧深读及其衍生跨论文综述仍待重新整理。旧正文和审计报告可从 `tmp/site-backups/withdrawn-deep-reads-2026-09-17/` 恢复，不应继续作为有效阅读结论。原始 PDF、提取资料和初读保持不变。
 
 ```text
 ReadingPaper/
@@ -34,7 +43,7 @@ ReadingPaper/
 ├── dhe-net-2026/
 │   ├── index.html            # 论文总览（生成）
 │   ├── first-pass.html       # 原有初读页面，原 index.html 移至此处
-│   ├── deep-read.html        # 暂未整理
+│   ├── deep-read.html        # 用户提供的写作精读（正文源文件）
 │   └── code.html             # 暂未整理
 ├── dsor-2021/                # 同样的四阶段页面结构
 ├── weathernet-2020/          # 以及其他已收录论文的独立目录

@@ -138,7 +138,7 @@ def export(profile='local'):
                 raise ValueError(f'Non-site dependency: {relative}')
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source_path(relative), dest)
-        exported_papers = [{'slug': p['slug'], 'stages': {k: f'{k}.html' for k in sorted(p['available'])}} for p in normalized]
+        exported_papers = [{'slug': p['slug'], 'category': p['category'], 'venue': p['venue'], 'stages': {k: f'{k}.html' for k in sorted(p['available'])}} for p in normalized]
         (staging / '.nojekyll').write_text('')
         total = sum(p.stat().st_size for p in staging.rglob('*') if p.is_file())
         if total > config.get('maxTotalMB', 900) * 1024**2:
