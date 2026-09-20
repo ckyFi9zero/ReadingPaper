@@ -1,5 +1,36 @@
 # 网站维护与发布
 
+## 文件放在哪里
+
+日常主要使用首页、`papers/` 和 `papers.json`，无需逐个打开工具目录。
+
+```text
+ReadingPaper/
+├── index.html             # 论文库入口
+├── papers.json            # 论文元信息和阅读阶段
+├── papers/                # 所有论文的阅读页面
+│   └── 方法名-年份/
+│       ├── index.html     # 自动生成的论文总览
+│       ├── first-pass.html
+│       ├── deep-read.html
+│       └── code.html
+├── assets/                # 共用样式与导航
+├── docs/                  # 维护说明
+├── scripts/               # 生成、检查和导出工具
+├── tests/                 # 回归测试
+├── templates/             # 笔记模板
+├── skills/                # 仓库内研究辅助 skill
+├── pdf/                   # 既有原始论文，不新增上传
+├── notes/                 # 早期笔记，保留追溯
+├── paper-cards/           # 提取资料及综述来源，非新增阅读页入口
+├── _site/                 # 自动导出的本地阅读副本，不在这里编辑
+└── tmp/                   # 本地临时文件与备份，不自动清理
+```
+
+2026-09-20 将原来平铺的论文目录统一移动到 `papers/`。首页入口保持不变，旧的 `论文名/first-pass.html` 收藏链接需改为 `papers/论文名/first-pass.html`；站内链接已同步调整。没有删除论文、原图、旧笔记或备份。
+
+新增论文在 `papers/` 下建目录；`papers.json` 的 `slug` 仍只写 `方法名-年份`，不要添加 `papers/` 前缀。`stages` 相对该论文目录，`pdf` 和 `card` 仍相对仓库根目录。独立 HTML 在 head 中引用 `<script src="../../assets/reader-nav.js" defer></script>`，即可获得返回论文库与阶段导航。
+
 ## 阅读内容与来源核对
 
 `papers.json` 管目录，正文存放在论文目录或原有 `paper-cards/`。现在三个阶段都可使用 Markdown：

@@ -91,13 +91,13 @@ def stage_tabs(paper, current):
 def resources(paper):
     links = []
     if paper.get("pdf"):
-        links.append(f'<a href="../{esc(paper["pdf"], quote=True)}">论文 PDF ↗</a>')
+        links.append(f'<a href="../../{esc(paper["pdf"], quote=True)}">论文 PDF ↗</a>')
     if paper.get("doi"):
         links.append(f'<a href="https://doi.org/{esc(paper["doi"], quote=True)}" target="_blank" rel="noopener">DOI ↗</a>')
     elif paper.get("url"):
         links.append(f'<a href="{esc(paper["url"], quote=True)}" target="_blank" rel="noopener">论文原文 ↗</a>')
     if paper.get("card"):
-        links.append(f'<a href="../{esc(paper["card"], quote=True)}">原始 Markdown</a>')
+        links.append(f'<a href="../../{esc(paper["card"], quote=True)}">原始 Markdown</a>')
     if paper.get("codeUrl"):
         links.append(f'<a href="{esc(paper["codeUrl"], quote=True)}" target="_blank" rel="noopener">代码仓库 ↗</a>')
     return '<div class="resource-links">' + ''.join(links) + '</div>'
@@ -127,7 +127,7 @@ def render_markdown(path, output="overview.html"):
 
 def paper_pages(paper):
     slug = paper["slug"]
-    header = f'''<div class="crumb"><a href="../index.html">论文库</a> / {esc(paper['name'])}</div>
+    header = f'''<div class="crumb"><a href="../../index.html">论文库</a> / {esc(paper['name'])}</div>
 <header class="page-head"><div class="eyebrow">{paper['year']} · {esc(paper['venue'])}</div><h1>{esc(paper['name'])}</h1>
 <p>{esc(paper['title'])}</p><p class="paper-meta">{CATEGORIES[paper['category']]} · 阅读日期 {esc(paper['readDate'])} · {len(paper['available'])} / 3 个阶段有笔记</p></header>'''
     panels = []
@@ -139,7 +139,7 @@ def paper_pages(paper):
     note = '<p class="notice">深读内容由已有 Paper Card 转为网页，保留原有分析与结论。第一遍初读和代码阅读独立记录。</p>' if paper.get("card") else ""
     questions = paper.get("openQuestions", [])
     extras = ('<section class="notice"><h2>待核对的问题</h2><ul>' + ''.join(f'<li>{esc(q)}</li>' for q in questions) + '</ul></section>') if questions else ''
-    save(f"{slug}/index.html", shell(paper["name"], header + stage_tabs(paper, "index") + f'<p>{esc(paper["summary"])}</p>' + resources(paper) + '<div class="stage-grid">' + ''.join(panels) + '</div>' + extras + note, "../", "paper"))
+    save(f"papers/{slug}/index.html", shell(paper["name"], header + stage_tabs(paper, "index") + f'<p>{esc(paper["summary"])}</p>' + resources(paper) + '<div class="stage-grid">' + ''.join(panels) + '</div>' + extras + note, "../../", "paper"))
     for key, label in STAGES.items():
         source = paper['_sources'].get(key)
         if source and source.suffix.lower() == '.html':
@@ -147,12 +147,12 @@ def paper_pages(paper):
         if source:
             review = paper.get('reviews', {}).get(key, {})
             evidence = ''.join(f'<li>{esc(item)}</li>' for item in review.get('evidence', []))
-            content = f'<div class="notice">{esc(review_label(paper, key))}' + (f'<ul>{evidence}</ul>' if evidence else '') + '</div>' + render_markdown(source, f'{slug}/{key}.html')
+            content = f'<div class="notice">{esc(review_label(paper, key))}' + (f'<ul>{evidence}</ul>' if evidence else '') + '</div>' + render_markdown(source, f'papers/{slug}/{key}.html')
         else:
             state = '未公开' if paper.get('_public') else '尚未整理'
             explanation = '公开版本不包含此阶段笔记。' if paper.get('_public') else '这篇论文还没有保存此阶段的笔记。'
             content = f'<section class="empty"><h2>{label}{state}</h2><p>{explanation}</p><p>{DESCRIPTIONS[key]}</p><a href="index.html">返回论文总览</a></section>'
-        save(f"{slug}/{key}.html", shell(f"{paper['name']} · {label}", header + stage_tabs(paper, key) + content, "../", "paper"))
+        save(f"papers/{slug}/{key}.html", shell(f"{paper['name']} · {label}", header + stage_tabs(paper, key) + content, "../../", "paper"))
 
 
 def build(papers=None, *, write=True, overview=True):
@@ -181,7 +181,7 @@ def build(papers=None, *, write=True, overview=True):
         for key, value in paper.get("stages", {}).items():
             if key not in STAGES or not isinstance(value, str) or (value != f'{key}.html' and not value.endswith('.md')):
                 raise ValueError(f"Stage must reference canonical HTML or a Markdown source: {slug}")
-            path = local_path(f"{slug}/{value}")
+            path = local_path(f"papers/{slug}/{value}")
             if not path.is_file() or MARKER in path.read_text():
                 raise ValueError(f"Stage needs authored content: {path}")
             paper["available"].add(key)
@@ -207,7 +207,7 @@ def build(papers=None, *, write=True, overview=True):
         stages = []
         for key, label in STAGES.items():
             if key in paper["available"]:
-                stages.append(f'<a href="{slug}/{key}.html">{label} →</a>')
+                stages.append(f'<a href="papers/{slug}/{key}.html">{label} →</a>')
             else:
                 stages.append(f'<span class="unavailable">{label} · {"未公开" if paper.get("_public") else "待整理"}</span>')
         status = "已有深读" if "deep-read" in paper["available"] else "已有初读" if "first-pass" in paper["available"] else "已有代码笔记" if "code" in paper["available"] else "待阅读"
@@ -217,7 +217,7 @@ def build(papers=None, *, write=True, overview=True):
         verification = f'{checked} 个阶段登记来源核对' if checked else '来源核对未登记'
         cards.append(f'''<article class="paper-card" data-slug="{slug}" data-category="{paper['category']}" data-venue="{esc(paper['venue'], quote=True)}" data-search="{esc(searchable, quote=True)}" data-year="{paper['year']}" data-date="{esc(paper['readDate'], quote=True)}" data-stages="{' '.join(sorted(paper['available']))}">
 <div class="card-top"><div class="paper-meta"><span class="year">{paper['year']}</span><span>· {esc(paper['venue'])}</span><span>· 阅读于 {esc(paper['readDate'])}</span></div><span class="badge">{status}</span></div>
-<h2><a href="{slug}/index.html">{esc(paper['name'])}</a></h2><p class="paper-title">{esc(paper['title'])}</p>
+<h2><a href="papers/{slug}/index.html">{esc(paper['name'])}</a></h2><p class="paper-title">{esc(paper['title'])}</p>
 <p class="paper-summary">{esc(paper['summary'])}</p><div class="tags"><span class="tag category-tag">{CATEGORIES[paper['category']]}</span>{''.join(f'<span class="tag">{esc(tag)}</span>' for tag in paper['tags'])}</div><p class="review-status">{verification}</p><div class="stage-links">{''.join(stages)}</div></article>''')
     counts = {key: sum(key in p['available'] for p in papers) for key in STAGES}
     category_options = ''.join(f'<option value="{key}">{label}（{sum(p["category"] == key for p in papers)}）</option>' for key, label in CATEGORIES.items())

@@ -38,7 +38,7 @@ def check(root=ROOT, papers=None):
         papers = json.loads(manifest.read_text())['papers'] if manifest.exists() else json.loads((root / 'papers.json').read_text())
     paths = [root / "index.html", root / "overview.html"]
     for paper in papers:
-        paths += [root / paper["slug"] / f"{stage}.html" for stage in ["index", "first-pass", "deep-read", "code"]]
+        paths += [root / "papers" / paper["slug"] / f"{stage}.html" for stage in ["index", "first-pass", "deep-read", "code"]]
     pages, errors, links = {}, [], 0
     for path in paths:
         if not path.is_file():

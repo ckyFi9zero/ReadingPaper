@@ -12,12 +12,14 @@
 
 ## 当前已完成的内容
 
-- 纯静态网站已在本地构建，共 17 篇论文、70 个 HTML 页面。
+- 纯静态网站已在本地构建，共 20 篇论文、82 个 HTML 页面。
+- 2026-09-20 整理目录：所有论文页面统一位于 `papers/<slug>/`，不再平铺于根目录；首页入口不变，单篇页面旧路径需增加 `papers/` 前缀。生成、检查、导出和共享导航已适配。仅调整位置与链接，不删除论文、原始资料或备份。
 - 首页支持关键词搜索、领域分类、期刊／会议与阅读阶段取交集筛选，以及最近阅读和发表年份排序。`category` 取 `in-field` / `out-of-field` / `uncategorized`（默认），`venue` 直接提供发表来源分组，两者独立于 `tags`、阅读进度与公开范围。同一发表来源应统一名称，arXiv 单列为预印本来源。
-- 目前领域内 13 篇（含扬尘工况）、领域外 4 篇。DHE-Net、电弧噪声论文以及 Density-Sensitive Transformer 点云补全、SA-LPCC 点云压缩归为领域外。分类不删除论文或笔记，不因同属 LiDAR 就算作天气去噪。
+- 目前领域内 13 篇（含扬尘工况）、领域外 7 篇。DHE-Net、电弧噪声论文、Density-Sensitive Transformer、SA-LPCC、HD-Fusion、UniDMB 和 SLD + ALA 归为领域外。分类不删除论文或笔记，不因同属 LiDAR 或涉及恶劣天气就算作 3D 激光去噪。
 - DHE-Net、DSOR 已有独立的第一遍初读 HTML，保留原有图像、页码引用及阅读交互。
 - 用户指出现有第二遍深读不正确，2026-09-17 已撤下另外 7 篇旧 Paper Card 及其衍生跨论文综述，等待重新整理。
-- 当前登记数量为初读 13 篇、深读 1 篇、代码阅读 0 篇。DHE-Net 深读来自用户提供的 `writing-close-reading.html`，聚焦写作结构与语言；没有在接入中复核其学术结论，也不表示完成公式推导、实验审计或代码复现。
+- 当前登记数量为初读 16 篇、深读 1 篇、代码阅读 0 篇。DHE-Net 深读来自用户提供的 `writing-close-reading.html`，聚焦写作结构与语言；没有在接入中复核其学术结论，也不表示完成公式推导、实验审计或代码复现。
+- 2026-09-20 后续更新：新增 HD-Fusion、UniDMB、SLD + ALA 三份初读，更新 SA-LPCC 初读。保留用户提供的正文、图片与来源核对登记；接入时只检查网站结构，不重新核验学术结论。没有新增 PDF。
 - 2026-09-20 接入用户更新的七份初读：新增 3D-OutDet、DROR、LIOR 去雪、LiSnowNet 四篇，补充 CNNWeatherNet、4DenoiseNet、TripleMixer 三篇的初读。保留正文、内嵌图及用户已有的来源核对登记，只补统一导航；本次接入检查网站结构，不重新验证论文结论。未新增独立 PDF，未恢复旧深读。
 - 2026-09-20 导入 Density-Sensitive Transformer（IEEE TII 2024）与 SA-LPCC（IEEE TII 2023）两份初读。保留正文、内嵌图片与原文件，只补导航并将补全论文的本机 PDF 链接改为 DOI 出版页；原页码文本保留，不声称链接可跳转 PDF 页。没有新增独立 PDF，不登记“来源已核对”。
 - 旧深读正文、审计报告和综述备份在 `tmp/site-backups/withdrawn-deep-reads-2026-09-17/`，仅供追溯，不得自动恢复或继续用作研究依据。
@@ -25,28 +27,31 @@
 - 公开范围 `publish.json` 当前为空；`_site/` 供本地完整阅读，`_site-public/` 只从明确选中的论文阶段生成，不包含默认私人材料。不能将两个输出混用。
 - 用户已要求将 LIOR、SCFNR 两份初读接入并更新 GitHub；Git 推送结果以实际提交记录为准，不能等同于已部署 GitHub Pages。
 - 2026-09-18 按用户要求撤回本机自动阅读机制，改为用户自行上传阅读 HTML。后台服务及登录自启已停用，桌面入口、自动阅读脚本、相关测试和项目内 reader skill 副本已移出活动项目；个人安装的 skill 不变。不要自动重建 PDF 监听或模型调用机制。
-- 原 PDF、任务记录及撤回的实现保留在本机仓库外的回退备份中，不上传。LIOR 初读随后按用户要求复制到 `lior-2021/first-pass.html`；用户提供的 SCFNR 初读移入 `scfnr-2026/first-pass.html`。保留正文和内嵌图，只接入导航；未重新核验论文结论，不登记为“来源已核对”。
+- 原 PDF、任务记录及撤回的实现保留在本机仓库外的回退备份中，不上传。LIOR 初读随后按用户要求复制到 `papers/lior-2021/first-pass.html`；用户提供的 SCFNR 初读移入 `papers/scfnr-2026/first-pass.html`。保留正文和内嵌图，只接入导航；未重新核验论文结论，不登记为“来源已核对”。
 - Pages 恢复手动触发，不因 push 自动发布；`publish.json` 仍管理明确选择的公开阶段。`.gitignore` 保留新增 PDF 排除规则；已有 PDF 及 Git 历史未清理。
 
 | 论文目录 | 名称 | 现有笔记 | 独立 PDF |
 | --- | --- | --- | --- |
-| `dhe-net-2026/` | DHE-Net | 第一遍初读、第二遍写作精读 | 当前仓库无 |
-| `dsor-2021/` | DSOR | 第一遍初读 | 当前仓库无 |
-| `lior-2021/` | LIOR De-Dust | 第一遍初读 | 不上传 |
-| `scfnr-2026/` | SCFNR | 第一遍初读 | 不上传 |
-| `density-sensitive-completion-2024/` | Density-Sensitive Transformer | 第一遍初读 | 不上传 |
-| `sa-lpcc-2023/` | SA-LPCC | 第一遍初读 | 不上传 |
-| `3d-outdet-2024/` | 3D-OutDet | 第一遍初读 | 不上传 |
-| `dror-2018/` | DROR | 第一遍初读 | 不上传 |
-| `lior-snow-2020/` | LIOR 去雪 | 第一遍初读 | 不上传 |
-| `lisnownet-2022/` | LiSnowNet | 第一遍初读 | 不上传 |
-| `weathernet-2020/` | CNNWeatherNet | 第一遍初读（旧深读撤下） | 有 |
-| `4denoisenet-2023/` | 4DenoiseNet | 第一遍初读（旧深读撤下） | 有 |
-| `crfor-2023/` | CRFOR | 待整理（旧深读撤下） | 有 |
-| `dcor-2024/` | DCOR | 待整理（旧深读撤下） | 有 |
-| `triplemixer-2025/` | TripleMixer | 第一遍初读（旧深读撤下） | 有 |
-| `electric-arc-2026/` | Electric Arc Noise | 待整理（旧深读撤下） | 有 |
-| `pmdf-2026/` | PMDF | 待整理（旧深读撤下） | 有 |
+| `papers/dhe-net-2026/` | DHE-Net | 第一遍初读、第二遍写作精读 | 当前仓库无 |
+| `papers/dsor-2021/` | DSOR | 第一遍初读 | 当前仓库无 |
+| `papers/lior-2021/` | LIOR De-Dust | 第一遍初读 | 不上传 |
+| `papers/scfnr-2026/` | SCFNR | 第一遍初读 | 不上传 |
+| `papers/density-sensitive-completion-2024/` | Density-Sensitive Transformer | 第一遍初读 | 不上传 |
+| `papers/sa-lpcc-2023/` | SA-LPCC | 第一遍初读 | 不上传 |
+| `papers/hd-fusion-2026/` | HD-Fusion | 第一遍初读 | 不上传 |
+| `papers/unidmb-2026/` | UniDMB | 第一遍初读 | 不上传 |
+| `papers/sld-ala-2026/` | SLD + ALA | 第一遍初读 | 不上传 |
+| `papers/3d-outdet-2024/` | 3D-OutDet | 第一遍初读 | 不上传 |
+| `papers/dror-2018/` | DROR | 第一遍初读 | 不上传 |
+| `papers/lior-snow-2020/` | LIOR 去雪 | 第一遍初读 | 不上传 |
+| `papers/lisnownet-2022/` | LiSnowNet | 第一遍初读 | 不上传 |
+| `papers/weathernet-2020/` | CNNWeatherNet | 第一遍初读（旧深读撤下） | 有 |
+| `papers/4denoisenet-2023/` | 4DenoiseNet | 第一遍初读（旧深读撤下） | 有 |
+| `papers/crfor-2023/` | CRFOR | 待整理（旧深读撤下） | 有 |
+| `papers/dcor-2024/` | DCOR | 待整理（旧深读撤下） | 有 |
+| `papers/triplemixer-2025/` | TripleMixer | 第一遍初读（旧深读撤下） | 有 |
+| `papers/electric-arc-2026/` | Electric Arc Noise | 待整理（旧深读撤下） | 有 |
+| `papers/pmdf-2026/` | PMDF | 待整理（旧深读撤下） | 有 |
 
 ## 文件职责与事实来源
 
@@ -61,8 +66,8 @@
 | `assets/style.css` | 首页及生成页面的共享样式 | 统一布局和响应式调整 |
 | `assets/app.js` | 搜索、筛选、排序 | 浏览器端增强，无后端 |
 | `assets/reader-nav.js` | 原有独立阅读页的返回入口和阶段导航 | 在手写阶段 HTML 的 head 中引用 |
-| `dhe-net-2026/first-pass.html`、`dsor-2021/first-pass.html` | 用户已有初读内容 | 内容页是源文件，不能用占位页覆盖 |
-| `dhe-net-2026/deep-read.html` | 用户提供的第二遍写作精读 | 保留正文，只接入导航并修复原仓库外 PDF 链接；手写源文件不能被生成器覆盖 |
+| `papers/dhe-net-2026/first-pass.html`、`papers/dsor-2021/first-pass.html` | 用户已有初读内容 | 内容页是源文件，不能用占位页覆盖 |
+| `papers/dhe-net-2026/deep-read.html` | 用户提供的第二遍写作精读 | 保留正文，只接入导航并修复原仓库外 PDF 链接；手写源文件不能被生成器覆盖 |
 | `tmp/site-backups/withdrawn-deep-reads-2026-09-17/` | 已撤下的七篇深读、审计报告和综述 | 仅追溯备份，非网站数据源；不得自动沿用 |
 | `paper-cards/*/source_bundle.json`、`rendered-pages/` | 阅读时的提取资料和 PDF 页面图像 | 有需要时定点核查，不必整目录加载 |
 | `paper-cards/cross-paper-overview.md` | 综述待整理说明 | `overview.html` 的内容来源；旧比较和候选已撤下 |
@@ -83,11 +88,11 @@
 
 ## 如何新增论文或阅读阶段
 
-1. 以 `方法名-年份` 建立独立目录，使用小写字母、数字和连字符。
+1. 在 `papers/` 下以 `方法名-年份` 建立独立目录，使用小写字母、数字和连字符；`slug` 不含 `papers/` 前缀。
 2. 在 `papers.json` 中登记真实的 `slug`、`name`、`title`、`year`、`venue`、`readDate`、`tags`、`summary`。
 3. `stages` 支持三个阶段的 Markdown（相对论文目录）或固定名称的 HTML；生成页仍为 `first-pass.html`、`deep-read.html`、`code.html`。
 4. 旧 `card` 字段仍可指向深读 Markdown，不要同时登记 `stages.deep-read`。独立 PDF 存在时才添加 `pdf`。`reviews` 核对登记与阶段存在分别记录。
-5. 将待整理页替换为真实笔记时，去掉该页的生成注释，更新 `stages`。手写页引用 `../assets/reader-nav.js` 可接入统一导航。
+5. 将待整理页替换为真实笔记时，去掉该页的生成注释，更新 `stages`。手写页引用 `../../assets/reader-nav.js`（使用 defer）可接入统一导航。
 6. 运行生成器和检查器。缺文件、重复 slug、冲突来源或覆盖手写内容时应解决源数据问题，不能绕过保护。
 
 ```bash

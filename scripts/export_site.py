@@ -70,14 +70,14 @@ def export(profile='local'):
     for paper in normalized:
         for stage, source in paper['_sources'].items():
             if source.suffix == '.html':
-                outputs[f"{paper['slug']}/{stage}.html"] = source.read_text()
+                outputs[f"papers/{paper['slug']}/{stage}.html"] = source.read_text()
         if public:
             # Remove local source-card links, without modifying the source note.
-            page = f"{paper['slug']}/index.html"
+            page = f"papers/{paper['slug']}/index.html"
             outputs[page] = re.sub(r'<a href="[^\"]*">原始 Markdown</a>', '', outputs[page])
             if not paper.get('_embedded_approved'):
                 for stage in paper['available']:
-                    if re.search(r'data:image/', outputs[f"{paper['slug']}/{stage}.html"]):
+                    if re.search(r'data:image/', outputs[f"papers/{paper['slug']}/{stage}.html"]):
                         raise ValueError(f"{paper['slug']}: embedded paper images need explicit allow_embedded_images review")
     output = ROOT / ('_site-public' if public else '_site')
     if output.is_symlink() or (output.exists() and not (output / 'site-manifest.json').is_file()):
