@@ -25,7 +25,7 @@
 
 每篇论文可在 `papers.json` 中设置 `category`：`in-field`（领域内）、`out-of-field`（领域外）、`uncategorized`（未分类，省略字段时默认）。例如 `"category": "out-of-field"`。分类表示与个人研究方向的关系，独立于雨、雪、深度学习等 `tags`，也独立于阅读进度；不会根据关键词自动改变分类。
 
-领域内以用户确认的“恶劣天气下的 3D 激光去噪”为边界，目前 9 篇，含扬尘工况的 LIOR De-Dust 和矿区雾尘雪去噪的 SCFNR；DHE-Net 和 Electric Arc Noise 属于领域外，不因同属点云去噪就默认算作领域内。
+领域内以用户确认的“恶劣天气下的 3D 激光去噪”为边界，目前 9 篇，含扬尘工况的 LIOR De-Dust 和矿区雾尘雪去噪的 SCFNR；DHE-Net、Electric Arc Noise、Density-Sensitive Transformer 和 SA-LPCC 共 4 篇属于领域外，不因同属点云处理就默认算作领域内。
 
 期刊／会议筛选直接从 `venue` 字段自动生成，新增发表来源不需要改代码。同一期刊或会议应统一名称（例如始终使用 `IEEE RA-L`），不要混用缩写与全称；arXiv 作为预印本来源保留。该维度与 `category` 独立，同一期刊可同时有领域内和领域外论文，不需要重复登记论文。
 

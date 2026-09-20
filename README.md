@@ -30,9 +30,9 @@ AI 接续讨论和维护项目时，可先阅读 [PROJECT_CHARTER.md](PROJECT_CH
 
 首页支持“领域内 / 领域外 / 未分类”和期刊／会议两项独立筛选，可与搜索和阅读阶段取交集。在 `papers.json` 为论文设置 `"category": "in-field"`（领域内）或 `"category": "out-of-field"`（领域外）；省略时为 `uncategorized`（未分类）。发表来源直接使用 `venue` 字段，例如 `IEEE TII`、`IEEE RA-L`；同一来源请统一命名，arXiv 作为预印本来源单列。分类不需要移动目录或复制论文。
 
-领域内按用户确认的“恶劣天气下的 3D 激光去噪”界定，目前 9 篇（含扬尘工况）；DHE-Net（真实低成本 LiDAR 噪声）和 Electric Arc Noise（电弧噪声）为领域外，共 2 篇，正文和阅读进度均保留。例如可筛选“领域外 + IEEE TII”查看 DHE-Net，或“领域内 + IEEE TITS”查看相关雪天去噪论文。
+领域内按用户确认的“恶劣天气下的 3D 激光去噪”界定，目前 9 篇（含扬尘工况）；领域外共 4 篇，包括 DHE-Net（真实低成本 LiDAR 噪声）、Electric Arc Noise（电弧噪声）、Density-Sensitive Transformer（点云补全）和 SA-LPCC（点云压缩）。正文和阅读进度均保留。例如可筛选“领域外 + IEEE TII”查看 DHE-Net 及两篇新初读，或“领域内 + IEEE TITS”查看相关雪天去噪论文。
 
-当前收录 11 篇：DHE-Net、DSOR、LIOR De-Dust 和 SCFNR 已有初读，共 4 篇；DHE-Net 已接入用户提供的第二遍写作精读，代码阅读为 0 篇。该精读聚焦摘要、引言、结论的论证结构和语言，不表示已完成公式推导或代码复现。LIOR、SCFNR 仅导入已有 HTML，不表示本次重新核对了论文结论；二者不上传独立 PDF。2026-09-17 按用户要求撤下的七篇旧深读及其衍生跨论文综述仍待重新整理。旧正文和审计报告可从 `tmp/site-backups/withdrawn-deep-reads-2026-09-17/` 恢复，不应继续作为有效阅读结论。原始 PDF、提取资料和初读保持不变。
+当前收录 13 篇：DHE-Net、DSOR、LIOR De-Dust、SCFNR、Density-Sensitive Transformer 和 SA-LPCC 已有初读，共 6 篇；DHE-Net 已接入用户提供的第二遍写作精读，代码阅读为 0 篇。该精读聚焦摘要、引言、结论的论证结构和语言，不表示已完成公式推导或代码复现。导入已有 HTML 不表示重新核对了论文结论；新增阅读页不上传独立 PDF。Density-Sensitive Transformer 的本机 PDF 链接已改为 DOI 出版页，页码标注保留但不直接跳转原 PDF。2026-09-17 按用户要求撤下的七篇旧深读及其衍生跨论文综述仍待重新整理。旧正文和审计报告可从 `tmp/site-backups/withdrawn-deep-reads-2026-09-17/` 恢复，不应继续作为有效阅读结论。原始 PDF、提取资料和初读保持不变。
 
 ```text
 ReadingPaper/
