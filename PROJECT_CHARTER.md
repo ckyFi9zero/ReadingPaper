@@ -12,12 +12,13 @@
 
 ## 当前已完成的内容
 
-- 纯静态网站已在本地构建，共 13 篇论文、54 个 HTML 页面。
+- 纯静态网站已在本地构建，共 17 篇论文、70 个 HTML 页面。
 - 首页支持关键词搜索、领域分类、期刊／会议与阅读阶段取交集筛选，以及最近阅读和发表年份排序。`category` 取 `in-field` / `out-of-field` / `uncategorized`（默认），`venue` 直接提供发表来源分组，两者独立于 `tags`、阅读进度与公开范围。同一发表来源应统一名称，arXiv 单列为预印本来源。
-- 目前领域内 9 篇（含扬尘工况）、领域外 4 篇。DHE-Net、电弧噪声论文以及新增的 Density-Sensitive Transformer 点云补全、SA-LPCC 点云压缩归为领域外。分类不删除论文或笔记，不因同属 LiDAR 就算作天气去噪。
+- 目前领域内 13 篇（含扬尘工况）、领域外 4 篇。DHE-Net、电弧噪声论文以及 Density-Sensitive Transformer 点云补全、SA-LPCC 点云压缩归为领域外。分类不删除论文或笔记，不因同属 LiDAR 就算作天气去噪。
 - DHE-Net、DSOR 已有独立的第一遍初读 HTML，保留原有图像、页码引用及阅读交互。
 - 用户指出现有第二遍深读不正确，2026-09-17 已撤下另外 7 篇旧 Paper Card 及其衍生跨论文综述，等待重新整理。
-- 当前登记数量为初读 6 篇、深读 1 篇、代码阅读 0 篇。DHE-Net 深读来自用户提供的 `writing-close-reading.html`，聚焦写作结构与语言；没有在接入中复核其学术结论，也不表示完成公式推导、实验审计或代码复现。
+- 当前登记数量为初读 13 篇、深读 1 篇、代码阅读 0 篇。DHE-Net 深读来自用户提供的 `writing-close-reading.html`，聚焦写作结构与语言；没有在接入中复核其学术结论，也不表示完成公式推导、实验审计或代码复现。
+- 2026-09-20 接入用户更新的七份初读：新增 3D-OutDet、DROR、LIOR 去雪、LiSnowNet 四篇，补充 CNNWeatherNet、4DenoiseNet、TripleMixer 三篇的初读。保留正文、内嵌图及用户已有的来源核对登记，只补统一导航；本次接入检查网站结构，不重新验证论文结论。未新增独立 PDF，未恢复旧深读。
 - 2026-09-20 导入 Density-Sensitive Transformer（IEEE TII 2024）与 SA-LPCC（IEEE TII 2023）两份初读。保留正文、内嵌图片与原文件，只补导航并将补全论文的本机 PDF 链接改为 DOI 出版页；原页码文本保留，不声称链接可跳转 PDF 页。没有新增独立 PDF，不登记“来源已核对”。
 - 旧深读正文、审计报告和综述备份在 `tmp/site-backups/withdrawn-deep-reads-2026-09-17/`，仅供追溯，不得自动恢复或继续用作研究依据。
 - 2026-09-17 优化：初读/深读/代码三个阶段均支持 Markdown；新增独立来源核对登记、构建前全量冲突检查、本地与公开导出，以及手动 GitHub Pages 工作流。具体维护方式见 `docs/site-workflow.md`。
@@ -35,11 +36,15 @@
 | `scfnr-2026/` | SCFNR | 第一遍初读 | 不上传 |
 | `density-sensitive-completion-2024/` | Density-Sensitive Transformer | 第一遍初读 | 不上传 |
 | `sa-lpcc-2023/` | SA-LPCC | 第一遍初读 | 不上传 |
-| `weathernet-2020/` | CNNWeatherNet | 待整理（旧深读撤下） | 有 |
-| `4denoisenet-2023/` | 4DenoiseNet | 待整理（旧深读撤下） | 有 |
+| `3d-outdet-2024/` | 3D-OutDet | 第一遍初读 | 不上传 |
+| `dror-2018/` | DROR | 第一遍初读 | 不上传 |
+| `lior-snow-2020/` | LIOR 去雪 | 第一遍初读 | 不上传 |
+| `lisnownet-2022/` | LiSnowNet | 第一遍初读 | 不上传 |
+| `weathernet-2020/` | CNNWeatherNet | 第一遍初读（旧深读撤下） | 有 |
+| `4denoisenet-2023/` | 4DenoiseNet | 第一遍初读（旧深读撤下） | 有 |
 | `crfor-2023/` | CRFOR | 待整理（旧深读撤下） | 有 |
 | `dcor-2024/` | DCOR | 待整理（旧深读撤下） | 有 |
-| `triplemixer-2025/` | TripleMixer | 待整理（旧深读撤下） | 有 |
+| `triplemixer-2025/` | TripleMixer | 第一遍初读（旧深读撤下） | 有 |
 | `electric-arc-2026/` | Electric Arc Noise | 待整理（旧深读撤下） | 有 |
 | `pmdf-2026/` | PMDF | 待整理（旧深读撤下） | 有 |
 
