@@ -1,6 +1,6 @@
 # ReadingPaper 项目说明与 AI 上下文
 
-更新日期：2026-09-20。范围：ReadingPaper 仓库及本次会话已确认的项目需求。
+更新日期：2026-09-21。范围：ReadingPaper 仓库及本次会话已确认的项目需求。
 
 这是供 AI 接续讨论和维护使用的项目说明，描述核查时的快照。新的任务开始时，应以实际文件为准；此文件不表示授权发布、上传、提交代码或开展新实验。
 
@@ -12,13 +12,15 @@
 
 ## 当前已完成的内容
 
-- 纯静态网站已在本地构建，共 20 篇论文、82 个 HTML 页面。
+- 纯静态网站已在本地构建，共 22 篇论文、90 个 HTML 页面。
 - 2026-09-20 整理目录：所有论文页面统一位于 `papers/<slug>/`，不再平铺于根目录；首页入口不变，单篇页面旧路径需增加 `papers/` 前缀。生成、检查、导出和共享导航已适配。仅调整位置与链接，不删除论文、原始资料或备份。
 - 首页支持关键词搜索、领域分类、期刊／会议与阅读阶段取交集筛选，以及最近阅读和发表年份排序。`category` 取 `in-field` / `out-of-field` / `uncategorized`（默认），`venue` 直接提供发表来源分组，两者独立于 `tags`、阅读进度与公开范围。同一发表来源应统一名称，arXiv 单列为预印本来源。
-- 目前领域内 13 篇（含扬尘工况）、领域外 7 篇。DHE-Net、电弧噪声论文、Density-Sensitive Transformer、SA-LPCC、HD-Fusion、UniDMB 和 SLD + ALA 归为领域外。分类不删除论文或笔记，不因同属 LiDAR 或涉及恶劣天气就算作 3D 激光去噪。
+- 目前领域内 13 篇（含扬尘工况）、领域外 9 篇。DHE-Net、电弧噪声论文、Density-Sensitive Transformer、SA-LPCC、HD-Fusion、UniDMB、SLD + ALA、BEVFormer 和 UMI on Legs 归为领域外。分类不删除论文或笔记，不因同属 LiDAR 或涉及恶劣天气就算作 3D 激光去噪。
 - DHE-Net、DSOR 已有独立的第一遍初读 HTML，保留原有图像、页码引用及阅读交互。
 - 用户指出现有第二遍深读不正确，2026-09-17 已撤下另外 7 篇旧 Paper Card 及其衍生跨论文综述，等待重新整理。
-- 当前登记数量为初读 16 篇、深读 1 篇、代码阅读 0 篇。DHE-Net 深读来自用户提供的 `writing-close-reading.html`，聚焦写作结构与语言；没有在接入中复核其学术结论，也不表示完成公式推导、实验审计或代码复现。
+- 当前登记数量为初读 18 篇、深读 6 篇、代码阅读 2 篇。DHE-Net 深读来自用户提供的 `writing-close-reading.html`，聚焦写作结构与语言；没有在接入中复核其学术结论，也不表示完成公式推导、实验审计或代码复现。
+- 2026-09-21 接入 UMI on Legs 三阶段阅读包：初读、写作精读、方法与代码精读分别保存为 `papers/umi-on-legs-2024/first-pass.html`、`deep-read.html`、`code.html`，并保留 `writing-statistics.json`。按包内 arXiv:2407.10353v1（2024）登记，不另行推断发表会议。未导入 source.pdf；PDF 链接改为同版本在线 PDF，保留页码参数并注明联网和阅读器限制。图片、代码摘录与静态阅读边界保留，本次只核对文件完整性和网站结构，不登记为来源已核对。
+- 本次接入前仓库已包含 BEVFormer 初读与代码阅读，以及 SA-LPCC、HD-Fusion、UniDMB、SLD + ALA 写作精读；这些现有内容未改写。完整阅读状态仍以 `papers.json` 为准。
 - 2026-09-20 后续更新：新增 HD-Fusion、UniDMB、SLD + ALA 三份初读，更新 SA-LPCC 初读。保留用户提供的正文、图片与来源核对登记；接入时只检查网站结构，不重新核验学术结论。没有新增 PDF。
 - 2026-09-20 接入用户更新的七份初读：新增 3D-OutDet、DROR、LIOR 去雪、LiSnowNet 四篇，补充 CNNWeatherNet、4DenoiseNet、TripleMixer 三篇的初读。保留正文、内嵌图及用户已有的来源核对登记，只补统一导航；本次接入检查网站结构，不重新验证论文结论。未新增独立 PDF，未恢复旧深读。
 - 2026-09-20 导入 Density-Sensitive Transformer（IEEE TII 2024）与 SA-LPCC（IEEE TII 2023）两份初读。保留正文、内嵌图片与原文件，只补导航并将补全论文的本机 PDF 链接改为 DOI 出版页；原页码文本保留，不声称链接可跳转 PDF 页。没有新增独立 PDF，不登记“来源已核对”。
@@ -37,10 +39,12 @@
 | `papers/lior-2021/` | LIOR De-Dust | 第一遍初读 | 不上传 |
 | `papers/scfnr-2026/` | SCFNR | 第一遍初读 | 不上传 |
 | `papers/density-sensitive-completion-2024/` | Density-Sensitive Transformer | 第一遍初读 | 不上传 |
-| `papers/sa-lpcc-2023/` | SA-LPCC | 第一遍初读 | 不上传 |
-| `papers/hd-fusion-2026/` | HD-Fusion | 第一遍初读 | 不上传 |
-| `papers/unidmb-2026/` | UniDMB | 第一遍初读 | 不上传 |
-| `papers/sld-ala-2026/` | SLD + ALA | 第一遍初读 | 不上传 |
+| `papers/sa-lpcc-2023/` | SA-LPCC | 第一遍初读、第二遍写作精读 | 不上传 |
+| `papers/hd-fusion-2026/` | HD-Fusion | 第一遍初读、第二遍写作精读 | 不上传 |
+| `papers/unidmb-2026/` | UniDMB | 第一遍初读、第二遍写作精读 | 不上传 |
+| `papers/sld-ala-2026/` | SLD + ALA | 第一遍初读、第二遍写作精读 | 不上传 |
+| `papers/bevformer-2022/` | BEVFormer | 第一遍初读、代码阅读 | 不上传 |
+| `papers/umi-on-legs-2024/` | UMI on Legs | 第一遍初读、第二遍写作精读、代码阅读 | 不上传 |
 | `papers/3d-outdet-2024/` | 3D-OutDet | 第一遍初读 | 不上传 |
 | `papers/dror-2018/` | DROR | 第一遍初读 | 不上传 |
 | `papers/lior-snow-2020/` | LIOR 去雪 | 第一遍初读 | 不上传 |
