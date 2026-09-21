@@ -75,7 +75,7 @@
 | `tmp/site-backups/withdrawn-deep-reads-2026-09-17/` | 已撤下的七篇深读、审计报告和综述 | 仅追溯备份，非网站数据源；不得自动沿用 |
 | `paper-cards/*/source_bundle.json`、`rendered-pages/` | 阅读时的提取资料和 PDF 页面图像 | 有需要时定点核查，不必整目录加载 |
 | `paper-cards/cross-paper-overview.md` | 综述待整理说明 | `overview.html` 的内容来源；旧比较和候选已撤下 |
-| `pdf/`、`notes/` | 原始论文与较早笔记 | 保留原文件，不以网页取代原始材料 |
+| `papers/*/images/` | 阅读页实际使用的论文图表裁剪 | 只保留有 HTML 引用的局部图，不存整篇 PDF |
 | `skills/lock-paper-story/` | 从已有实验收敛论文故事线的仓库内 skill | 非网站依赖；相关任务再读取 SKILL.md |
 | `tmp/` | 既有临时产物 | 非网站数据源，未经确认不清理 |
 
@@ -88,7 +88,8 @@
 3. DHE-Net 原 `index.html` 已移为 `first-pass.html`，新的 `index.html` 用作总览。
 4. DHE-Net 与 DSOR 原来指向仓库外部的 PDF 路径已改为出版页/arXiv 链接；本地嵌入的页面图像仍保留。
 5. 七篇旧卡片曾被转换为深读页面，但已被用户否定并撤下。重新深读需回到论文源材料，不能复用旧卡片结论。
-6. 当前采用与已有阅读页一致的浅底、深绿配色；桌面侧边导航，手机纵向布局。
+6. 原始 PDF 与早期 `notes/` 已从仓库移除；原文通过 DOI/出版页追溯，阅读页仅保留必要的局部图表裁剪。
+7. 当前采用与已有阅读页一致的浅底、深绿配色；桌面侧边导航，手机纵向布局。
 
 ## 如何新增论文或阅读阶段
 

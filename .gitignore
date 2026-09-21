@@ -5,8 +5,8 @@
 
 # Temporary experiments and withdrawn reading backups — keep local only
 /tmp/
-# New source PDFs stay outside this public repository. Already tracked PDFs
-# are NOT removed by this rule; their history requires a separate decision.
+# Source PDFs stay outside this repository; reading pages keep only the
+# necessary local figure crops and traceable DOI/publisher links.
 *.[pP][dD][fF]
 
 # Reproducible PDF extraction intermediates, not active reading notes
@@ -39,5 +39,4 @@ Thumbs.db
 *.swo
 *.log
 
-# Root/paper HTML, assets and existing notes remain tracked.
-# The new PDF ignore above does not untrack previously committed PDFs.
+# Root/paper HTML, assets and current Markdown sources remain tracked.
