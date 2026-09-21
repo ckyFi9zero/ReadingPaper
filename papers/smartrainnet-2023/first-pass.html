@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SmartRainNet｜第一遍初读</title>
+  <script src="../../assets/reader-nav.js" defer></script>
+  <style>
+    :root{--ink:#172033;--muted:#5e6879;--paper:#fff;--bg:#edf2f5;--accent:#145b78;--line:#d9e2e8;--author:#e5f3ff;--summary:#edf7ea;--observe:#fff3d5;--unclear:#f2edfa;--shadow:0 12px 32px rgba(23,32,51,.09)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.72 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    a{color:var(--accent)}code{overflow-wrap:anywhere;word-break:break-word}.page{max-width:1420px;margin:auto;display:grid;grid-template-columns:260px minmax(0,1fr);gap:28px;padding:26px}.sidebar{position:sticky;top:18px;align-self:start;background:#12384a;color:#edf8fb;border-radius:18px;padding:20px;box-shadow:var(--shadow);max-height:calc(100vh - 36px);overflow:auto}.sidebar h2{font-size:16px;margin:0 0 12px}.sidebar a{display:block;color:#d7eaf1;text-decoration:none;padding:5px 0;font-size:14px}.sidebar a:hover{color:#fff}.content{min-width:0}.hero,.section{background:var(--paper);border-radius:18px;padding:28px 34px;margin-bottom:22px;box-shadow:var(--shadow)}.hero{border-top:7px solid var(--accent)}h1{font-size:clamp(28px,4vw,46px);line-height:1.16;margin:0 0 14px}h2{font-size:26px;line-height:1.3;margin:0 0 20px}h3{font-size:18px;margin:22px 0 8px}.meta{display:flex;gap:9px;flex-wrap:wrap;color:var(--muted);font-size:14px}.meta span{border:1px solid var(--line);border-radius:999px;padding:4px 10px}.scope{margin-top:18px;padding:14px 16px;background:#f7fafc;border-left:4px solid var(--accent);color:#445066}.tag{display:inline-block;border-radius:999px;padding:1px 8px;margin-right:6px;font-weight:700;font-size:12px;vertical-align:1px}.tag.author{background:var(--author);color:#07527a}.tag.summary{background:var(--summary);color:#30622b}.tag.observe{background:var(--observe);color:#765614}.tag.unclear{background:var(--unclear);color:#5f427c}.loc{color:var(--muted);font-size:.86em}.evidence{margin:10px 0;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:#fbfcfd}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{border:1px solid var(--line);border-radius:14px;padding:15px 17px;background:#fcfdfe}.card h3{margin-top:0}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:14px}table{border-collapse:collapse;width:100%;min-width:760px;background:#fff}th,td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}th{background:#f1f6f8;color:#284656}.flow{display:grid;gap:10px}.step{position:relative;border-left:5px solid #6ba5bb;background:#f7fbfc;border-radius:10px;padding:12px 15px}.step:not(:last-child):after{content:"↓";display:block;position:absolute;left:13px;bottom:-22px;color:#598092;font-weight:800;z-index:2}.result{border-left:5px solid #5f9b72;padding:12px 16px;background:#f5faf6;border-radius:10px;margin:12px 0}.figure{margin:22px 0;padding:14px;border:1px solid var(--line);border-radius:16px;background:#f7f9fb}.figure img{display:block;width:100%;height:auto;border-radius:9px;background:white}.figure figcaption{margin-top:10px;color:#4f5a6b;font-size:14px}.figure a{font-weight:650}.remember li{margin:10px 0}.kicker{color:var(--accent);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:13px}.footer{color:#657185;font-size:13px;padding:8px 4px 28px}
+    @media(max-width:900px){.page{display:block;padding:14px}.sidebar{position:relative;top:auto;max-height:none;margin-bottom:18px}.sidebar nav{display:flex;gap:8px 14px;flex-wrap:wrap}.sidebar a{display:inline}.hero,.section{padding:22px 20px}.grid{grid-template-columns:1fr}}
+    @media print{body{background:#fff}.page{display:block;max-width:none;padding:0}.sidebar{display:none}.hero,.section{box-shadow:none;border:1px solid #ccd6de;break-inside:auto}.figure,.card,.result{break-inside:avoid}a{color:inherit;text-decoration:none}}
+  </style>
+</head>
+<body>
+<div class="page">
+  <aside class="sidebar">
+    <h2>Stage 1 · 十二项初读</h2>
+    <nav>
+      <a href="#section-01">1. 一句话</a><a href="#section-02">2. Research Problem</a><a href="#section-03">3. Existing Methods &amp; Gap</a><a href="#section-04">4. Core Observation / Insight</a><a href="#section-05">5. Method</a><a href="#section-06">6. Contributions</a><a href="#section-07">7. Experiments</a><a href="#section-08">8. Limitations</a><a href="#section-09">9. Future Work</a><a href="#section-10">10. 论文逻辑链</a><a href="#section-11">11. 记住的东西</a><a href="#section-12">12. 暂不深入</a>
+    </nav>
+  </aside>
+  <main class="content">
+    <header class="hero">
+      <div class="kicker">Robotics Research Reader · Stage 1</div>
+      <h1>SmartRainNet: Uncertainty Estimation For Laser Measurement in Rain</h1>
+      <div class="meta"><span>2023</span><span>IEEE ICRA</span><span>DOI 10.1109/ICRA48891.2023.10160874</span><span>PDF 7 页</span></div>
+      <div class="scope"><strong>材料覆盖范围：</strong>完整核对论文摘要、引言、相关工作、方法、两类数据集、定性与定量实验、应用示例、结论，以及 Fig. 1–6 和 Table I。原文件为 <code>SmartRainNet_Uncertainty_Estimation_For_Laser_Measurement_in_Rain.pdf</code>。本页只还原当前 PDF 的 Problem → Gap → Observation → Method → Experiment 故事线；不读代码、不借助外部资料补写，也不做迁移或审稿判断。</div>
+    </header>
+
+    <section class="section" id="section-01">
+      <h2>一、论文一句话在做什么</h2>
+      <div class="evidence"><span class="tag summary">概括</span>作者不直接恢复或删除雨天退化点，而是学习晴天可靠激光量测的条件概率分布，为每个有效或缺失量测给出不确定性分数，使下游感知、定位或传感器性能评估能够按量测可信度采取不同处理。 <span class="loc">（Abstract；Sec. I；Sec. III）</span></div>
+    </section>
+
+    <section class="section" id="section-02">
+      <h2>二、Research Problem</h2>
+      <div class="grid">
+        <div class="card"><h3>具体问题</h3><div class="evidence"><span class="tag author">作者表述</span>在雨天找出 3D LiDAR 中不可靠的单个激光量测，并为每个量测估计不确定性，而不是只给整帧一个退化分数。 <span class="loc">（Sec. I；Sec. II 第 2 段；Sec. III 开头）</span></div></div>
+        <div class="card"><h3>发生场景</h3><div class="evidence"><span class="tag author">作者表述</span>自动驾驶在雨天运行时，雨滴反射、雨水吸收以及目标表面的暗色或镜面性质会造成噪声点与缺失量测。 <span class="loc">（Fig. 1；Sec. IV-C；Fig. 4）</span></div></div>
+        <div class="card"><h3>为何重要</h3><div class="evidence"><span class="tag author">作者表述</span>感知与定位直接消费受损量测时，其性能会下降；系统还难以知道当前传感器可靠性并据此调整驾驶策略。 <span class="loc">（Sec. I 第 1、3 段）</span></div></div>
+        <div class="card"><h3>导致后果</h3><div class="evidence"><span class="tag author">作者表述</span>道路点可能消失、雨滴产生散乱回波，暗色或高反车辆只留下少量点，从而增加定位不稳定与目标漏检风险。 <span class="loc">（Fig. 1；Sec. IV-C；Fig. 4 B2–B4；Sec. IV-E）</span></div></div>
+      </div>
+      <figure class="figure" id="fig-rain-degradation"><a href="images/fig1-rain-degradation.png" target="_blank"><img src="images/fig1-rain-degradation.png" alt="同一地点在雨前、中雨、暴雨和雨后采集的 LiDAR 点云变化"></a><figcaption>原图裁剪：Fig. 1，PDF p. 2。作者用同一地点的雨前、中雨、暴雨和雨后点云展示缺失量测与噪声量测。点击查看原尺寸。</figcaption></figure>
+    </section>
+
+    <section class="section" id="section-03">
+      <h2>三、Existing Methods &amp; Gap</h2>
+      <div class="tablewrap"><table><thead><tr><th>作者讨论的方法</th><th>原本怎么解决</th><th>作者指出的不足</th><th>为何影响当前问题</th></tr></thead><tbody>
+        <tr><td>数据恢复</td><td>用生成式模型等恢复受损数据。</td><td>可能生成场景中原本不存在的伪影。</td><td>恢复结果本身可能引入新的不可靠信息。 <span class="loc">（Sec. I 第 2 段）</span></td></tr>
+        <tr><td>数据移除</td><td>根据雨雪噪声生成过程识别并删除受损量测。</td><td>需要正确建模传感器、环境与天气的复杂交互，作者认为实际中几乎不可行。</td><td>噪声模型不准时难以可靠判断哪些点应删除。 <span class="loc">（Sec. I 第 2 段）</span></td></tr>
+        <tr><td>在恶劣天气数据上直接训练下游任务</td><td>在雨天数据上训练并以检测 AP 等任务指标优化。</td><td>需要大量标注，而恶劣天气难预测、难采集；并且通常不输出自身的退化信息。</td><td>系统既难获得足够训练数据，也难感知当前驾驶能力。 <span class="loc">（Sec. I 第 3 段）</span></td></tr>
+        <tr><td>受控/仿真退化分析与整帧异常检测</td><td>分析强度、距离、回波数变化，或用异常检测为整帧 LiDAR 估计退化分数。</td><td>多数定量研究使用固定目标、受控或仿真环境；整帧分数不能定位到单个量测，异常样本选择还依赖主观标准。</td><td>无法向下游模块提供逐量测可信度。 <span class="loc">（Sec. II 前两段）</span></td></tr>
+      </tbody></table></div>
+      <h3>作者认为真正缺少的东西</h3>
+      <div class="evidence"><span class="tag summary">概括</span>现有路线缺少一种无需主观挑选异常样本、能在真实驾驶数据上学习晴天正常分布并输出逐激光量测不确定性的退化评估方式。 <span class="loc">（Sec. II 第 2 段；Sec. III 开头）</span></div>
+    </section>
+
+    <section class="section" id="section-04">
+      <h2>四、Core Observation / Insight</h2>
+      <div class="grid">
+        <div class="card"><h3>观察 1：晴天量测也具有多模态性</h3><div class="evidence"><span class="tag author">作者表述</span>激光束在边缘或多径场景可被多个物体部分反射，因此同一位置可能出现多个有效回波；Fig. 3 中标牌边缘与灌木区域的累计距离直方图出现两个峰。 <span class="loc">（Sec. III-C；Fig. 3, PDF p. 3）</span></div><p><strong>如何引出算法：</strong>作者据此选择 Gaussian mixture，而不是单峰分布来描述量测。 <span class="loc">（Sec. III-C；Eq. (2)）</span></p></div>
+        <div class="card"><h3>观察 2：相邻量测相关，但雨致退化是意外事件</h3><div class="evidence"><span class="tag author">作者表述</span>空间邻近的激光量测具有相关性；若某量测在邻域条件下概率密度低，它更可能是随机雨滴交互造成的噪声或缺失量测。 <span class="loc">（Sec. III-B–C）</span></div><p><strong>如何引出算法：</strong>先用 attention 学习邻域相关性，再用条件混合密度网络估计该量测的相对似然。 <span class="loc">（Fig. 2；Eqs. (1)–(2)）</span></p></div>
+      </div>
+      <div class="evidence"><span class="tag summary">概括</span>核心 insight 是：先从晴天数据学习“给定空间邻域时，正常量测可能落在哪里”的多峰分布，再把低条件概率密度当成高不确定性；这样不需要预先定义雨噪声的完整生成模型。 <span class="loc">（Sec. II 末段；Sec. III）</span></div>
+    </section>
+
+    <section class="section" id="section-05">
+      <h2>五、Method：只看宏观逻辑</h2>
+      <div class="flow">
+        <div class="step"><strong>Input：3D LiDAR scan。</strong>每个量测包含距离、强度和三维坐标；无回波位置也必须保留。 <span class="loc">（Sec. III-A）</span></div>
+        <div class="step"><strong>预处理。</strong>把固定通道与水平发射位置映射成 2D LiDAR image，让有效量测与无回波位置都能被记录；作者这样做主要是为了显式表示缺失量测。 <span class="loc">（Sec. III-A）</span></div>
+        <div class="step"><strong>Spatial Correlation Learning。</strong>从图像切片取邻域序列，加入相对位置编码，用 self-attention 建模中心量测与邻近量测的关系；作者认为 attention 能比卷积更灵活地关注边界附近的邻域。 <span class="loc">（Sec. III-B；Eq. (1)）</span></div>
+        <div class="step"><strong>Uncertainty Modeling。</strong>Mixture Density Network 输出两个 Gaussian component 的均值与方差，并形成条件概率密度。 <span class="loc">（Sec. III-C；Eq. (2)；Sec. IV-B）</span></div>
+        <div class="step"><strong>Output：逐量测不确定性。</strong>高概率密度对应低不确定性，低密度对应高不确定性。 <span class="loc">（Sec. III-C 末段）</span></div>
+      </div>
+      <figure class="figure" id="fig-architecture"><a href="images/fig2-architecture.png" target="_blank"><img src="images/fig2-architecture.png" alt="SmartRainNet 从 LiDAR 图像预处理、空间相关学习到不确定性建模的总体流程"></a><figcaption>原图裁剪：Fig. 2，PDF p. 3。SmartRainNet 的输入、图像化、attention 与 Mixture Density Network 流程。点击查看原尺寸。</figcaption></figure>
+      <h3>相比已有方法，核心变化在哪里</h3>
+      <div class="evidence"><span class="tag summary">概括</span>核心变化是把“雨天量测修复/删除”改写成“学习晴天逐量测条件分布并输出不确定性”，且把缺失回波与有效回波统一放入固定 LiDAR image 中评估。 <span class="loc">（Sec. II 末段；Sec. III-A–C）</span></div>
+    </section>
+
+    <section class="section" id="section-06">
+      <h2>六、Contributions</h2>
+      <p>论文没有在 Introduction 中列出编号式贡献；摘要与引言明确陈述了以下工作内容，按出现顺序整理：</p>
+      <ol>
+        <li><span class="tag author">作者表述</span><strong>Method：</strong>提出逐激光量测不确定性估计任务与 SmartRainNet，用 attention-based Mixture Density Network 学习空间相关性和条件概率分布。 <span class="loc">（Abstract；Sec. I 第 4 段）</span></li>
+        <li><span class="tag author">作者表述</span><strong>Experiment：</strong>在 naturalistic degradation dataset 与 synthetic degradation dataset 上给出定性、定量评估。 <span class="loc">（Abstract；Sec. I 末段；Sec. IV）</span></li>
+        <li><span class="tag author">作者表述</span><strong>Other：</strong>展示传感器退化评估、不可靠量测过滤、部分可观测目标辅助检测三类应用。 <span class="loc">（Abstract；Sec. IV-E；Fig. 6）</span></li>
+      </ol>
+    </section>
+
+    <section class="section" id="section-07">
+      <h2>七、Experiments</h2>
+      <div class="tablewrap"><table><tbody>
+        <tr><th>Dataset</th><td>Naturalistic Driving Dataset（NDD）：32-channel RoboSense LiDAR，晴天行驶数据 + 同一路线固定位置完整降雨过程，并同步记录降雨强度；Synthetic Degradation Dataset（SDD）：在晴天量测上随机加入缺失与噪声。 <span class="loc">（Sec. IV-A）</span></td></tr>
+        <tr><th>与哪些方法比较</th><td><span class="tag unclear">论文未明确说明</span>实验没有给出与其他不确定性估计方法的直接数值比较；Table I 只报告 SmartRainNet 在不同数据与阈值下的结果。</td></tr>
+        <tr><th>评价指标</th><td>把量测分成 low/high uncertainty，使用 <code>acc@k</code>，其中 k ∈ {0.1, 0.2, 0.5, 0.8}；另有不确定性分布直方图与定性可视化。 <span class="loc">（Sec. IV-D；Table I）</span></td></tr>
+        <tr><th>硬件/环境</th><td><span class="tag unclear">论文未明确说明</span>未报告训练或推理硬件，也未报告运行时间。</td></tr>
+        <tr><th>消融实验</th><td><span class="tag unclear">论文未明确说明</span>没有模块消融。</td></tr>
+        <tr><th>参数实验</th><td>报告四个决策阈值 k，并在 SDD 中分别加入 10%、20%、30% 退化量测；还比较雨前、中雨、暴雨、雨后的分布变化。 <span class="loc">（Sec. IV-C–D；Fig. 5；Table I）</span></td></tr>
+        <tr><th>定性/定量</th><td>两者都有。定性覆盖四类场景和三类应用；定量覆盖三个 NDD 地点与三个 SDD 设置。 <span class="loc">（Sec. IV-C–E）</span></td></tr>
+      </tbody></table></div>
+
+      <div class="result"><strong>实验 1：四类场景定性评估。</strong><br><strong>结果：</strong>Fig. 4 中晴天大部分区域保持低分；树冠、雨滴散乱回波、雨天道路缺失以及车辆缺失区域被赋予较高不确定性。<br><strong>作者据此得出的结论：</strong>模型能标出多回波、雨滴噪声和缺失量测等不可靠区域。<br><span class="loc">来源：Sec. IV-C1；Fig. 4, PDF p. 5。</span></div>
+      <figure class="figure"><a href="images/fig4-uncertainty-cases.png" target="_blank"><img src="images/fig4-uncertainty-cases.png" alt="SmartRainNet 在晴天、雨滴噪声、道路缺失和车辆缺失四类场景的不确定性图"></a><figcaption>原图裁剪：Fig. 4，PDF p. 5。左侧为 range image，右侧为逐量测不确定性。点击查看原尺寸。</figcaption></figure>
+
+      <div class="result"><strong>实验 2：不同降雨强度。</strong><br><strong>结果：</strong>两个固定采集地点的直方图均显示，从中雨到暴雨，高不确定性量测数量增加；雨停后下降。<br><strong>作者据此得出的结论：</strong>不确定性估计能反映降雨造成的退化变化。<br><span class="loc">来源：Sec. IV-C2；Fig. 5, PDF p. 5。</span></div>
+
+      <div class="result"><strong>实验 3：二分类定量评估。</strong><br><strong>结果：</strong>三个 NDD 的 <code>acc@avg</code> 分别为 0.83、0.84、0.75；三个 SDD 的结果分别为 0.71、0.68、0.61。<br><strong>作者据此得出的结论：</strong>作者认为 SDD 较低是因为模型学习真实晴天量测分布，而人为退化可能与自然退化分布不同。<br><span class="loc">来源：Sec. IV-D；Table I, PDF p. 6。</span></div>
+      <figure class="figure"><a href="images/table1-quantitative.png" target="_blank"><img src="images/table1-quantitative.png" alt="SmartRainNet 在三个自然数据集和三个合成数据集上的 acc@k 结果表"></a><figcaption>原表裁剪：Table I，PDF p. 6。表中保留 acc@0.1、0.2、0.5、0.8 与平均结果。点击查看原尺寸。</figcaption></figure>
+
+      <div class="result"><strong>实验 4：应用示例。</strong><br><strong>结果：</strong>作者把不确定性分布偏度转为整帧退化分数；阈值过滤后保留建筑轮廓并去掉多数雨滴回波；对点云中只剩少量点的车辆，其缺失区域在不确定性图中被突出。<br><strong>作者据此得出的结论：</strong>这些信息可能辅助驾驶策略、定位特征提取和部分可观测目标检测。<br><span class="loc">来源：Sec. IV-E；Fig. 6, PDF p. 6。</span></div>
+    </section>
+
+    <section class="section" id="section-08">
+      <h2>八、Limitations</h2>
+      <h3>作者明确承认的 limitation</h3>
+      <div class="evidence"><span class="tag author">作者表述</span>SDD 上结果低于 NDD；作者说明合成退化很可能与自然退化具有不同分布。 <span class="loc">（Sec. IV-D 末段）</span></div>
+      <div class="evidence"><span class="tag author">作者表述</span>结论把“更多动态环境实验”留到未来，说明当前实验未充分覆盖动态环境。 <span class="loc">（Sec. V 末句）</span></div>
+      <h3>从实验结果中直接可见、但作者没有明确称为 limitation 的现象</h3>
+      <div class="evidence"><span class="tag observe">直接观察</span>Table I 没有其他方法的基线列，无法从该表直接判断 SmartRainNet 相对已有逐量测不确定性方法的优势。 <span class="loc">（Table I）</span></div>
+      <div class="evidence"><span class="tag observe">直接观察</span>Fig. 6 的三类下游应用均为示例或潜在用途，论文未报告定位稳定性、检测 AP 或驾驶决策收益的定量变化。 <span class="loc">（Sec. IV-E；Fig. 6）</span></div>
+    </section>
+
+    <section class="section" id="section-09">
+      <h2>九、Future Work / Research Implications</h2>
+      <div class="evidence"><span class="tag author">作者表述</span>未来将讨论更多动态环境实验。 <span class="loc">（Sec. V 末句）</span></div>
+    </section>
+
+    <section class="section" id="section-10">
+      <h2>十、论文逻辑链</h2>
+      <div class="flow">
+        <div class="step"><span class="tag summary">概括</span>雨滴反射、雨水吸收与目标材质使 LiDAR 出现噪声或缺失量测，影响感知和定位。 <span class="loc">（Sec. I；Fig. 1）</span></div>
+        <div class="step"><span class="tag summary">概括</span>已有方案尝试恢复、删除、直接训练下游任务或评估整帧退化。 <span class="loc">（Sec. I–II）</span></div>
+        <div class="step"><span class="tag summary">概括</span>恢复会造伪影，删除依赖难建的噪声模型，下游训练缺标注且不输出退化信息，整帧分数又不够细。 <span class="loc">（Sec. I–II）</span></div>
+        <div class="step"><span class="tag summary">概括</span>晴天量测受空间邻域约束，并因边缘和多径呈多峰分布；雨致意外量测在该条件分布下应具有低密度。 <span class="loc">（Sec. III；Fig. 3）</span></div>
+        <div class="step"><span class="tag summary">概括</span>学习正常晴天量测的条件概率分布，用密度反向表达不确定性。 <span class="loc">（Sec. II 末段；Sec. III-C）</span></div>
+        <div class="step"><span class="tag summary">概括</span>LiDAR image 显式保留缺失位置 → attention 学习空间相关性 → MDN 输出多峰条件分布 → 得到逐量测分数。 <span class="loc">（Fig. 2；Sec. III）</span></div>
+        <div class="step"><span class="tag summary">概括</span>用 NDD 与 SDD 做四类场景、雨强变化、二分类准确率和应用示例验证。 <span class="loc">（Sec. IV）</span></div>
+        <div class="step"><span class="tag summary">概括</span>作者结论是逐量测不确定性可识别不可靠量测，并有潜力辅助传感器评估及下游任务。 <span class="loc">（Sec. V）</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="section-11">
+      <h2>十一、第一遍阅读结束后，我应该记住的东西</h2>
+      <ol class="remember">
+        <li><div class="evidence"><span class="tag summary">概括</span>这篇论文解决雨天 3D LiDAR 的逐量测可靠性估计问题，不直接把任务限定为去噪或恢复。 <span class="loc">（Sec. I；Sec. III）</span></div></li>
+        <li><div class="evidence"><span class="tag summary">概括</span>核心 gap 是已有路线无法同时避免复杂雨噪生成建模、减少恶劣天气标注依赖，并输出细粒度退化信息。 <span class="loc">（Sec. I–II）</span></div></li>
+        <li><div class="evidence"><span class="tag author">作者表述</span>关键 observation 是晴天量测具有空间相关性与多模态性，意外雨致量测在邻域条件分布中会呈低概率密度。 <span class="loc">（Sec. III-B–C；Fig. 3）</span></div></li>
+        <li><div class="evidence"><span class="tag summary">概括</span>最核心变化是用 attention-conditioned MDN 学正常量测分布，并把概率密度转成逐量测不确定性。 <span class="loc">（Fig. 2；Eqs. (1)–(2)）</span></div></li>
+        <li><div class="evidence"><span class="tag author">作者表述</span>最重要结果是 NDD 三个地点的平均准确率为 0.75–0.84，且不确定性分布随雨强增强向高分移动、雨后回落。 <span class="loc">（Fig. 5；Table I）</span></div></li>
+      </ol>
+    </section>
+
+    <section class="section" id="section-12">
+      <h2>十二、暂时不要深入的内容</h2>
+      <ul>
+        <li>相对位置编码与局部 attention 的具体计算。 <span class="loc">（Sec. III-B；Eq. (1)）</span></li>
+        <li>Mixture Density Network 中 π、μ、σ 的训练与两个 Gaussian component 的实现。 <span class="loc">（Sec. III-C；Eq. (2)；Sec. IV-B）</span></li>
+        <li>NDD 二分类标签如何用雨前多帧聚类生成，以及 SDD 的三档退化比例。 <span class="loc">（Sec. IV-D）</span></li>
+        <li><code>acc@k</code> 阈值变化对各数据集的逐列影响。 <span class="loc">（Table I）</span></li>
+        <li>Fig. 6 中从直方图偏度到整帧 degradation score，以及下游模块怎样消费逐量测不确定性。 <span class="loc">（Sec. IV-E；Fig. 6）</span></li>
+      </ul>
+    </section>
+
+    <div class="footer">生成口径：robotics-research-reader / Stage 1。原图均由当前 PDF 对应页面实际渲染、核对并裁剪；HTML 与相对路径 images/ 目录共同组成离线阅读页，无 CDN、远程字体或外部框架依赖。</div>
+  </main>
+</div>
+</body>
+</html>
