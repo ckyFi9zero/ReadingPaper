@@ -1,0 +1,451 @@
+{
+  "version": 1,
+  "paper": "3d-unoutdet-2025",
+  "viewer": {
+    "local_pdf": "source.pdf",
+    "default_stage": "first-pass"
+  },
+  "nodes": [
+    {
+      "id": "note:story",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-01",
+      "label": "论文一句话在做什么"
+    },
+    {
+      "id": "note:core-observation",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-04",
+      "label": "核心观察与假设"
+    },
+    {
+      "id": "note:method-overview",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-05",
+      "label": "方法总体逻辑"
+    },
+    {
+      "id": "note:experiments",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-07",
+      "label": "实验与下游任务"
+    },
+    {
+      "id": "note:limitations",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-08",
+      "label": "限制与适用边界"
+    },
+    {
+      "id": "pdf:method",
+      "kind": "pdf",
+      "href": "https://doi.org/10.1109/IROS60139.2025.11247379",
+      "page": 3,
+      "section": "Sec. III / Algorithm 1",
+      "label": "方法、算法与伪标签路径",
+      "anchors": [
+        {
+          "stage": "first-pass",
+          "anchor": "section-05"
+        },
+        {
+          "stage": "code",
+          "anchor": "map"
+        }
+      ],
+      "regions": [
+        {
+          "x": 0.06,
+          "y": 0.46,
+          "width": 0.88,
+          "height": 0.42,
+          "label": "Sec. III 方法与算法区域"
+        }
+      ]
+    },
+    {
+      "id": "pdf:fig-2",
+      "kind": "pdf",
+      "href": "https://doi.org/10.1109/IROS60139.2025.11247379",
+      "page": 3,
+      "figure": "Fig. 2",
+      "label": "3D-UnOutDet 总体框架",
+      "anchors": [
+        {
+          "stage": "first-pass",
+          "anchor": "unoutdet-fig2"
+        },
+        {
+          "stage": "code",
+          "anchor": "fig-unoutdet-fig2"
+        }
+      ],
+      "regions": [
+        {
+          "x": 0.14,
+          "y": 0.15,
+          "width": 0.72,
+          "height": 0.34,
+          "label": "Fig. 2 总体框架"
+        }
+      ]
+    },
+    {
+      "id": "pdf:fig-3",
+      "kind": "pdf",
+      "href": "https://doi.org/10.1109/IROS60139.2025.11247379",
+      "page": 6,
+      "figure": "Fig. 3",
+      "label": "WADS 去雪结果示例",
+      "anchors": [
+        {
+          "stage": "first-pass",
+          "anchor": "unoutdet-fig3"
+        }
+      ],
+      "regions": [
+        {
+          "x": 0.08,
+          "y": 0.12,
+          "width": 0.84,
+          "height": 0.48,
+          "label": "Fig. 3 去雪结果"
+        }
+      ]
+    },
+    {
+      "id": "code:knn",
+      "kind": "code",
+      "stage": "code",
+      "anchor": "code-u-dataset-supervised-_point_cloud_dataset-py-129",
+      "repo": "https://github.com/sporsho/3DUnOutDet",
+      "commit": "b22ac8b9ea9f7e8bcaba757b4ce4d938180150e7",
+      "path": "dataset/supervised/_point_cloud_dataset.py",
+      "start": 111,
+      "end": 164,
+      "label": "点云预处理与 kNN 邻域"
+    },
+    {
+      "id": "code:ssr",
+      "kind": "code",
+      "stage": "code",
+      "anchor": "code-u-dataset-unsupervised-_supervisor-py-34",
+      "repo": "https://github.com/sporsho/3DUnOutDet",
+      "commit": "b22ac8b9ea9f7e8bcaba757b4ce4d938180150e7",
+      "path": "dataset/unsupervised/_supervisor.py",
+      "start": 28,
+      "end": 43,
+      "label": "SSR 伪标签生成"
+    },
+    {
+      "id": "code:nh",
+      "kind": "code",
+      "stage": "code",
+      "anchor": "code-u-modules-_out_det-py-88",
+      "repo": "https://github.com/sporsho/3DUnOutDet",
+      "commit": "b22ac8b9ea9f7e8bcaba757b4ce4d938180150e7",
+      "path": "modules/_out_det.py",
+      "start": 14,
+      "end": 101,
+      "label": "NeighborHood Convolution 后端"
+    },
+    {
+      "id": "code:loss",
+      "kind": "code",
+      "stage": "code",
+      "anchor": "code-u-scripts-train_WADS_unsupervised-py-134",
+      "repo": "https://github.com/sporsho/3DUnOutDet",
+      "commit": "b22ac8b9ea9f7e8bcaba757b4ce4d938180150e7",
+      "path": "scripts/train_WADS_unsupervised.py",
+      "start": 134,
+      "end": 151,
+      "label": "伪标签损失与参数更新"
+    },
+    {
+      "id": "code:eval",
+      "kind": "code",
+      "stage": "code",
+      "anchor": "code-u-scripts-eval_wads-py-95",
+      "repo": "https://github.com/sporsho/3DUnOutDet",
+      "commit": "b22ac8b9ea9f7e8bcaba757b4ce4d938180150e7",
+      "path": "scripts/eval_wads.py",
+      "start": 95,
+      "end": 115,
+      "label": "WADS 推理与标签导出"
+    },
+    {
+      "id": "note:problem-specific",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "problem-specific",
+      "label": "具体问题"
+    },
+    {
+      "id": "note:problem-scene",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "problem-scene",
+      "label": "发生场景"
+    },
+    {
+      "id": "note:problem-importance",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "problem-importance",
+      "label": "为什么重要"
+    },
+    {
+      "id": "note:problem-consequence",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "problem-consequence",
+      "label": "最终后果"
+    },
+    {
+      "id": "pdf:problem-specific",
+      "kind": "pdf",
+      "href": "https://doi.org/10.1109/IROS60139.2025.11247379",
+      "page": 1,
+      "section": "Sec. I / Abstract",
+      "quote": "In this work, we propose a novel, fast, and memory-efficient unsupervised statistical method, combined with an unsupervised deep learning (DL) model, for de-snowing 3D LiDAR point clouds in a fully unsupervised fashion.",
+      "label": "无监督去雪问题定义",
+      "quotes": [
+        "In this work, we propose a novel, fast, and memory-efficient unsupervised statistical method, combined with an unsupervised deep learning (DL) model, for de-snowing 3D LiDAR point clouds in a fully unsupervised fashion.",
+        "Our methodology has two stages. In the first stage, a new, simple, yet efficient statistical method named Statistical Snow Remover (SSR) is used to generate an initial estimate about potential outliers, i.e., snow particles, in the point cloud by considering the intensity and sparsity information."
+      ],
+      "regions": [
+        {
+          "x": 0.07,
+          "y": 0.18,
+          "width": 0.86,
+          "height": 0.25,
+          "label": "摘要问题定义"
+        },
+        {
+          "x": 0.07,
+          "y": 0.45,
+          "width": 0.43,
+          "height": 0.28,
+          "label": "引言问题背景"
+        }
+      ]
+    },
+    {
+      "id": "pdf:problem-scene",
+      "kind": "pdf",
+      "href": "https://doi.org/10.1109/IROS60139.2025.11247379",
+      "page": 1,
+      "section": "Sec. I",
+      "quote": "Adverse weather, particularly snow, poses a significant challenge to the development of autonomous vehicles, since the quality of sensor readings, such as 3D LiDAR point clouds, is degraded by the presence of snowflakes [1].",
+      "label": "雪天 LiDAR 场景",
+      "quotes": [
+        "Adverse weather, particularly snow, poses a significant challenge to the development of autonomous vehicles, since the quality of sensor readings, such as 3D LiDAR point clouds, is degraded by the presence of snowflakes [1].",
+        "The results obtained on the real-scanned Winter Adverse Driving dataSet (WADS) show that our DL model achieves a 6.3% improvement in mIoU over the current state-of-the-art unsupervised DL methods and performs comparable to supervised counterparts, substantially narrowing the performance gap between supervised and unsupervised approaches.",
+        "In addition to that, our model also outperforms its closest competitor by 12.8% mIoU when tested on our Canadian Adverse Driving Conditions (CADC) dataset annotations."
+      ],
+      "regions": [
+        {
+          "x": 0.07,
+          "y": 0.18,
+          "width": 0.86,
+          "height": 0.25,
+          "label": "摘要数据集与场景"
+        },
+        {
+          "x": 0.07,
+          "y": 0.45,
+          "width": 0.43,
+          "height": 0.22,
+          "label": "引言雪天场景"
+        }
+      ]
+    },
+    {
+      "id": "pdf:problem-importance",
+      "kind": "pdf",
+      "href": "https://doi.org/10.1109/IROS60139.2025.11247379",
+      "page": 1,
+      "section": "Sec. I",
+      "quote": "This inevitably leads to deterioration in the performance of downstream perception tasks, including semantic scene segmentation [2] and object detection.",
+      "label": "下游感知受损",
+      "quotes": [
+        "Adverse weather, particularly snow, poses a significant challenge to the development of autonomous vehicles, since the quality of sensor readings, such as 3D LiDAR point clouds, is degraded by the presence of snowflakes [1].",
+        "This inevitably leads to deterioration in the performance of downstream perception tasks, including semantic scene segmentation [2] and object detection.",
+        "the latter models are predominantly supervised that require costly point-wise annotations to achieve high performance (see Figure 1)."
+      ],
+      "regions": [
+        {
+          "x": 0.07,
+          "y": 0.45,
+          "width": 0.43,
+          "height": 0.3,
+          "label": "引言下游影响"
+        }
+      ]
+    },
+    {
+      "id": "pdf:problem-consequence",
+      "kind": "pdf",
+      "href": "https://doi.org/10.1109/IROS60139.2025.11247379",
+      "page": 1,
+      "section": "Sec. I",
+      "quote": "This literature gap, along with the performance issues arising from domain shifts, highlights the urgent need for unsupervised solutions that are potentially more generic and deployable while coming with no annotation cost.",
+      "label": "无监督方案动机",
+      "quotes": [
+        "This inevitably leads to deterioration in the performance of downstream perception tasks, including semantic scene segmentation [2] and object detection.",
+        "Furthermore, due to domain shifts [13], a supervised model trained on one dataset may exhibit suboptimal performance when applied to a different dataset or when confronted with a real-world deployment.",
+        "This literature gap, along with the performance issues arising from domain shifts, highlights the urgent need for unsupervised solutions that are potentially more generic and deployable while coming with no annotation cost."
+      ],
+      "regions": [
+        {
+          "x": 0.5,
+          "y": 0.45,
+          "width": 0.43,
+          "height": 0.34,
+          "label": "引言研究动机"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-story-fig2",
+      "from": "note:story",
+      "to": "pdf:fig-2",
+      "type": "derived-from",
+      "status": "source-checked"
+    },
+    {
+      "id": "edge-observation-method",
+      "from": "note:core-observation",
+      "to": "pdf:method",
+      "type": "supports",
+      "status": "source-checked"
+    },
+    {
+      "id": "edge-method-fig2",
+      "from": "note:method-overview",
+      "to": "pdf:fig-2",
+      "type": "derived-from",
+      "status": "source-checked"
+    },
+    {
+      "id": "edge-fig2-knn",
+      "from": "pdf:fig-2",
+      "to": "code:knn",
+      "type": "implements",
+      "status": "static-read",
+      "region": {
+        "x": 0.07,
+        "y": 0.07,
+        "width": 0.28,
+        "height": 0.18,
+        "label": "Fig. 2：输入与 kNN 邻域"
+      }
+    },
+    {
+      "id": "edge-fig2-ssr",
+      "from": "pdf:fig-2",
+      "to": "code:ssr",
+      "type": "implements",
+      "status": "static-read",
+      "region": {
+        "x": 0.07,
+        "y": 0.16,
+        "width": 0.28,
+        "height": 0.12,
+        "label": "Fig. 2：SSR 监督器"
+      }
+    },
+    {
+      "id": "edge-fig2-nh",
+      "from": "pdf:fig-2",
+      "to": "code:nh",
+      "type": "implements",
+      "status": "static-read",
+      "region": {
+        "x": 0.28,
+        "y": 0.07,
+        "width": 0.5,
+        "height": 0.19,
+        "label": "Fig. 2：NeighborHood Convolution 后端"
+      }
+    },
+    {
+      "id": "edge-method-loss",
+      "from": "note:method-overview",
+      "to": "code:loss",
+      "type": "implements",
+      "status": "static-read",
+      "region": {
+        "x": 0.77,
+        "y": 0.07,
+        "width": 0.17,
+        "height": 0.19,
+        "label": "Fig. 2：Loss 损失路径"
+      }
+    },
+    {
+      "id": "edge-experiments-fig3",
+      "from": "note:experiments",
+      "to": "pdf:fig-3",
+      "type": "supports",
+      "status": "source-checked",
+      "region": {
+        "x": 0.08,
+        "y": 0.12,
+        "width": 0.84,
+        "height": 0.48,
+        "label": "Fig. 3：WADS 去雪结果"
+      }
+    },
+    {
+      "id": "edge-experiments-eval",
+      "from": "note:experiments",
+      "to": "code:eval",
+      "type": "related",
+      "status": "static-read"
+    },
+    {
+      "id": "edge-limitations-loss",
+      "from": "code:loss",
+      "to": "note:limitations",
+      "type": "related",
+      "status": "inferred",
+      "note": "代码核对揭示训练监督与人工验证选模需要分开解释。"
+    },
+    {
+      "id": "edge-problem-specific",
+      "from": "note:problem-specific",
+      "to": "pdf:problem-specific",
+      "type": "derived-from",
+      "status": "source-checked"
+    },
+    {
+      "id": "edge-problem-scene",
+      "from": "note:problem-scene",
+      "to": "pdf:problem-scene",
+      "type": "derived-from",
+      "status": "source-checked"
+    },
+    {
+      "id": "edge-problem-importance",
+      "from": "note:problem-importance",
+      "to": "pdf:problem-importance",
+      "type": "supports",
+      "status": "source-checked"
+    },
+    {
+      "id": "edge-problem-consequence",
+      "from": "note:problem-consequence",
+      "to": "pdf:problem-consequence",
+      "type": "derived-from",
+      "status": "source-checked"
+    }
+  ]
+}

@@ -14,9 +14,11 @@ from urllib.parse import unquote, urlsplit
 
 import build_site
 from check_site import Page, check
+from evidence import END_MARKER, START_MARKER, load_map
+from render_evidence import render_text
 
 ROOT = build_site.ROOT
-ASSETS = ['assets/style.css', 'assets/app.js', 'assets/reader-nav.js', 'assets/favicon.svg']
+ASSETS = ['assets/style.css', 'assets/app.js', 'assets/reader-nav.js', 'assets/favicon.svg', 'assets/evidence-reader.css', 'assets/evidence-reader.js', 'assets/pdfjs/pdf.min.mjs', 'assets/pdfjs/pdf.worker.mjs', 'assets/pdfjs/LICENSE']
 PROTECTED = {'paper-cards', 'notes', 'skills', 'tmp', 'scripts', 'ai-context', '.git', '.github'}
 
 
@@ -70,7 +72,11 @@ def export(profile='local'):
     for paper in normalized:
         for stage, source in paper['_sources'].items():
             if source.suffix == '.html':
-                outputs[f"papers/{paper['slug']}/{stage}.html"] = source.read_text()
+                text = source.read_text(encoding='utf-8')
+                evidence = load_map(ROOT, paper['slug'])
+                if evidence and START_MARKER in text and END_MARKER in text:
+                    text = render_text(text, evidence, paper['slug'], stage)
+                outputs[f"papers/{paper['slug']}/{stage}.html"] = text
         if public:
             # Remove local source-card links, without modifying the source note.
             page = f"papers/{paper['slug']}/index.html"

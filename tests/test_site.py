@@ -13,6 +13,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
 import build_site as builder
 import export_site as exporter
 from check_site import check
+from evidence import START_MARKER, END_MARKER
+from render_evidence import render_text
 
 
 class SiteTests(unittest.TestCase):
@@ -216,6 +218,103 @@ class SiteTests(unittest.TestCase):
         self.put('papers/sample-2026/first-pass.md', '# Note\n\n[bad](/index.html)')
         with self.assertRaisesRegex(ValueError, 'leaves repository'):
             builder.build(write=False)
+
+    def test_evidence_map_renders_and_checks_bidirectional_cards(self):
+        p = copy.deepcopy(self.paper)
+        self.put('papers/sample-2026/first-pass.md', '# First pass\n\n## Evidence\n\nAn observation.')
+        self.put('papers/sample-2026/code.md', '# Code\n\n## Method\n\nImplementation details.')
+        evidence = {
+            'version': 1,
+            'paper': 'sample-2026',
+            'nodes': [
+                {'id': 'note:evidence', 'kind': 'note', 'stage': 'first-pass', 'anchor': 'evidence', 'label': 'Evidence'},
+                {'id': 'pdf:method', 'kind': 'pdf', 'href': 'https://example.com/paper.pdf', 'page': 2, 'label': 'Method page'},
+                {'id': 'code:method', 'kind': 'code', 'stage': 'code', 'anchor': 'method', 'repo': 'https://github.com/example/repo',
+                 'commit': '0123456789abcdef0123456789abcdef01234567', 'path': 'src/model.py', 'start': 10, 'end': 20,
+                 'label': 'Method implementation'},
+            ],
+            'edges': [
+                {'id': 'edge-method', 'from': 'note:evidence', 'to': 'pdf:method', 'type': 'derived-from', 'status': 'source-checked'},
+                {'id': 'edge-code', 'from': 'pdf:method', 'to': 'code:method', 'type': 'implements', 'status': 'static-read'},
+            ],
+        }
+        self.put('papers/sample-2026/evidence-map.json', json.dumps(evidence))
+        builder.build([p])
+        index = (self.root / 'papers/sample-2026/index.html').read_text()
+        first = (self.root / 'papers/sample-2026/first-pass.html').read_text()
+        self.assertIn('id="evidence-edge-method"', index)
+        self.assertIn('first-pass.html#evidence', index)
+        self.assertIn('code.html#method', index)
+        self.assertIn('src/model.py#L10-L20', index)
+        self.assertIn('id="evidence-edge-method"', first)
+        check(self.root)
+
+    def test_evidence_map_rejects_invalid_code_commit(self):
+        p = copy.deepcopy(self.paper)
+        evidence = {
+            'version': 1,
+            'paper': 'sample-2026',
+            'nodes': [
+                {'id': 'note:evidence', 'kind': 'note', 'stage': 'first-pass', 'anchor': 'evidence', 'label': 'Evidence'},
+                {'id': 'code:bad', 'kind': 'code', 'repo': 'https://github.com/example/repo', 'commit': 'bad', 'path': 'src/model.py', 'start': 1, 'end': 2, 'label': 'Bad'},
+            ],
+            'edges': [{'id': 'edge', 'from': 'note:evidence', 'to': 'code:bad', 'type': 'related', 'status': 'unverified'}],
+        }
+        self.put('papers/sample-2026/evidence-map.json', json.dumps(evidence))
+        with self.assertRaisesRegex(ValueError, 'full commit SHA'):
+            builder.build([p], write=False)
+
+    def test_evidence_map_rejects_missing_anchor_during_site_check(self):
+        p = copy.deepcopy(self.paper)
+        evidence = {
+            'version': 1,
+            'paper': 'sample-2026',
+            'nodes': [
+                {'id': 'note:missing', 'kind': 'note', 'stage': 'first-pass', 'anchor': 'does-not-exist', 'label': 'Missing'},
+                {'id': 'pdf:method', 'kind': 'pdf', 'href': 'https://example.com/paper.pdf', 'page': 2, 'label': 'Method'},
+            ],
+            'edges': [{'id': 'edge', 'from': 'note:missing', 'to': 'pdf:method', 'type': 'supports', 'status': 'unverified'}],
+        }
+        self.put('papers/sample-2026/evidence-map.json', json.dumps(evidence))
+        builder.build([p])
+        with self.assertRaisesRegex(ValueError, 'missing note anchor'):
+            check(self.root)
+
+    def test_evidence_map_rejects_invalid_relation_and_line_range(self):
+        p = copy.deepcopy(self.paper)
+        evidence = {
+            'version': 1,
+            'paper': 'sample-2026',
+            'nodes': [
+                {'id': 'note:evidence', 'kind': 'note', 'stage': 'first-pass', 'anchor': 'evidence', 'label': 'Evidence'},
+                {'id': 'code:bad', 'kind': 'code', 'repo': 'https://github.com/example/repo', 'commit': '0123456789abcdef0123456789abcdef01234567', 'path': 'src/model.py', 'start': 20, 'end': 10, 'label': 'Bad'},
+            ],
+            'edges': [{'id': 'edge', 'from': 'note:evidence', 'to': 'code:bad', 'type': 'unknown', 'status': 'unverified'}],
+        }
+        self.put('papers/sample-2026/evidence-map.json', json.dumps(evidence))
+        with self.assertRaisesRegex(ValueError, 'valid end line'):
+            builder.build([p], write=False)
+        evidence['nodes'][1]['end'] = 20
+        self.put('papers/sample-2026/evidence-map.json', json.dumps(evidence))
+        with self.assertRaisesRegex(ValueError, 'Invalid evidence relation'):
+            builder.build([p], write=False)
+
+    def test_evidence_renderer_requires_markers_and_preserves_surrounding_text(self):
+        data = {
+            'version': 1,
+            'paper': 'sample-2026',
+            'nodes': [
+                {'id': 'note:evidence', 'kind': 'note', 'stage': 'first-pass', 'anchor': 'evidence', 'label': 'Evidence'},
+                {'id': 'pdf:method', 'kind': 'pdf', 'href': 'https://example.com/paper.pdf', 'page': 2, 'label': 'Method'},
+            ],
+            'edges': [{'id': 'edge', 'from': 'note:evidence', 'to': 'pdf:method', 'type': 'supports', 'status': 'inferred'}],
+        }
+        text = 'BEFORE\n' + START_MARKER + '\nold\n' + END_MARKER + '\nAFTER'
+        rendered = render_text(text, data, 'sample-2026', 'first-pass')
+        self.assertTrue(rendered.startswith('BEFORE\n' + START_MARKER))
+        self.assertTrue(rendered.endswith(END_MARKER + '\nAFTER'))
+        with self.assertRaisesRegex(ValueError, 'missing a valid evidence marker'):
+            render_text('BEFORE\nAFTER', data, 'sample-2026', 'first-pass')
 
 
 if __name__ == '__main__':

@@ -52,6 +52,18 @@ ReadingPaper/
 
 代码笔记可从 `templates/code.md` 开始，分别写论文表述、代码事实、运行观察和个人理解。代码定位尽量记录完整 commit SHA、路径、函数与行号。静态读过代码并不等于复现成功。
 
+三阶段页面、PDF 定位、代码固定版本和 `evidence-map.json` 的可复制范式见 [`templates/readingpaper-evidence-template.md`](../templates/readingpaper-evidence-template.md)。新论文优先按该模板建立稳定锚点，再运行构建和检查。
+
+需要把笔记、原文和源码连成证据链时，在论文目录增加 `evidence-map.json`。节点引用阶段 HTML 的稳定 `id`、PDF 页码/图号以及固定 GitHub commit 的文件和行号；边使用 `derived-from`、`supports`、`implements`、`differs` 或 `related`，状态使用 `source-checked`、`static-read`、`inferred` 或 `unverified`。构建器会把映射渲染成总览页和 Markdown 阶段页的证据卡片。手写 HTML 需要在希望插入卡片的位置放置 `<!-- EvidenceLinks:START -->` 与 `<!-- EvidenceLinks:END -->`，再运行：
+
+```bash
+python3 scripts/render_evidence.py <论文 slug> --stage first-pass --stage code
+```
+
+导出器会对带标记的手写页面在临时输出中渲染证据卡片，源 HTML 不会被导出流程覆盖。没有本地 PDF 时，证据节点使用 DOI/arXiv/出版商链接并单独记录页码；私有 `source.pdf` 不应未经公开审查提交或加入公开导出。
+
+如果论文目录登记了 `viewer.local_pdf`，构建器还会生成 `linked-reader.html`。该页面使用本地 PDF.js 文本层显示 PDF，右侧笔记或证据卡片点击后会跳到登记页码，并在存在 `regions` 时标出 `pdf` 节点登记的近似区域；没有 `regions` 时仍可跳到页码。联动强调证据邻近关系，不把近似区域伪装成 OCR 级逐句对齐。页面同时提供“系统 PDF”回退入口。PDF 文件继续保持本地忽略，不随普通公开导出提交。
+
 ## 领域分类
 
 每篇论文可在 `papers.json` 中设置 `category`：`in-field`（领域内）、`out-of-field`（领域外）、`uncategorized`（未分类，省略字段时默认）。例如 `"category": "out-of-field"`。分类表示与个人研究方向的关系，独立于雨、雪、深度学习等 `tags`，也独立于阅读进度；不会根据关键词自动改变分类。
