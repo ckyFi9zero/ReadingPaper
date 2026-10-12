@@ -1,0 +1,92 @@
+version: 1
+paper: triplemixer-2025
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: 6d0c878626687f9145b65d309ae56a52879c930fb3002d34eb0ca78d92047485
+checked_at: '2026-10-12'
+tags:
+- 雨雾雪
+- 频率建模
+- 深度学习
+task:
+  name: 多天气去噪前处理
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: triplemixer-2025
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 天气噪声和缺失点降低分割、地点识别与检测可靠性
+  evidence:
+  - paper: triplemixer-2025
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-unified
+  name: 多天气特征统一建模
+  description: 混合几何、频率和通道特征，结合模拟天气数据集与多种下游感知任务进行评估。
+  evidence:
+  - paper: triplemixer-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-triplemixer-2025
+  name: 几何/频率/通道三域混合
+  role: core-module
+  motivation: 联合三种特征线索，作为不重训下游模型的前处理
+  evidence:
+  - paper: triplemixer-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-weather
+- challenge-structure
+- challenge-downstream
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 2
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: 参数量限制部署；合成天气不覆盖全部真实复杂性
+  evidence:
+  - paper: triplemixer-2025
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 二、Research Problem 具体问题 作者表述 在雪、雾、雨导致散射、反射与吸收异常时，从 LiDAR 点云中识别天气噪声并恢复更干净的点云，同时服务多个下游任务。 （Abstract；Sec.
+    I；Sec. IV-A） 发生场景 作者表述 模拟 Weather-KITTI/Weather-NuScenes 与真实 WADS、SemanticSTF、Boreas、CADC 恶劣天气数据。
+    （Secs. III, V） 为何重要 作者表述 作者强调去噪可作为任务无关、无需重新训练下游模型的前处理，补足域适配/泛化的任务特定重训练。 （Sec. I；Sec. II-A） 导致后果 作者表述
+    天气噪声和缺失点降低 3D 感知可靠性，影响语义分割、地点识别与目标检测。 （Sec. I）
+  method: 五、Method：只看宏观逻辑 Input： 每帧 ni×5 点集 (x,y,z,intensity,range)，带逐点天气标签用于监督训练。 GMX：体素/点几何混合 做什么：体素内均值下采样+MLP；对中心点
+    KNN，拼接中心、邻点与差向量，经 attention pooling 和 residual 得到局部几何特征。 为什么：保留原始 3D 细粒度结构，并突出重要邻域特征。 （Sec. IV-C,
+    Eq. (2)–(5), Fig. 6） TPP：三平面投影 做什么：把 GMX 特征量化到 YZ/XZ/XY 三个 2D 稀疏网格。 为什么：降低 3D 卷积成本，同时用三方向弥补单一 BEV
+    高度信息损失。 （Sec. IV-D.1, Fig. 7） LWL：可学习小波分解 做什么：逐尺度做水平/垂直 lifting wavelet，得到 LL/LH/HL/HH 四子带。 为什么：以无损通道扩展保留低/高频信息，并捕获多尺度几何。
+    （Sec. IV-D.2, Eq. (6)–(10)） MFM：多分辨率混合 做什么：用 MLP、transposed convolution、BN 与 residual 上采样、混合多尺度子带。
+    为什么：恢复空间分辨率并结合局部/全局频率信息。 （Sec. IV-D.3, Eq. (11)） CMX：通道上下文混合 做什么：把 2D 特征回投 3D，经 BN、MLP、group convolution、dropout
+    与 residual 融合通道。 为什么：综合不同方向/尺度上下文并输出逐点去噪特征。 （Sec. IV-E, Eq. (12)） 监督损失 做什么：联合 cross-entropy、Lovász
+    与 wavelet regularization。 为什么：处理类别不平衡并约束多尺度小波细节/近似项。 （Sec. IV-F, Eq. (13)–(14)） Output： 每点天气噪声标签与移除噪声后的点云，可直接送入已有感知模型。
+    真正发生变化的核心位置 概括 相比只做 2D 投影或只在原始点邻域处理，TripleMixer 的核心变化是把局部 3D 几何、三平面可学习多尺度小波频率和通道上下文串成统一去噪网络。 （Sec.
+    IV-B–E；Figs. 5–7） 原图 Fig. 5：TripleMixer 总体数据流，串联 GMX、三平面 FMX 与 CMX。 （PDF 第 6 页；来自当前论文 PDF 的页面裁剪） 查看原尺寸
+  limitations: 八、Limitations 作者明确承认的 limitation 作者表述 TripleMixer 的相对较高参数量可能阻碍资源受限设备部署。 （Sec. VI-A Future
+    Work, PDF p. 15） 作者表述 合成天气数据虽可控、可扩展，但可能无法完全覆盖真实天气的细微复杂性。 （Sec. VI-A Future Work, PDF p. 15） 从实验结果中直接可见、但作者没有明确称为
+    limitation 的现象 直接观察 SemanticSTF 的 bicyclist/motorcyclist 等稀有类别 IoU 接近零；作者把极端类别不平衡（<0.01%）及跨数据偏差列为可能因素。
+    （Sec. V-B；Tables VIII–X） 直接观察 WADS 上最高 precision 属于 LSK3DNet 97.16，而 TripleMixer 的优势在 recall/F1/mIoU；并非每个指标都最高。
+    （Table V）

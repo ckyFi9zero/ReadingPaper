@@ -1,0 +1,88 @@
+version: 1
+paper: dror-2018
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: 741273e6141612f4048ea191b5eb5b661e4644910ccd8ae5e516fb0271d6bd56
+checked_at: '2026-10-12'
+tags:
+- 雪
+- 动态半径
+- 统计滤波
+- Autonomoose
+task:
+  name: 单帧去雪
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: dror-2018
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 固定半径会删除远处结构或残留雪点
+  evidence:
+  - paper: dror-2018
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-statistical
+  name: 统计与几何规则过滤
+  description: 将 Radius Outlier Removal 的固定搜索半径改为随量测距离增大，以去除落雪点并保留远处环境特征。
+  evidence:
+  - paper: dror-2018
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-dror-2018
+  name: 距离相关半径
+  role: core-module
+  motivation: 补偿旋转 LiDAR 随距离变稀的采样
+  evidence:
+  - paper: dror-2018
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-density
+- challenge-range
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 3
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: 当前实现未达到 10 Hz；下游应用指标未评估
+  evidence:
+  - paper: dror-2018
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 二、Research Problem 具体问题 作者表述 从自动驾驶车辆的单帧 3D LiDAR 点云中移除随机分布的雪回波，同时保留定位、检测、规划所需环境点。 （Abstract；Sec.
+    I） 发生场景 作者表述 Waterloo 的 Autonomoose 在公开道路降雪中行驶，使用 Velodyne HDL-32E 旋转 LiDAR。 （Sec. I；Sec. III-A；Fig.
+    1） 为何重要 作者表述 LiDAR 广泛支撑自动驾驶定位、建图、动态目标检测与避障；雪噪声会破坏这些输入。 （Sec. I） 导致后果 作者表述 通用滤波要么面向表面平滑而非开放空间离群点，要么忽略旋转
+    LiDAR 随距离而变的点密度，导致雪残留或远处特征被删。 （Sec. I；Sec. IV-A）
+  method: 五、Method：只看宏观逻辑 Input： Velodyne HDL-32E 单帧点云 P；每点 range rp；参数 β、水平角分辨率 α、最小邻点数 kmin、最小搜索半径 SRmin。
+    计算动态半径 做什么：近距离点使用 SRmin；其他点使用 β·rp·α。 为什么：以预计相邻激光点间距补偿点云随距离变稀。 （Sec. IV-B；Algorithm 1, lines 2–7；Fig.
+    5） 半径邻域搜索 做什么：在每个 SRp 内统计邻点数量 k。 为什么：实物表面应在距离相关半径内仍有足够邻点，孤立雪点较少。 （Algorithm 1, line 8） 分类 做什么：若 k<kmin
+    标为 outlier，否则保留为 inlier。 为什么：在去除孤立雪点的同时避免固定半径造成远处结构整体消失。 （Algorithm 1, lines 9–13） Output： 环境 inlier
+    集合 I 与雪/离群点集合 O。 真正发生变化的核心位置 概括 相较固定半径 ROR，唯一而关键的结构变化是为每个点按 range 和 LiDAR 水平角分辨率计算搜索半径，并设置近距离下限。 （Sec.
+    IV-B；Algorithm 1） 原图 Algorithm 1、Fig. 5：DROR 的逐点动态搜索半径及邻域判定。 （PDF 第 5 页；来自当前论文 PDF 的页面裁剪） 查看原尺寸
+  limitations: 八、Limitations 作者明确承认的 limitation 作者表述 评估只覆盖点云性质与处理率，没有评估定位、检测或规划等下游 application-driven
+    metrics。 （Sec. V 开头） 作者表述 DROR 当前实现未达到 HDL-32E 的 10 Hz，作者把代码优化列为 future work。 （Sec. V-B；Sec. VI） 作者表述
+    作者计划扩大到雨、更重降雪等条件，说明当前条件覆盖有限。 （Sec. VI） 从实验结果中直接可见、但作者没有明确称为 limitation 的现象 直接观察 Fig. 8 中 DROR 在远距离仍增加删点，峰值低于
+    40% 而非零；当前证据只支持相对 ROR 改善。 （Fig. 8） 直接观察 PR 图来自参数 Monte Carlo 后删除 inferior points 的“最佳可能”包络，不是单一固定参数点。
+    （Sec. V-A.2）

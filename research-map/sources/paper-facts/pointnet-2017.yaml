@@ -1,0 +1,88 @@
+version: 1
+paper: pointnet-2017
+scope: out-of-field
+source_basis: existing-reading-note
+source_sha256: 59cd33d95e82c634a98bde1a4df559dfda37f484adf181708bb7dd5a097509a6
+checked_at: '2026-10-12'
+tags:
+- PointNet
+- 点云理解
+- 集合学习
+- 分类
+- 语义分割
+task:
+  name: 点集分类与分割
+  input: 本任务输入，见关联初读
+  output: 本任务输出，见关联初读
+  evidence:
+  - paper: pointnet-2017
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 无序点集需要直接表示与聚合
+  evidence:
+  - paper: pointnet-2017
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-external
+  name: 领域外技术来源
+  description: 直接以共享逐点编码和对称最大池化学习无序点集表示，统一物体分类、部件分割与场景语义分割。
+  evidence:
+  - paper: pointnet-2017
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-pointnet-2017
+  name: 共享逐点编码与对称最大池化
+  role: core-module
+  motivation: 学习对点排列不敏感的集合表示
+  evidence:
+  - paper: pointnet-2017
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-structure
+novelty_assessment:
+  novelty_class: 2
+  confidence: provisional
+  reason: 仅提供原任务的技术洞见；不是恶劣天气去噪首创或已验证迁移。
+limitations:
+- text: 作为点集表示技术来源，未验证天气去噪迁移
+  evidence:
+  - paper: pointnet-2017
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 二、Research Problem 具体问题 作者表述 如何设计直接接收无序点集的深度网络，同时尊重点的排列不变性，并考虑几何变换和点之间的联系。（Sec. 3、4.1） 发生场景
+    作者表述 分类输入是从形状采样或从场景预分割出的物体点云；分割输入是一个物体或三维场景子区域，输出每个点的类别分数。（Sec. 3，PDF p.2） 为何重要 作者表述 常规卷积需要规则网格。把点云转换成体素或多幅图像会使表示变得庞大，并引入量化伪影，可能遮蔽数据本身的自然不变性。（Sec.
+    1，第1段） 直接后果 概括 表示转换增加数据和计算负担；若直接把点当有序数组处理，同一几何对象改变点的输入顺序也会成为不同输入。作者因此要求网络对点的排列保持不变。（Sec. 1；Sec. 4.1–4.2）
+  method: 五、Method：只看宏观逻辑 PointNet Fig. 2，PDF p.3（印刷页654）。原图及原图注裁剪：共享逐点编码、最大池化与分类 / 分割分支。 点击可按原尺寸查看。 下列流程为
+    概括示意 ，依据 Sec. 3–4.2 与 Fig. 2。 Input：点集合 。输入 n 个点，基本设置为 XYZ，也允许颜色、法向量等额外通道；目的是直接处理几何数据。（Sec. 3） 输入与特征对齐
+    。T-net 预测输入变换；另一个 T-net 对齐逐点特征。作者希望把输入和特征带到较一致的空间，并以接近正交的正则化帮助高维特征变换优化。（Sec. 4.2，Joint Alignment Network）
+    共享逐点编码 → max pooling 。每个点用相同 MLP 独立处理，再逐通道取最大值形成全局特征；对称聚合使结果不依赖点的排列。（Sec. 4.2，Symmetry Function） 分类分支
+    。全局特征经全连接层输出 k 类分数。（Sec. 3；Fig. 2） 分割分支 。把全局特征与每个点的特征拼接，再做共享逐点预测，输出 n × m 分数，使预测同时使用逐点信息和整体语义。（Sec.
+    4.2，Local and Global Information Aggregation） 概括 核心变化发生在 三维数据进入网络及被聚合的位置 ：直接学习逐点特征，并用对称函数形成集合表示。这里不进一步展开
+    T-net 层宽、正则项推导或逐层实现。（Sec. 1、4.2）
+  limitations: 八、Limitations 作者明确承认的问题 作者表述 分类与 MVCNN 仍有差距；作者认为可能来自渲染图像能保留的精细几何细节。这里保留其解释身份。（Sec. 5.1，PDF
+    p.6） 作者表述 高维特征变换显著增加优化难度，因此加入正交正则化。（Sec. 4.2，PDF p.4） 实验直接可见、作者未明确称为 limitation 的现象 直接观察 部件分割均值最好不等于每类最好，例如
+    car 为74.9%，低于 Yi 的75.7%；motor 为65.2%，低于 Yi 的70.6%。（Table 2，PDF p.6） 直接观察 检测平均 AP 为24.24，高于18.22，但
+    sofa AP 为4.76，低于6.78；不能把作者对检测改善的概括改写为所有类别都提升。（Table 4，PDF p.6） 直接观察 Fig. 6 中缺失、离群点或高斯扰动继续增大时，准确率明显下降；这里只描述这些受控实验曲线，不推及未经测试的天气或传感器条件。（Fig.
+    6，PDF p.8）
+transfer_status: inferred

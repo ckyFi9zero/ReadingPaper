@@ -1,0 +1,569 @@
+version: 1
+domain: adverse-weather-lidar-denoising
+challenges:
+- id: challenge-density
+  name: 空间密度变化
+  description: 不同区域和天气强度改变邻点统计
+  status: inferred
+  observable_failures:
+  - 局部稀疏结构可能误删
+  - 固定邻域难适配局部密度
+  evidence:
+  - &id016
+    paper: sdor-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: pmdf-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id008
+    paper: rpsnownet-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id003
+    paper: desnow-gnn-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: pointnet-plus-plus-2017
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  insights:
+  - id: insight-adaptive
+    name: 自适应邻域
+    techniques:
+    - 局部密度
+    - 空间分区
+    - 非线性半径
+    status: inferred
+    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    source_papers:
+    - sdor-2026
+    - pmdf-2026
+    - rpsnownet-2026
+    - desnow-gnn-2026
+    evidence:
+    - &id018
+      paper: sdor-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: pmdf-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - &id012
+      paper: rpsnownet-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - &id005
+      paper: desnow-gnn-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  - id: insight-hierarchy
+    name: 多尺度局部集合表示
+    techniques:
+    - MSG/MRG
+    - 层次局部特征
+    status: inferred
+    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    source_papers:
+    - pointnet-plus-plus-2017
+    evidence:
+    - paper: pointnet-plus-plus-2017
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+- id: challenge-range
+  name: 远近距离采样不均
+  description: 近密远疏会影响半径与强度判别
+  status: inferred
+  observable_failures:
+  - 远处环境点被误删
+  - 固定强度阈值不适配距离
+  evidence:
+  - paper: dror-2018
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: dsor-2021
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  - &id001
+    paper: lior-snow-2020
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: dcor-2024
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  insights:
+  - id: insight-distance
+    name: 距离相关阈值与半径
+    techniques:
+    - 距离缩放
+    - 通道内邻域
+    - 强度曲线
+    status: inferred
+    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    source_papers:
+    - dror-2018
+    - dsor-2021
+    - lior-snow-2020
+    - dcor-2024
+    evidence:
+    - paper: dror-2018
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: dsor-2021
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+    - &id002
+      paper: lior-snow-2020
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: dcor-2024
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+- id: challenge-structure
+  name: 噪声与真实结构混淆
+  description: 低反射和稀疏真实结构与粒子噪声可能共享局部特征
+  status: inferred
+  observable_failures:
+  - 低密度非雪点误删
+  - 覆雪植被与噪声难区分
+  evidence:
+  - *id001
+  - paper: lior-2021
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  - &id004
+    paper: crfor-2023
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: scfnr-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  - paper: lisnownet-2022
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: pointnet-2017
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: implicit-point-to-voxel-lidar-imu-slam
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: post-refining-lidar-registration
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id010
+    paper: shape-enhanced-set-det-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  insights:
+  - id: insight-physical
+    name: 强度与几何上下文
+    techniques:
+    - 强度复核
+    - CRF
+    - 球形度
+    status: inferred
+    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    source_papers:
+    - lior-snow-2020
+    - lior-2021
+    - crfor-2023
+    - scfnr-2026
+    evidence:
+    - *id002
+    - paper: lior-2021
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+    - &id006
+      paper: crfor-2023
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: scfnr-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  - id: insight-frequency
+    name: 范围图频域先验
+    techniques:
+    - DWT/IDWT
+    - FFT 稀疏损失
+    status: inferred
+    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    source_papers:
+    - lisnownet-2022
+    evidence:
+    - paper: lisnownet-2022
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  - id: insight-geometry
+    name: 集合表示与隐式几何
+    techniques:
+    - 对称聚合
+    - 隐式体素
+    - 条件残差扩散
+    status: inferred
+    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    source_papers:
+    - pointnet-2017
+    - implicit-point-to-voxel-lidar-imu-slam
+    - post-refining-lidar-registration
+    evidence:
+    - paper: pointnet-2017
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: implicit-point-to-voxel-lidar-imu-slam
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: post-refining-lidar-registration
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  - id: insight-completion
+    name: 任务内形状补全
+    techniques:
+    - RoI 补全
+    - 形状特征融合
+    status: inferred
+    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    source_papers:
+    - shape-enhanced-set-det-2026
+    evidence:
+    - &id014
+      paper: shape-enhanced-set-det-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+- id: challenge-temporal
+  name: 单帧信息不足
+  description: 当前局部观测难区分短暂粒子与稳定场景
+  status: inferred
+  observable_failures:
+  - 上下文不充分
+  - 运动与瞬时噪声混淆
+  evidence:
+  - paper: 4denoisenet-2023
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - *id003
+  - *id004
+  - paper: removert-2020
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  insights:
+  - id: insight-temporal
+    name: 跨帧联合证据
+    techniques:
+    - 时空 kNN
+    - 配准差分
+    - 多分辨率删除后恢复
+    status: inferred
+    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    source_papers:
+    - 4denoisenet-2023
+    - desnow-gnn-2026
+    - crfor-2023
+    - removert-2020
+    evidence:
+    - paper: 4denoisenet-2023
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - *id005
+    - *id006
+    - paper: removert-2020
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+- id: challenge-weather
+  name: 多天气与跨域差异
+  description: 不同天气和传感器的退化分布不同
+  status: inferred
+  observable_failures:
+  - 共享参数不能覆盖天气差异
+  - 跨传感器强度偏置
+  evidence:
+  - paper: adversenet-2025
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id009
+    paper: triplemixer-2025
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id007
+    paper: ltdnet-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: weathernet-2020
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: bev-devils-2024
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  insights:
+  - id: insight-weather
+    name: 共享与天气条件表示
+    techniques:
+    - CTPV
+    - 天气特定参数
+    - 三域混合
+    - 天气 embedding
+    status: inferred
+    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    source_papers:
+    - adversenet-2025
+    - triplemixer-2025
+    - ltdnet-2026
+    - weathernet-2020
+    evidence:
+    - paper: adversenet-2025
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - &id013
+      paper: triplemixer-2025
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - &id011
+      paper: ltdnet-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: weathernet-2020
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  - id: insight-bev
+    name: 跨模态空间表征思路
+    techniques:
+    - BEV 表征比较
+    - Camera/LiDAR/Fusion
+    status: inferred
+    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    source_papers:
+    - bev-devils-2024
+    evidence:
+    - paper: bev-devils-2024
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+- id: challenge-downstream
+  name: 去噪与下游收益不一致
+  description: 逐点或重建指标不保证所有下游类别改善
+  status: inferred
+  observable_failures:
+  - 总体收益不代表每类改善
+  - 缺失结构不能靠删点恢复
+  evidence:
+  - *id007
+  - &id015
+    paper: 3d-unoutdet-2025
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - *id008
+  - *id009
+  - *id010
+  insights:
+  - id: insight-task
+    name: 结构恢复与下游评估
+    techniques:
+    - 恢复缺失几何
+    - 检测和分割评估
+    - RoI 形状特征
+    status: inferred
+    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    source_papers:
+    - ltdnet-2026
+    - 3d-unoutdet-2025
+    - rpsnownet-2026
+    - triplemixer-2025
+    - shape-enhanced-set-det-2026
+    evidence:
+    - *id011
+    - &id017
+      paper: 3d-unoutdet-2025
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - *id012
+    - *id013
+    - *id014
+- id: challenge-efficiency
+  name: 精度与计算成本冲突
+  description: 近邻查询、图构造和密集特征消耗资源
+  status: inferred
+  observable_failures:
+  - 滤波达不到传感器频率
+  - 特征与线程管理存在开销
+  evidence:
+  - paper: 3d-outdet-2024
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - *id015
+  - *id008
+  - *id016
+  insights:
+  - id: insight-fast
+    name: 分离训练成本与在线推理
+    techniques:
+    - 离线伪标签
+    - 轻量邻域算子
+    - 并行分区
+    status: inferred
+    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    source_papers:
+    - 3d-outdet-2024
+    - 3d-unoutdet-2025
+    - rpsnownet-2026
+    - sdor-2026
+    evidence:
+    - paper: 3d-outdet-2024
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - *id017
+    - *id012
+    - *id018

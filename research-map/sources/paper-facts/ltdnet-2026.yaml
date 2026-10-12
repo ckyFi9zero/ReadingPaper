@@ -1,0 +1,88 @@
+version: 1
+paper: ltdnet-2026
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: 05e06df0464e5e8c7f926657de351b02c467645638b33003472ade2974637e58
+checked_at: '2026-10-12'
+tags:
+- 雨雪雾
+- 点云恢复
+- 空频融合
+- IQA3D
+task:
+  name: 天气退化点云结构恢复
+  input: 恶劣天气 LiDAR 点云
+  output: 恢复点云
+  evidence:
+  - paper: ltdnet-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 只删除噪点不能恢复雨雾雪导致的结构缺失
+  evidence:
+  - paper: ltdnet-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-restoration
+  name: 范围图生成式结构恢复
+  description: 学习从天气退化点云到干净几何的映射，并以 IQA3D 同时评测结构恢复与下游检测。
+  evidence:
+  - paper: ltdnet-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-ltdnet-2026
+  name: 空频块、天气 embedding 与概率裁剪
+  role: core-module
+  motivation: 重建缺失几何并删除生成伪影
+  evidence:
+  - paper: ltdnet-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-structure
+- challenge-weather
+- challenge-downstream
+novelty_assessment:
+  novelty_class: 2
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: DDI 依赖合成配对数据；真实天气用检测 AP 评估
+  evidence:
+  - paper: ltdnet-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 二、Research Problem 作者表述 具体问题：雨、雾、雪会同时产生噪声与结构缺失，单纯去噪不能恢复几何。 （Abstract；Introduction 第 1 段；PDF
+    p. 1） 作者表述 场景：在晴天训练的 3D 检测器处理真实恶劣天气点云。 （Abstract；Introduction 第 1 段；PDF p. 1） 作者表述 重要性：下游模型输入质量直接决定有效距离与检测可靠性。
+    （Abstract；Introduction 第 1 段；PDF p. 1） 作者表述 后果：物体轮廓缺失、误检漏检和精度下降。 （Abstract；Introduction 第 1 段；PDF
+    p. 1）
+  method: 五、Method：只看宏观逻辑 做了什么： 把退化点云投影成单通道 range image，并加入 global/local positional encoding。 为什么： 位置编码用于补偿柱面投影引入的空间位置歧义。
+    （Method；Fig. 1；PDF pp. 2–3） 做了什么： 三层 Spatial-Frequency Blocks 并行提取空间与频率特征。 为什么： 空间分支保留局部结构，频率分支捕获全局退化模式。
+    （Method ‘Spatial-Frequency Block’；Fig. 1；PDF pp. 3–4） 做了什么： Weather-Aware Block 估计天气 embedding 并调制中间特征。
+    为什么： 同一网络需要适配雨、雾、雪的不同退化分布。 （Method ‘Weather-Aware Block’；Fig. 1；PDF pp. 3–4） 做了什么： decoder 与 skip
+    connections 重建 range image。 为什么： 目标是恢复丢失结构，而不只删除可疑点。 （Method；Fig. 1；PDF pp. 2–4） 做了什么： Probabilistic
+    Pruning Block 删除重建伪影并反投影为点云。 为什么： 生成式恢复可能引入 outlier/artifact，需在输出端抑制。 （Method ‘Probabilistic Pruning
+    Block’；Fig. 1；PDF p. 4） 原图裁剪：Fig. 1，PDF p. 3。LTDNet 的位置编码、空频块、天气感知块和概率剪枝模块；点击查看原尺寸。 概括 核心变化是把去噪改为端到端
+    degraded-to-clean 几何恢复，并以空频联合建模、天气调制和概率剪枝同时恢复结构与抑制伪影。 （Introduction；Method；Fig. 1；PDF pp. 1–4）
+  limitations: 八、Limitations 作者明确承认的 limitation 论文未明确说明 论文没有单列或明确承认 limitation。 （Conclusion；PDF p. 7）
+    从实验结果中直接可见，但作者没有明确称为 limitation 的现象 直接观察 DDI 依赖 synthetic paired clean/degraded 数据；真实天气部分以 detection
+    AP 而非 clean 几何对应评估。 （IQA3D；Tables 1–2；PDF pp. 4–6）

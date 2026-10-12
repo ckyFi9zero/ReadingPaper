@@ -39,6 +39,10 @@ def check(root=ROOT, papers=None):
         manifest = root / 'site-manifest.json'
         papers = json.loads(manifest.read_text())['papers'] if manifest.exists() else json.loads((root / 'papers.json').read_text())
     paths = [root / "index.html", root / "overview.html"]
+    # Map pages are local additions; public exports deliberately omit them.
+    for name in ('research-map.html', 'literature-tree.html', 'challenge-insight-tree.html'):
+        if (root / name).is_file():
+            paths.append(root / name)
     for paper in papers:
         paths += [root / "papers" / paper["slug"] / f"{stage}.html" for stage in ["index", "first-pass", "deep-read", "code"]]
         linked_reader = root / "papers" / paper["slug"] / "linked-reader.html"

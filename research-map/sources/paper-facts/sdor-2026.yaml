@@ -1,0 +1,86 @@
+version: 1
+paper: sdor-2026
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: 7b778c8a2be6ebc69baddb0363d9eb932a7b968a1a8de1e06e6c5eccd6d85647
+checked_at: '2026-10-12'
+tags:
+- 雨雪雾
+- 空间分区
+- 自适应半径
+- 并行过滤
+task:
+  name: 空间分区天气噪声过滤
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: sdor-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 仅距离调节无法覆盖局部密度不均和实时要求
+  evidence:
+  - paper: sdor-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-statistical
+  name: 统计与几何规则过滤
+  description: 将点云划分为空间扇区，以局部密度和距离自适应半径并行过滤天气噪声。
+  evidence:
+  - paper: sdor-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-sdor-2026
+  name: 扇区密度半径、边界补偿与并行
+  role: core-module
+  motivation: 处理局部密度差异并降低分区边缘邻点缺失
+  evidence:
+  - paper: sdor-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-density
+- challenge-range
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 3
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: 扇区边界影响精度；细分与高线程存在管理开销
+  evidence:
+  - paper: sdor-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 二、Research Problem 作者表述 具体问题：恶劣天气点云中的天气噪声去除。 （Abstract；Introduction 前两段；PDF p. 1） 作者表述 场景：自动驾驶
+    LiDAR 在雨、雪、雾条件下实时运行。 （Abstract；Introduction 前两段；PDF p. 1） 作者表述 重要性：过滤器必须同时保证 precision、recall 与实时性。
+    （Abstract；Introduction 前两段；PDF p. 1） 作者表述 后果：噪声和误删会削弱环境感知可靠性。 （Abstract；Introduction 前两段；PDF p. 1）
+  method: 五、Method：只看宏观逻辑 做了什么： 输入单帧 LiDAR 点云。 为什么： 目标是在恶劣天气下过滤噪声并保留结构。 （Methods；PDF p. 2） 做了什么： 按方位角和高度划分
+    NH×NV 个 3D 扇区。 为什么： 局部分区用于显式处理空间密度不均，并形成可独立执行的任务。 （Methods ‘Spatial division of point cloud’；Fig.
+    1；PDF pp. 2–4） 做了什么： 在各扇区统计局部密度，并让搜索半径同时随距离和 density adjustment factor 改变。 为什么： 仅随距离变化不足以补偿区域密度差异；blending
+    用于抑制极端半径。 （Methods；Eqs. (8)–(15)；PDF pp. 4–5） 做了什么： 各扇区并行计数邻居，并设置 boundary band 补偿跨扇区邻居。 为什么： 并行用于降低运行时间；边界带用于缓解扇区边缘邻居缺失。
+    （Methods ‘Parallel processing’ 与 boundary analysis；PDF pp. 5, 11） 做了什么： 合并各扇区保留点，输出去噪点云。 为什么： 恢复统一点云供下游感知使用。
+    （Methods；Fig. 1；PDF pp. 3–4） 原图裁剪：Fig. 1，PDF p. 4。点云分区、分区内独立去噪与结果合并的 SDOR 工作流；点击查看原尺寸。 概括 核心变化是把全局或仅距离相关的邻域过滤改为‘空间分区
+    + 扇区密度/距离联合自适应半径 + 并行执行’。 （Introduction 末段；Methods；Fig. 1；PDF pp. 2–5）
+  limitations: 八、Limitations 作者明确承认的 limitation 作者表述 作者明确指出：扇区边界会降低性能；分区过细会产生稀疏扇区和索引/线程管理开销；高线程数存在 parallelization
+    overhead。 （Results 与 Discussion；PDF pp. 11, 15–17） 从实验结果中直接可见，但作者没有明确称为 limitation 的现象 直接观察 Rain 条件下
+    SDOR 的 F1 略低于 DROR，且不同数据集上的绝对运行时间并不相同。 （Tables 7–10；PDF pp. 13–15）

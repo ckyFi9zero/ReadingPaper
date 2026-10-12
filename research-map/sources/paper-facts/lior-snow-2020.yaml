@@ -1,0 +1,89 @@
+version: 1
+paper: lior-snow-2020
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: c4b7d1bd3d5f116c6f2f06cdf66ea41d9d69212c4efe469d44abe282536b4a26
+checked_at: '2026-10-12'
+tags:
+- 雪
+- 强度
+- 统计滤波
+- 实时去噪
+task:
+  name: 强度辅助去雪
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: lior-snow-2020
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 删除雪点同时保留道路、车辆和远处结构
+  evidence:
+  - paper: lior-snow-2020
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-statistical
+  name: 统计与几何规则过滤
+  description: 先用低强度阈值筛出候选雪点，再以 Radius Inlier Saving 邻域规则救回非雪物体点。
+  evidence:
+  - paper: lior-snow-2020
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-lior-snow-2020
+  name: 强度阈值与 Radius Inlier Saving
+  role: core-module
+  motivation: 先筛低强度候选，再救回局部稠密的低反射物体点
+  evidence:
+  - paper: lior-snow-2020
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-structure
+- challenge-range
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 3
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: 阈值围绕 Ouster OS-1；10 FPS 依赖车前 ROI 裁剪
+  evidence:
+  - paper: lior-snow-2020
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 二、Research Problem 具体问题 作者表述 在不大量删除道路、车辆、树叶和远处建筑等有效点的前提下，实时移除 LiDAR 点云中的雪粒噪声。 （Abstract；Sec.
+    I；Sec. V-C） 发生场景 作者表述 Ouster OS-1 64 线 LiDAR 在真实落雪道路与建筑屋顶采集；论文另报告真实雨天点云。 （Sec. V-A；Tables 5–6） 为何重要
+    作者表述 作者认为既有雪滤波速度与准确率尚不足以用于自主车辆，尤其高计算量限制实时运行。 （Abstract；Sec. I） 导致后果 作者表述 固定距离滤波会把远处有效环境点当离群点；若保留过多点又无法去除雪，二者都会影响车载感知。
+    （Sec. II-A；Sec. V-C）
+  method: 五、Method：只看宏观逻辑 Input： 每个点带距离与 intensity 的 OS-1 LiDAR 单帧点云。 距离相关强度阈值 做什么：在 71.235 m 的理论雪检测范围内，按雪粒物理分析得到的红色阈值曲线
+    Ithr 判定。 为什么：回波强度随距离衰减，固定强度阈值不能覆盖不同距离。 （Sec. III-B；Sec. IV-B–C；Fig. 9） 低强度候选删除 做什么：若点强度 Ip≤Ithr，先归为
+    outlier；否则保留。 为什么：利用雪粒相较同距离物体点更低的强度。 （Algorithm 1, lines 3–10） RIS 救回有效点 做什么：对低强度 outlier 在 0.1 m
+    半径内计数；邻点数大于 3 时重新标为 inlier。 为什么：低反射物体点可能同样低强度，但局部更稠密；雪点更稀疏。 （Sec. IV-A；Algorithm 1, lines 11–15；Sec.
+    V-B） ROI 加速 做什么：只处理车辆前方道路 crop box。 为什么：省去非必要区域计算，把实际处理率提升到传感器上限 10 FPS。 （Sec. V-D.1；Table 3；Fig.
+    12） Output： 保留环境点并移除雪/雨粒子的点云。 真正发生变化的核心位置 概括 相比 DROR 等以点间距离为主要判据的方法，LIOR 把随距离变化的回波强度阈值作为第一判据，只对低强度候选执行局部
+    RIS 邻域检查。 （Sec. III–IV；Algorithm 1） 原图 Algorithm 1、Figs. 4–5：简单阈值的误删，以及 RIS 依据邻域密度救回有效点。 （PDF 第 4
+    页；来自当前论文 PDF 的页面裁剪） 查看原尺寸
+  limitations: 八、Limitations 作者明确承认的 limitation 作者表述 未加 ROI 的 LIOR 速度只适合低速自主驾驶；作者通过裁剪车前道路提升到 10 FPS。 （Sec.
+    V-D.1） 作者表述 论文的强度曲线与阈值围绕特定 Ouster OS-1、865 nm 波长和所设雪粒参数推导；作者没有报告跨 LiDAR 型号的定量验证。 （Sec. III-B；Sec.
+    IV-B；Sec. V-A） 从实验结果中直接可见、但作者没有明确称为 limitation 的现象 直接观察 速度上限 10 FPS 与本实验 LiDAR 的 10 Hz 转速一致；表中无法说明在更高帧率传感器上实际端到端速度。
+    （Sec. V-D.1） 直接观察 准确率核心比较仅用 10 个时间匹配扫描；随后 50 帧验证未提供与 DROR 相同的完整精确率/召回率表。 （Sec. V-D.2；Table 5）

@@ -1,0 +1,87 @@
+version: 1
+paper: 4denoisenet-2023
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: 5b9591e7a5355476db32ecba3a83986f836cf46d3da5dc5d1f625df689f332ba
+checked_at: '2026-10-12'
+tags:
+- 雪
+- 多帧
+- 深度学习
+task:
+  name: 相邻帧天气点去噪
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: 4denoisenet-2023
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 单帧局部判断可能误删有效点或保留天气杂波
+  evidence:
+  - paper: 4denoisenet-2023
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-temporal
+  name: 多帧时空建模
+  description: 联合空间邻域与相邻帧信息，用时空一致性辅助区分雪噪声和真实环境点。
+  evidence:
+  - paper: 4denoisenet-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-4denoisenet-2023
+  name: 空间/时间 kNN 与 motion-guided attention
+  role: core-module
+  motivation: 结合空间邻域和相邻帧运动线索
+  evidence:
+  - paper: 4denoisenet-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-temporal
+- challenge-weather
+novelty_assessment:
+  novelty_class: 2
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: CADC 无逐点标注；强度通道存在跨传感器偏置
+  evidence:
+  - paper: 4denoisenet-2023
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 二、Research Problem 具体问题 作者表述 从稀疏 LiDAR 点云中移除由雨滴、雾与雪花等空气粒子造成的错误点。 （Abstract；Sec. I） 发生场景 作者表述
+    机器人与自动驾驶在恶劣天气下依赖 LiDAR 完成定位、检测、导航等下游任务。 （Sec. I, PDF p. 1） 为何重要 作者表述 降水引起反射、折射、吸收，使点云出现缺失与杂波，并影响障碍物检测等安全相关任务。
+    （Sec. I, PDF p. 1） 导致后果 作者表述 错误滤波会移除有效点并保留天气杂波；杂波也会降低下游感知质量。 （Sec. I；Sec. II-A）
+  method: 五、Method：只看宏观逻辑 Input： 相邻两帧点云 P(t) 与 P(t−1)，先投影为有序球面表示；定量实验含 range/intensity/坐标等通道，真实跨传感器定性实验另报告去掉
+    intensity。 有序点云表示 做什么：把 LiDAR 坐标映射到球面投影图，并保留度量坐标特征。 为什么：获得稠密、可由 2D 网络高效处理的组织形式。 （Sec. III-A, Eq. (1)）
+    空间 kNN 分支 做什么：在当前帧的度量空间检索邻点，以局部相对几何执行 kNN convolution。 为什么：天气杂波低密度，局部度量邻域比投影图像邻域更准确。 （Sec. III-B,
+    Fig. 1） 时间 kNN 分支 做什么：用当前帧 anchor 到前一帧近邻的差向量编码运动。 为什么：规则运动产生较平滑的相对位移分布，天气噪声更随机。 （Sec. III-C, Fig.
+    2） MGA 融合与解码 做什么：双分支 residual block 编码后，经 motion-guided attention 融合，再用 residual block、pixel shuffle、卷积与
+    Softmax 预测。 为什么：把运动引导的时间特征与空间特征结合，并恢复逐点分辨率。 （Sec. III-D, Fig. 3） Mask 去噪 做什么：根据 Softmax 置信度移除空气粒子点。
+    为什么：输出干净当前帧点云。 （Sec. III-D） Output： 当前帧的二分类预测与去噪点云 P′(t)。 真正发生变化的核心位置 概括 相较单帧投影 CNN，4DenoiseNet 的核心变化是用度量空间
+    kNN 卷积同时编码当前帧局部结构与相邻帧运动，并通过 MGA 融合。 （Sec. III；Fig. 3） 原图 Fig. 3：当前帧空间分支、前一帧时间分支、MGA 融合和解码/Mask 全流程。
+    （PDF 第 4 页；来自当前论文 PDF 的页面裁剪） 查看原尺寸
+  limitations: 八、Limitations 作者明确承认的 limitation 作者表述 真实 CADC 没有逐点标注，因此真实天气测试仅为定性，无法给出真实数据 IoU。 （Sec. IV-A；Sec.
+    IV-D） 作者表述 作者报告带 intensity 的模型在跨传感器域迁移时会受强度通道偏置影响，需去掉该通道重新训练；且该设置未用于定量实验。 （Sec. IV-D, PDF p. 7） 从实验结果中直接可见、但作者没有明确称为
+    limitation 的现象 直接观察 Fig. 4 显示某些训练子集下 SalsaNext 可与 4DenoiseNet 持平；作者没有把单一模型在所有训练子集上绝对领先作为结论。 （Fig.
+    4；Sec. IV-B）

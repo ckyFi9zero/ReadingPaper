@@ -1,0 +1,88 @@
+version: 1
+paper: weathernet-2020
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: 5ad411756be56b00b001272e79829ca2e572dd2c26c71810a14045f008bc3678
+checked_at: '2026-10-12'
+tags:
+- 恶劣天气
+- 范围图
+- 深度学习
+task:
+  name: 监督雨雾点分类
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: weathernet-2020
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 雨雾噪声影响 LiDAR 输入质量
+  evidence:
+  - paper: weathernet-2020
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-range
+  name: 范围图学习型过滤
+  description: 在二维 LiDAR 表示中学习天气噪声特征，探索 CNN 在恶劣天气去噪中的作用。
+  evidence:
+  - paper: weathernet-2020
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-weathernet-2020
+  name: 二维 LiDAR 表示与 CNN 分割
+  role: core-module
+  motivation: 在受控静态采集条件下构造标签并学习天气点特征
+  evidence:
+  - paper: weathernet-2020
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-structure
+- challenge-weather
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 2
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: 动态场景只能定性评估；静态可重复采集是自动标注前提
+  evidence:
+  - paper: weathernet-2020
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 二、Research Problem 具体问题 作者表述 识别并过滤雨滴、雾等水滴反向散射产生的错误 LiDAR 点，同时保留行人、骑行者等小型有效结构。 （Abstract；Sec.
+    I；Figs. 1, 7–8） 发生场景 作者表述 自动驾驶/移动机器人在重雨、浓雾和道路自然小雨中使用 VLP-32C LiDAR。 （Sec. I；Sec. IV–V） 为何重要 作者表述 作者指出底层几何感知对噪声敏感，水滴可被误认为障碍并导致机器人停车。
+    （Abstract；Sec. I） 导致后果 作者表述 噪声点引发漏检与误报；仅依赖局部稀疏性的滤波又会删除中远距离小物体和有效单点。 （Abstract；Sec. I；Sec. II-B）
+  method: 五、Method：只看宏观逻辑 Input： VLP-32C 一圈扫描组成 32×1800 的 cylindrical distance image D 和 intensity image
+    I。 气候舱自动标注 做什么：将无天气参考帧堆叠，与雨/雾帧相同光束位置的距离比较；最小差距超出 ±35 cm 时标为 clutter，并区分 rain/fog。 为什么：水滴难以人工准确标注；受控静态场景可给逐点标签。
+    （Sec. III-B, Eq. (1)–(2)） 天气增强 做什么：按雾消光模型限制测距并添加散射点/强度分布；雨增强设置消光系数和随机散射概率。 为什么：利用大量晴天道路点云训练，同时缓解气候舱场景过拟合。
+    （Sec. III-C, Eq. (3), Algorithm 1） WeatherNet 做什么：以 LiLaNet 为基础减小深度，在 LiLaBlock 加 dilated convolution，并加入
+    dropout。 为什么：三类任务比完整语义分割简单；扩大感受野且提高泛化，同时减少参数与推理时间。 （Sec. III-D, Figs. 2–3） 逐点分割与去噪 做什么：预测 clear/rain/fog，移除
+    rain/fog 对应点。 为什么：把天气过滤变成监督语义分割，而非局部几何阈值。 （Abstract；Fig. 1） Output： 逐点天气类别及只保留 valid/clear 点的去噪点云。
+    真正发生变化的核心位置 概括 相比 DROR 的局部邻域阈值，WeatherNet 学习距离图、强度与较大感受野中的场景上下文；相比通用分割网，它针对三类天气分割压缩深度并加入扩张卷积与 dropout。
+    （Sec. II-C；Sec. III-D） 原图 Figs. 2–3：加入 dilated convolution/dropout 的 LiLaBlock 与轻量 WeatherNet。 （PDF
+    第 4 页；来自当前论文 PDF 的页面裁剪） 查看原尺寸
+  limitations: 八、Limitations 作者明确承认的 limitation 作者表述 动态场景无法在完全相同运动状态下重复采集晴天与天气帧，因此没有 ground truth，只能定性评估。
+    （Sec. V-A） 作者表述 自动标注只适用于受控静态可重复场景；论文用 ±35 cm 宽阈值减少 false negatives，并报告参考自测像素误差 0.367±0.053%。 （Sec.
+    III-B） 从实验结果中直接可见、但作者没有明确称为 limitation 的现象 直接观察 Fig. 6 显示主要混淆发生在 rain 与 fog；作者指出这不影响把二者都过滤，但会影响天气类型分类。
+    （Fig. 6；Sec. V） 直接观察 自然小雨道路结果为少量定性关键帧，正文没有该域的逐点 IoU。 （Fig. 8；Sec. V-B）

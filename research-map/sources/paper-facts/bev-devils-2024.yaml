@@ -1,0 +1,103 @@
+version: 1
+paper: bev-devils-2024
+scope: out-of-field
+source_basis: existing-reading-note
+source_sha256: 32ca741e83a0f3589ccbd431448392f1ef95f1523765f5c9ff7411a2c9e480b7
+checked_at: '2026-10-12'
+tags:
+- BEV
+- 自动驾驶感知
+- 综述
+- 多模态融合
+- BEVFormer++
+- Voxel-SPVCNN
+task:
+  name: BEV 感知综述与评估
+  input: 本任务输入，见关联初读
+  output: 本任务输出，见关联初读
+  evidence:
+  - paper: bev-devils-2024
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: BEV 感知的表征和训练配方影响效果
+  evidence:
+  - paper: bev-devils-2024
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-external
+  name: 领域外技术来源
+  description: 梳理 Camera、LiDAR 与 Fusion 三条 BEV 感知路线，并以 Waymo 检测和分割消融整理数据增强、编码器及损失等实践配方。
+  evidence:
+  - paper: bev-devils-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-bev-devils-2024
+  name: Camera/LiDAR/Fusion 表征比较
+  role: core-module
+  motivation: 梳理空间表征及不同模态的互补和代价
+  evidence:
+  - paper: bev-devils-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-weather
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 仅提供原任务的技术洞见；不是恶劣天气去噪首创或已验证迁移。
+limitations:
+- text: 综述及消融提供思路，不证明天气去噪有效
+  evidence:
+  - paper: bev-devils-2024
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: STAGE 1 / 02 Research Problem 具体问题是什么？ 概括 摘要提出四个问题：从透视图转换到 BEV 时如何恢复丢失的 3D 信息；如何获得 BEV 网格的真实标注；如何融合不同来源与视角的特征；传感器配置变化时如何保持适应性和泛化能力。
+    Abstract，PDF p. 1。 发生在什么场景？ 概括 装备多种传感器的自动驾驶车辆，需要完成 3D 检测、分割、跟踪等任务，并向规划与控制提供场景表示。作者按输入把研究分为 BEV Camera、BEV
+    LiDAR、BEV Fusion。 Sec. I-A；Fig. 1，PDF pp. 1–2。 为什么重要？ 作者表述 随着传感器数量和种类增加，统一表示更为重要。BEV 便于融合，也便于后续规划和控制使用；相机的三维理解能力与
+    LiDAR 仍存在明显差距，因此准确的 2D→3D 转换具有研究价值。 Sec. I；Sec. I-B “Significance”，PDF pp. 1–2。这里保留作者当时的论述，不将历史排行榜差距当作当前结论。
+    问题会造成什么后果？ 作者表述 相机图像缺少深度会妨碍准确的三维定位；相机与 LiDAR 特征的错位或不准确的深度预测，作者认为可能解释部分融合方法为何不及 LiDAR-only。后一个连接是作者提出的可能解释，并非本文完成的独立因果验证。
+    Sec. III-A1；Sec. I-B “Space”，PDF pp. 5、2。 Fig. 1 · PDF p. 2 / 期刊 p. 2152，原论文图及图注裁剪。概括：从输入、基础任务到 BEV
+    等核心任务，定位三条输入模态路线。 点击图片可放大；Esc 关闭。
+  method: STAGE 1 / 05 Method：只看宏观逻辑 概括 下面是对综述中通用 pipeline 的 概括示意 ；各路线并非必须串行执行的一个新网络。 5.1 Camera：恢复几何，再做三维任务
+    Input → 多相机图像 ：共享 2D backbone / neck 提取图像特征，利用成熟的二维表征。 视角变换 ：2D→3D 先预测深度再 lifting；3D→2D 从三维查询图像；pure-network-based
+    隐式学习关系。目的都是把图像信息组织成可用于三维感知的表示。 Output → 3D decoder ：输出 3D boxes、BEV map 或车道关键点。作者也说明并非所有方法都显式构建 BEV
+    特征或独立 view transformation 模块。 概括依据：Sec. III-A1–2；Fig. 2–3，PDF pp. 5–8。 Fig. 2 · PDF p. 7 / 期刊 p. 2157，原论文图及图注裁剪。三种视角变换是替代路线。
+    点击图片可放大；Esc 关闭。 5.2 LiDAR：在什么位置压缩成 BEV 概括 Input 点云 → pre-BEV 路线 先体素化并提取 3D 特征，再压缩高度到 BEV； post-BEV
+    路线 先形成 BEV 表示，再做 2D 特征提取；随后通过检测头输出三维结果。作者把两者的差别联系到几何保留程度与效率。 Sec. III-B；Fig. 4，pp. 8–9。 Fig. 4 · PDF
+    p. 8 / 期刊 p. 2158，原论文图及图注裁剪。上支路先提取 3D 特征，下支路先转换到 BEV。 点击图片可放大；Esc 关闭。 5.3 Fusion：统一特征，再预测 概括 图像＋点云
+    → 各模态特征提取 → 图像特征转 BEV → BEV 特征融合 → 时空聚合 → 感知输出。 作者认为这能减少结果级人工规则，并为多模态与历史信息提供一致表示；它仍需要解决几何对齐。 Sec.
+    III-C、III-D；Fig. 5，pp. 9–11。 Fig. 5 · PDF p. 10 / 期刊 p. 2160，原论文图及图注裁剪。上为透视图结果级融合，下为 BEV 特征级融合。 点击图片可放大；Esc
+    关闭。 5.4 本文用于评测配方的两个实例 概括 BEVFormer++ 沿用网格 BEV queries：多相机 backbone → 每层先 temporal self-attention 再
+    spatial cross-attention 与 FFN → 六层 encoder → 任务头。在此框架中调整增强、特征提取、视角变换、时间融合和损失等配置。 Sec. IV-A1、IV-B1、IV-C1，pp.
+    12–14。 概括 Voxel-SPVCNN 基于 SPVCNN：输入点特征先通过三层轻量 MLP 再体素化，原来的点分支改接 voxel-as-point，保留分支间特征交互，以减少多扫描输入的计算负担，输出逐点语义类别。
+    Sec. IV-A2、IV-B2，pp. 13–14。 概括 核心变化的位置 ：综述层面聚焦“从哪里建立 3D 表示、在哪里融合”；配方层面改进既有 pipeline 的组件与训练／推理配置。作者没有提出一个同时替代三条路线的全新统一算法。
+    Sec. I-C；III；IV。
+  limitations: STAGE 1 / 08 Limitations 作者明确承认的问题 概括 本文没有单独的 Limitations 小节；以下是作者在讨论中明确写出的技术限制，不将其改写为对本文的外部审稿意见。
+    作者表述 基于相机几何投影的路线依赖标定精度，参数在长时间驾驶中可能变化；固定或自适应 IPM 仍受其平地假设限制。 Sec. III-A2(2)、III-D3，pp. 7、11。 作者表述 细粒度
+    3D 体素保留几何但代价高，压缩高度到 BEV 又损失信息，性能与效率仍需权衡。 Sec. III-B4，p. 9。 作者表述 历史 BEV 的 ego-motion 对齐没有显式建模其他交通参与者的运动，仍依赖网络学习。
+    Sec. IV-B1(c)，p. 14。 作者表述 copy-paste、Mosaic 等非仿射增强可能造成图像语义与三维空间不对齐；空间增强必须维护相机参数和标注关系。 Sec. IV-A，p.
+    12。 表中可直接看到、作者未明确称为 limitation 的现象 直接观察 Table IV ID 4 相对 ID 0 的 LET-mAPL 从 34.6 增至 36.2，但 L1/mAPH
+    从 25.5 变为 25.4；同一配置在不同指标上的变化方向并不完全一致。ID 4 同时勾选 DA 和 LLW，不能单独归因于 DA。 直接观察 Table IV ID 9 的 2× BEV Scale
+    对照，L1/mAPH 与 ID 0 同为 25.5；该表未展示其另外两项 LET 指标，也不能据此判断全部指标都没有变化。 直接观察 Table V 的最高 mIoU 75.4 来自包含图像 Painting、时间输入、集成、专家模型和后处理的最终配置；原始
+    SPVCNN 基线是 67.4。表本身没有给出这些配置的延迟或资源列。 Table IV，p. 12；Table V，p. 13。以上仅描述已见数据，不外推失效范围或泛化能力。
+transfer_status: inferred

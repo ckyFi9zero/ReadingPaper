@@ -1,0 +1,51 @@
+version: 1
+domain: adverse-weather-lidar-denoising
+candidates:
+- id: candidate-cross-weather-density-adaptation
+  title: 跨天气和跨距离的 LiDAR 密度自适应恢复
+  setting:
+    input: 恶劣天气 LiDAR 点云
+    output: 结构保持的恢复点云
+  failure_case: 固定邻域或单天气模型在距离变化和天气变化下同时出现误删与残留
+  core_technical_challenge: 在未知天气域中联合估计局部密度、结构可信度和噪声概率
+  gate:
+    novelty_gate_case: pending
+    same_task_evidence: []
+    related_domain_evidence: []
+    citation_graph_evidence: []
+  importance:
+    impact_scope: pending
+    urgency: pending
+    generality: pending
+    technical_readiness: pending
+  candidate_pipelines: []
+  verdict: needs-more-retrieval
+  status: unverified
+  selection_status: example-not-selected
+  challenge_ids:
+  - challenge-density
+  - challenge-range
+  - challenge-weather
+  evidence:
+  - paper: sdor-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: pmdf-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: adversenet-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  retrieval_required:
+  - 检索跨天气密度自适应过滤与恢复的同输入输出工作
+  - 按关键 DOI 扩展前向和后向引用
+  - 检索其他 data domain 的局部密度与噪声可信度估计

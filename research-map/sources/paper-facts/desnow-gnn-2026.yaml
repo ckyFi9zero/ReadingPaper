@@ -1,0 +1,86 @@
+version: 1
+paper: desnow-gnn-2026
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: c6000d8c9ac4a3fc34e023d195dd43451204b2017d7c95669cb70450d8e20f5b
+checked_at: '2026-10-12'
+tags:
+- 雨雪雾
+- 图神经网络
+- 时空融合
+- 运动门控
+task:
+  name: 连续帧天气点去噪
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: desnow-gnn-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 稀疏不规则点云需兼顾近密远疏与跨帧信息
+  evidence:
+  - paper: desnow-gnn-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-temporal
+  name: 多帧时空建模
+  description: 以动态半径图、轻量跨帧注册和运动门控联合建模 LiDAR 点云的空间与时序噪声线索。
+  evidence:
+  - paper: desnow-gnn-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-desnow-gnn-2026
+  name: 时空图、跨帧配准与顶点重建
+  role: core-module
+  motivation: 用空间邻接和时序差分联合识别伪回波
+  evidence:
+  - paper: desnow-gnn-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-temporal
+- challenge-density
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 2
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: 图构造和原始点到顶点映射成本较高；雨雾主要定性展示
+  evidence:
+  - paper: desnow-gnn-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 二、Research Problem 作者表述 具体问题：在雨雪雾中识别并删除 LiDAR 伪回波。 （Abstract；Sec. 1 前两段；PDF p. 1） 作者表述 场景：自动驾驶与机器人连续点云。
+    （Abstract；Sec. 1 前两段；PDF p. 1） 作者表述 重要性：稀疏、不规则、近密远疏的点云不适合简单网格卷积。 （Abstract；Sec. 1 前两段；PDF p. 1） 作者表述
+    后果：噪声会降低检测和跟踪能力。 （Abstract；Sec. 1 前两段；PDF p. 1）
+  method: 五、Method：只看宏观逻辑 做了什么： 输入连续原始点云，并下采样为图顶点。 为什么： 降低直接在全部原始点上建图的规模。 （Sec. 3.1；Fig. 3；PDF pp. 3–4）
+    做了什么： 基于空间邻接构图，并保存当前顶点用于下一帧。 为什么： 图结构适配非规则点云，邻接边表达局部几何关系。 （Sec. 3.1；Fig. 3；PDF pp. 3–4） 做了什么： temporal
+    branch 配准前后帧并聚合差分；spatial branch 更新边和顶点。 为什么： 两条分支分别捕获运动后的时序变化和当前帧局部结构。 （Sec. 3.2；Fig. 3；PDF p. 4）
+    做了什么： 融合两分支并预测顶点为噪声的概率。 为什么： 联合时空证据用于顶点分类。 （Sec. 3.2；Fig. 3；PDF p. 4） 做了什么： 将顶点预测映射回原始点并重建去噪点云。 为什么：
+    输出需保持原始点云分辨率，而非只给下采样顶点。 （Sec. 3.3；Fig. 3；PDF p. 5） 原图裁剪：Fig. 3，PDF p. 3。图构造、顶点分类、时空融合与点云重建的完整 DeSnow-GNN
+    框架；点击查看原尺寸。 概括 核心变化是以直接点云图替代 2D 投影，并在顶点分类中显式融合空间邻接与跨帧注册后的时序差分。 （Sec. 1；Sec. 3.1–3.3；Fig. 3；PDF pp.
+    1–5）
+  limitations: 八、Limitations 作者明确承认的 limitation 作者表述 作者明确指出 graph construction 对大规模点云仍计算密集；原始点到顶点的 O(M·N)
+    映射造成运行劣势，因此实验把 N 限制为 5000、R 限制为 25。 （Sec. 4.7；Sec. 5；PDF p. 8） 从实验结果中直接可见，但作者没有明确称为 limitation 的现象
+    直接观察 核心逐点定量表使用 WADS；CADC 以及雨/雾部分主要用于定性展示。 （Table 2；Figs. 5、7；PDF pp. 5–8）

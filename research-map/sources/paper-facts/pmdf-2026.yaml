@@ -1,0 +1,86 @@
+version: 1
+paper: pmdf-2026
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: 6663006403bd03cbccb5de558e32351c4357de8a5b2d9d50928efa5c75c564c2
+checked_at: '2026-10-12'
+tags:
+- 雪
+- 自适应
+- 统计滤波
+task:
+  name: 雪强与传感器自适应去雪
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: pmdf-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 固定或线性阈值难适配不同雪强和传感器
+  evidence:
+  - paper: pmdf-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-statistical
+  name: 统计与几何规则过滤
+  description: 从当前雪噪声空间概率分布估计过滤参数，以迭代自优化适应不同 LiDAR 与降雪强度。
+  evidence:
+  - paper: pmdf-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-pmdf-2026
+  name: 参数分布拟合与历史窗口更新
+  role: core-module
+  motivation: 以噪声距离/高度分布更新半径和密度阈值
+  evidence:
+  - paper: pmdf-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-density
+- challenge-range
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 3
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: 体素化降低近处低密度结构精度；主表排除 cold start
+  evidence:
+  - paper: pmdf-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 二、Research Problem 作者表述 具体问题：在不同 LiDAR、不同降雪强度下自适应删除雪噪声。 （Abstract；Sec. I；PDF pp. 1–2） 作者表述
+    场景：自动驾驶和路侧感知的雪天点云。 （Abstract；Sec. I；PDF pp. 1–2） 作者表述 重要性：固定或线性密度阈值难适配真实雪点的复杂分布。 （Abstract；Sec. I；PDF
+    pp. 1–2） 作者表述 后果：误删目标结构或漏掉雪点，降低 3D 检测准确率。 （Abstract；Sec. I；PDF pp. 1–2）
+  method: 五、Method：只看宏观逻辑 做了什么： 输入雪天 LiDAR 点云，并用物理先验做 coarse denoising。 为什么： 初始阶段需要从当前数据取得候选雪点，以缓解 cold
+    start。 （Sec. III-A；Fig. 2；PDF pp. 4–5） 做了什么： 恢复被粗滤误删的目标点，形成用于建模的雪噪声样本。 为什么： 粗滤结果同时包含不确定噪声和非噪声，需要 target
+    recovery 提高参数样本可靠性。 （Sec. III-A；Fig. 2；PDF pp. 4–5） 做了什么： 拟合距离 gamma 分布及高度 location-scale 分布。 为什么：
+    作者认为雪噪声空间分布是非线性的，固定阈值不能跨场景。 （Sec. III-B–C；Figs. 3–4；PDF pp. 5–8） 做了什么： 体素化点云，以概率模型生成 search radius/密度阈值并过滤。
+    为什么： 体素化降低 3D 邻域搜索成本，模型阈值替代数据集特定参数。 （Sec. III-D；Eqs. (7)–(9)；Algorithm 1；PDF pp. 8–10） 做了什么： 用历史窗口迭代更新参数，输出去雪点云。
+    为什么： self-optimization 用于随当前雪强和传感器条件重新校准。 （Sec. III-D；Algorithm 1；PDF pp. 8–10） 原图裁剪：Fig. 2，PDF p.
+    4。粗雪点提取、空间分布参数估计与精细过滤组成的 PMDF 流程；点击查看原尺寸。 概括 核心变化是先从当前/历史粗滤雪点拟合空间概率分布，再由该模型生成细滤参数并自迭代更新，而不是依赖离线固定阈值。
+    （Sec. I；Sec. III；Fig. 2；Algorithm 1；PDF pp. 1–10）
+  limitations: 八、Limitations 作者明确承认的 limitation 作者表述 作者明确指出：体素化提高效率，但会降低传感器近处、尤其树木等低密度目标的过滤精度；真实雪天数据收集和标注也很困难。
+    （Sec. IV-B、IV-D；Fig. 8；PDF pp. 12, 15） 从实验结果中直接可见，但作者没有明确称为 limitation 的现象 直接观察 主过滤对比排除了 cold-start
+    结果，报告的是 steady-state performance。 （Sec. IV-B；Table I 前后正文；PDF p. 11）

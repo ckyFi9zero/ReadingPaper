@@ -1,0 +1,475 @@
+version: 1
+domain: adverse-weather-lidar-denoising
+description: 从当前笔记构建的任务与技术路线地图；首创归属尚未检索
+novelty_classes:
+  1: 新 task 的 seminal work
+  2: 新 pipeline/representation 的 seminal work
+  3: 新 module 的 seminal work
+  4: 已有 pipeline 的增量改进
+nodes:
+- id: task-denoising
+  kind: task
+  name: 天气噪声识别与过滤
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 输入退化点云，识别噪声并保留观测到的有效点；起源尚未检索。
+  source_papers:
+  - dror-2018
+  - dsor-2021
+  - adversenet-2025
+  evidence:
+  - &id001
+    paper: dror-2018
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id002
+    paper: dsor-2021
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  - &id017
+    paper: adversenet-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: task-restoration
+  kind: task
+  name: 天气退化点云结构恢复
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 输入退化点云，重建缺失几何；与仅删除噪声点的输出不同。
+  source_papers:
+  - ltdnet-2026
+  evidence:
+  - &id019
+    paper: ltdnet-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-statistical
+  kind: pipeline
+  name: 统计与几何规则过滤
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 代表性方法路线分组；2 类是候选层级，不表示分组内全部论文均为首创。
+  source_papers:
+  - dror-2018
+  - dsor-2021
+  - lior-snow-2020
+  - lior-2021
+  - crfor-2023
+  - dcor-2024
+  - pmdf-2026
+  - sdor-2026
+  - scfnr-2026
+  evidence:
+  - *id001
+  - *id002
+  - &id003
+    paper: lior-snow-2020
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id004
+    paper: lior-2021
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  - &id005
+    paper: crfor-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id006
+    paper: dcor-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id007
+    paper: pmdf-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id008
+    paper: sdor-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id009
+    paper: scfnr-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  parent: task-denoising
+- id: module-dror-2018
+  kind: module
+  name: DROR · 距离相关半径
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 补偿旋转 LiDAR 随距离变稀的采样
+  source_papers:
+  - dror-2018
+  evidence:
+  - *id001
+  parent: pipeline-statistical
+- id: module-dsor-2021
+  kind: module
+  name: DSOR · 距离相关统计阈值与 WADS 标注
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 让统计阈值随距离调整，并建立逐点雪标签评估
+  source_papers:
+  - dsor-2021
+  evidence:
+  - *id002
+  parent: pipeline-statistical
+- id: module-lior-snow-2020
+  kind: module
+  name: LIOR · 强度阈值与 Radius Inlier Saving
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 先筛低强度候选，再救回局部稠密的低反射物体点
+  source_papers:
+  - lior-snow-2020
+  evidence:
+  - *id003
+  parent: pipeline-statistical
+- id: module-lior-2021
+  kind: follow-up
+  name: LIOR De-Dust · 低强度筛选与半径复核
+  novelty_class: 4
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 将强度及邻域规则用于扬尘回波
+  source_papers:
+  - lior-2021
+  evidence:
+  - *id004
+  parent: pipeline-statistical
+- id: module-crfor-2023
+  kind: module
+  name: CRFOR · 联合特征与 kNN-CRF 标签推断
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 以邻域标签关系复核 uncertain 点；CRFOR-t 加入对齐历史帧
+  source_papers:
+  - crfor-2023
+  evidence:
+  - *id005
+  parent: pipeline-statistical
+- id: module-dcor-2024
+  kind: module
+  name: DCOR · 逐通道动态半径过滤
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 缩小搜索空间并补偿远处点密度下降
+  source_papers:
+  - dcor-2024
+  evidence:
+  - *id006
+  parent: pipeline-statistical
+- id: module-pmdf-2026
+  kind: module
+  name: PMDF · 参数分布拟合与历史窗口更新
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 以噪声距离/高度分布更新半径和密度阈值
+  source_papers:
+  - pmdf-2026
+  evidence:
+  - *id007
+  parent: pipeline-statistical
+- id: module-sdor-2026
+  kind: module
+  name: SDOR · 扇区密度半径、边界补偿与并行
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 处理局部密度差异并降低分区边缘邻点缺失
+  source_papers:
+  - sdor-2026
+  evidence:
+  - *id008
+  parent: pipeline-statistical
+- id: module-scfnr-2026
+  kind: module
+  name: SCFNR · 球形度、多尺度分类与地面上下文
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 以局部几何及地面邻域区分天气噪声和结构
+  source_papers:
+  - scfnr-2026
+  evidence:
+  - *id009
+  parent: pipeline-statistical
+- id: pipeline-range
+  kind: pipeline
+  name: 范围图学习型过滤
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 代表性方法路线分组；2 类是候选层级，不表示分组内全部论文均为首创。
+  source_papers:
+  - weathernet-2020
+  - lisnownet-2022
+  evidence:
+  - &id010
+    paper: weathernet-2020
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id011
+    paper: lisnownet-2022
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-denoising
+- id: module-weathernet-2020
+  kind: module
+  name: CNNWeatherNet · 二维 LiDAR 表示与 CNN 分割
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 在受控静态采集条件下构造标签并学习天气点特征
+  source_papers:
+  - weathernet-2020
+  evidence:
+  - *id010
+  parent: pipeline-range
+- id: module-lisnownet-2022
+  kind: module
+  name: LiSnowNet · DWT/IDWT 多尺度网络与稀疏损失
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 通过变换域稀疏先验减少逐点标签依赖
+  source_papers:
+  - lisnownet-2022
+  evidence:
+  - *id011
+  parent: pipeline-range
+- id: pipeline-point
+  kind: pipeline
+  name: 点集与点/距离图联合学习
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 代表性方法路线分组；2 类是候选层级，不表示分组内全部论文均为首创。
+  source_papers:
+  - 3d-outdet-2024
+  - 3d-unoutdet-2025
+  - rpsnownet-2026
+  evidence:
+  - &id012
+    paper: 3d-outdet-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id013
+    paper: 3d-unoutdet-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id014
+    paper: rpsnownet-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-denoising
+- id: module-3d-outdet-2024
+  kind: module
+  name: 3D-OutDet · NeighborHood Convolution
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 将空间最近邻重排后直接卷积，控制计算和模型成本
+  source_papers:
+  - 3d-outdet-2024
+  evidence:
+  - *id012
+  parent: pipeline-point
+- id: module-3d-unoutdet-2025
+  kind: follow-up
+  name: 3D-UnOutDet · SSR 伪标签与未改结构的 3D-OutDet
+  novelty_class: 4
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 将邻域强度统计判断变成学习型后端的监督
+  source_papers:
+  - 3d-unoutdet-2025
+  evidence:
+  - *id013
+  parent: pipeline-point
+- id: module-rpsnownet-2026
+  kind: module
+  name: DMROR + RPSnowNet · DMROR 伪标签与 point-range 双分支
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 离线滤波造标签，在线轻量网络兼顾投影效率和点级细节
+  source_papers:
+  - rpsnownet-2026
+  evidence:
+  - *id014
+  parent: pipeline-point
+- id: pipeline-temporal
+  kind: pipeline
+  name: 多帧时空建模
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 代表性方法路线分组；2 类是候选层级，不表示分组内全部论文均为首创。
+  source_papers:
+  - 4denoisenet-2023
+  - desnow-gnn-2026
+  evidence:
+  - &id015
+    paper: 4denoisenet-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id016
+    paper: desnow-gnn-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-denoising
+- id: module-4denoisenet-2023
+  kind: module
+  name: 4DenoiseNet · 空间/时间 kNN 与 motion-guided attention
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 结合空间邻域和相邻帧运动线索
+  source_papers:
+  - 4denoisenet-2023
+  evidence:
+  - *id015
+  parent: pipeline-temporal
+- id: module-desnow-gnn-2026
+  kind: module
+  name: DeSnow-GNN · 时空图、跨帧配准与顶点重建
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 用空间邻接和时序差分联合识别伪回波
+  source_papers:
+  - desnow-gnn-2026
+  evidence:
+  - *id016
+  parent: pipeline-temporal
+- id: pipeline-unified
+  kind: pipeline
+  name: 多天气特征统一建模
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 代表性方法路线分组；2 类是候选层级，不表示分组内全部论文均为首创。
+  source_papers:
+  - triplemixer-2025
+  - adversenet-2025
+  evidence:
+  - &id018
+    paper: triplemixer-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - *id017
+  parent: task-denoising
+- id: module-triplemixer-2025
+  kind: module
+  name: TripleMixer · 几何/频率/通道三域混合
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 联合三种特征线索，作为不重训下游模型的前处理
+  source_papers:
+  - triplemixer-2025
+  evidence:
+  - *id018
+  parent: pipeline-unified
+- id: module-adversenet-2025
+  kind: module
+  name: AdverseNet · CTPV 与共享/天气特定参数训练
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 共享天气共性并补充各天气差异
+  source_papers:
+  - adversenet-2025
+  evidence:
+  - *id017
+  parent: pipeline-unified
+- id: pipeline-restoration
+  kind: pipeline
+  name: 范围图生成式结构恢复
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 代表性方法路线分组；2 类是候选层级，不表示分组内全部论文均为首创。
+  source_papers:
+  - ltdnet-2026
+  evidence:
+  - *id019
+  parent: task-restoration
+- id: module-ltdnet-2026
+  kind: module
+  name: LTDNet · 空频块、天气 embedding 与概率裁剪
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 重建缺失几何并删除生成伪影
+  source_papers:
+  - ltdnet-2026
+  evidence:
+  - *id019
+  parent: pipeline-restoration

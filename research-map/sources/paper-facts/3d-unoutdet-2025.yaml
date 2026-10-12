@@ -1,0 +1,90 @@
+version: 1
+paper: 3d-unoutdet-2025
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: ddff09de6ac8c52df85ca2f0a9421730f1507ea27bdf4da3dc509c139168c6a4
+checked_at: '2026-10-12'
+tags:
+- 雪
+- 无监督学习
+- 伪标签
+- 统计滤波
+- 下游感知
+task:
+  name: 无监督去雪
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: 3d-unoutdet-2025
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 逐点标签昂贵，统计规则与监督网络各有局限
+  evidence:
+  - paper: 3d-unoutdet-2025
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-point
+  name: 点集与点/距离图联合学习
+  description: 以邻域强度统计滤波 SSR 生成伪标签，训练保留原结构的 3D-OutDet；在 WADS/CADC 评估去雪精度、执行成本及下游分割和检测。
+  evidence:
+  - paper: 3d-unoutdet-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-3d-unoutdet-2025
+  name: SSR 伪标签与未改结构的 3D-OutDet
+  role: core-module
+  motivation: 将邻域强度统计判断变成学习型后端的监督
+  evidence:
+  - paper: 3d-unoutdet-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-structure
+- challenge-efficiency
+- challenge-downstream
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: SSR 依赖雪先验；最近邻计算仍是瓶颈；跨传感器需调配置
+  evidence:
+  - paper: 3d-unoutdet-2025
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 02 · Research Problem 问题层次 原文故事线 具体问题 概括 对真实扫描点云中的落雪点进行 snow / non-snow 二分类并删除落雪噪声。 （Sec. I；Sec.
+    V-B） 发生场景 概括 自动驾驶车辆在降雪环境中使用 3D LiDAR；实验覆盖 WADS 与 CADC 两个真实采集数据集。 （Sec. I；Sec. IV） 为什么重要 作者表述 雪花降低传感器读数质量，进而损害场景语义分割、目标检测等下游感知；训练高性能监督模型又需要昂贵的逐点标注。
+    （Sec. I） 最终后果 概括 作者将噪声导致的下游性能下降，以及域偏移导致已标注数据的效用下降，作为发展无监督去雪方案的动机。 （Sec. I）
+  method: 05 · Method：只看宏观逻辑 概括 输入带坐标与 intensity 的无标签点云，计算 kNN 的索引和距离；这些邻域信息由 SSR 与网络后端共享。 （Sec. III；Fig.
+    2，pp. 3–4） 概括 SSR 收集邻域强度，可选做距离平方校正，再计算 FFT 输出的 L2 范数并与阈值比较，得到逐点伪标签；目的在于结合作者所述的强度与稀疏性线索。 （Sec. III-A；Algorithm
+    1） 概括 3D-OutDet 后端接收原始点及邻域信息，沿用两层 NeighborHood Convolution 和一个残差连接，使用 SSR 标签计算交叉熵与 Lovasz-Softmax
+    损失。 （Sec. III-B；Fig. 2） 概括 训练后由网络输出 snow / non-snow 判断并去除雪点；作者报告推理耗时与原监督 3D-OutDet 相同，SSR 主要提供训练监督。
+    （Sec. III-B；Table I） Fig. 2，PDF p. 3，论文原图及图注裁剪。SSR 的伪标签进入损失计算，kNN 信息同时供给两条路径。 点击图片查看原尺寸，可横向滚动；按 Esc
+    关闭。 概括 核心变化的位置： 保留 3D-OutDet 网络结构，把训练所需的人工逐点标签换成 SSR 生成的初始判断；作者同时提出 SSR 本身。网络中不插入 LiSnowNet 式 FFT
+    / DWT 模块。 （Sec. II-B；III-B）
+  limitations: 08 · Limitations 作者明确承认的 limitation 作者表述 SSR 依赖雪的低强度与稀疏性特点，作者认为用于雾或 dirt 污染点云时不会具有同等效力。
+    （Sec. VII，p. 7） 作者表述 执行时间主要花在最近邻计算，这是瓶颈。 （Sec. VII，p. 7） 作者表述 从 WADS 转至 CADC 仍需要调整配置，例如 k；作者将其与 64
+    线和 32 线分辨率差异联系起来。 （Sec. VII；Sec. V-A） 作者表述 点云稀疏程度/质量与下游增益之间的关系还需要进一步实验，超出本文范围。 （Sec. VII） 图表中直接可见、作者未统一称为
+    limitation 的现象 直接观察 3D-UnOutDet Recall 为 92.68%，低于 LiSnowNet-L2 的 98.22%；其 Precision 则为 95.77%，高于后者
+    83.94%。作者也在讨论中指出二者侧重不同。 （Table I；Sec. VII） 直接观察 下游总体 mIoU 上升并不表示每类都上升：SalsaNext 的 road IoU 从 64.37
+    降至 63.15，fence 从 23.85 降至 18.91。 （Table II，p. 5）

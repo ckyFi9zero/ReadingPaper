@@ -26,6 +26,7 @@ DESCRIPTIONS = {
 }
 esc = html.escape
 OUTPUTS = {}
+MAP_ENABLED = False
 
 
 def local_path(value):
@@ -67,6 +68,7 @@ def shell(title, body, prefix="", current="library"):
     def nav(href, text, key):
         active = ' aria-current="page"' if current == key else ""
         return f'<a href="{prefix}{href}"{active}>{text}</a>'
+    map_nav = nav('research-map.html', '研究地图', 'research-map') if current == 'research-map' or (MAP_ENABLED and current in {'library', 'overview'}) else ''
     return f'''<!doctype html>
 {MARKER}
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -76,7 +78,7 @@ def shell(title, body, prefix="", current="library"):
 <body><a class="skip" href="#main">跳到正文</a><div class="layout"><aside class="sidebar">
 <a class="brand" href="{prefix}index.html"><span class="brand-mark" aria-hidden="true">R</span>ReadingPaper</a>
 <p class="side-caption">个人论文阅读库</p><nav aria-label="主导航">
-{nav('index.html', '全部论文', 'library')}{nav('overview.html', '跨论文综述', 'overview')}
+{nav('index.html', '全部论文', 'library')}{nav('overview.html', '跨论文综述', 'overview')}{map_nav}
 </nav><div class="side-note">研究方向<br>机器人感知<br>恶劣天气点云去噪</div></aside>
 <main id="main">{body}<footer class="footer">ReadingPaper · 阅读、理解与连接<br>阅读阶段依据已保存的笔记；未整理的阶段不计入完成数量。</footer></main></div></body></html>'''
 
@@ -169,7 +171,9 @@ def paper_pages(paper):
         save(f"papers/{slug}/{key}.html", shell(f"{paper['name']} · {label}", header + stage_tabs(paper, key) + content, "../../", "paper"))
 
 
-def build(papers=None, *, write=True, overview=True):
+def build(papers=None, *, write=True, overview=True, research_map=True):
+    global MAP_ENABLED
+    MAP_ENABLED = research_map and (ROOT / 'research-map').is_dir()
     OUTPUTS.clear()
     papers = copy.deepcopy(papers if papers is not None else json.loads((ROOT / "papers.json").read_text()))
     slugs = set()
@@ -253,6 +257,9 @@ def build(papers=None, *, write=True, overview=True):
     save("index.html", shell("我的论文库", home))
     overview_body = render_markdown(ROOT / 'paper-cards/cross-paper-overview.md') if overview else '<p class="notice">跨论文综述尚未列入公开范围。</p>'
     save("overview.html", shell("跨论文综述", '<header class="page-head"><div class="eyebrow">RESEARCH CONNECTIONS</div><h1>跨论文综述</h1></header>' + overview_body, current="overview"))
+    if MAP_ENABLED:
+        from build_research_map import render
+        OUTPUTS.update(render(ROOT, papers, shell, OUTPUTS))
     if write:
         for paper in papers:
             stale = local_path(f"papers/{paper['slug']}/linked-reader.html")

@@ -1,0 +1,86 @@
+version: 1
+paper: crfor-2023
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: 83a65ab3462d0036ae09b22cbe98c227aeb71c2f1e1baa0649e715cb370c34df
+checked_at: '2026-10-12'
+tags:
+- 雪
+- CRF
+- 几何先验
+task:
+  name: 结构保持去雪
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: crfor-2023
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 硬阈值对模糊雪/非雪点缺少上下文
+  evidence:
+  - paper: crfor-2023
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-statistical
+  name: 统计与几何规则过滤
+  description: 结合强度、密度和局部不规则度初始化置信度，并以时空 CRF 从高置信邻居传播标签。
+  evidence:
+  - paper: crfor-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-crfor-2023
+  name: 联合特征与 kNN-CRF 标签推断
+  role: core-module
+  motivation: 以邻域标签关系复核 uncertain 点；CRFOR-t 加入对齐历史帧
+  evidence:
+  - paper: crfor-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-structure
+- challenge-temporal
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 3
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: 稀疏雪点仍会保留；低密度非雪点仍可能误删
+  evidence:
+  - paper: crfor-2023
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 二、Research Problem 作者表述 具体问题：从雪天 LiDAR 扫描中去除雪花伪回波，同时保留真实结构点。 （Abstract；Sec. I 第 1 段；PDF p.
+    1） 作者表述 场景：自动驾驶与机器人在强降雪下的 3D 感知。 （Abstract；Sec. I 第 1 段；PDF p. 1） 作者表述 重要性：多数感知算法在干净点云上训练，雪噪声会破坏输入分布。
+    （Abstract；Sec. I 第 1 段；PDF p. 1） 作者表述 后果：目标检测与跟踪性能下降，可能影响系统安全。 （Abstract；Sec. I 第 1 段；PDF p. 1）
+  method: 五、Method：只看宏观逻辑 做了什么： 输入单帧或连续帧雪天点云，并把去雪写成逐点标签推断。 为什么： 作者需要同时保留真实结构点并识别雪点。 （Sec. III-A；Fig. 2；PDF
+    p. 3） 做了什么： 计算 intensity、mean distance 和 irregularity，并归一化为 joint feature F。 为什么： 三项特征分别提供物理、局部密度和几何规则性线索，联合后作为初始置信度。
+    （Sec. III-B；Eq. (1)；Fig. 2；PDF p. 3） 做了什么： 把点初始化为 definite snow、definite non-snow 或 uncertain，并构造
+    kNN-CRF。 为什么： 硬阈值难处理置信度接近零的点，邻域标签关系可提供额外证据。 （Sec. III-A、III-C–D；Fig. 2；PDF pp. 3–4） 做了什么： 用 ICM 更新
+    uncertain 点；CRFOR-t 先将历史帧变换到当前坐标系再并入图。 为什么： ICM用于近似求解 CRF 标签；时序邻域用于补充单帧证据。 （Sec. III-E–F；Algorithm
+    1；PDF pp. 4–5） 做了什么： 输出雪/非雪标签与去雪点云。 为什么： 这是后续点云感知使用的预处理结果。 （Sec. III-E–F；PDF pp. 4–5） 原图裁剪：Fig. 2，PDF
+    p. 3。CRFOR 的联合特征、置信标签、CRF 推断及 CRFOR-t 时序扩展；点击查看原尺寸。 概括 核心变化是把单次二值阈值判断改为 joint feature 初始化后的 CRF belief
+    propagation，并可把连续帧纳入同一推断。 （Sec. III-A–F；Fig. 2；PDF pp. 3–5）
+  limitations: 八、Limitations 作者明确承认的 limitation 作者表述 作者明确指出：仍会保留稀疏雪点、误删低密度非雪点；irregularity 约占运行时间的三分之二；检测器自身造成的错误不一定能由去雪修复。
+    （Sec. IV-C–E；Figs. 4–5；PDF pp. 6–7） 从实验结果中直接可见，但作者没有明确称为 limitation 的现象 直接观察 主要逐点定量验证集中在 WADS；下游检测只提供一个定性案例。
+    （Tables II–IV；Fig. 5；PDF pp. 6–7）

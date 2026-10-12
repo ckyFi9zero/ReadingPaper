@@ -19,7 +19,7 @@ from render_evidence import render_text
 
 ROOT = build_site.ROOT
 ASSETS = ['assets/style.css', 'assets/app.js', 'assets/reader-nav.js', 'assets/favicon.svg', 'assets/evidence-reader.css', 'assets/evidence-reader.js', 'assets/pdfjs/pdf.min.mjs', 'assets/pdfjs/pdf.worker.mjs', 'assets/pdfjs/LICENSE']
-PROTECTED = {'paper-cards', 'notes', 'skills', 'tmp', 'scripts', 'ai-context', '.git', '.github'}
+PROTECTED = {'paper-cards', 'research-map', 'notes', 'skills', 'tmp', 'scripts', 'ai-context', '.git', '.github'}
 
 
 def source_path(relative):
@@ -68,7 +68,7 @@ def export(profile='local'):
     public = profile == 'public'
     chosen = selected_papers(papers, config) if public else papers
     # Render from source; never copy stale generated pages from the working tree.
-    outputs, normalized = build_site.build(chosen, write=False, overview=config['overview'] is True if public else True)
+    outputs, normalized = build_site.build(chosen, write=False, overview=config['overview'] is True if public else True, research_map=not public)
     for paper in normalized:
         for stage, source in paper['_sources'].items():
             if source.suffix == '.html':
@@ -111,6 +111,8 @@ def export(profile='local'):
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(text, encoding='utf-8')
         allowed = set(ASSETS)
+        if not public and 'research-map.html' in outputs:
+            allowed.update(['assets/research-map.css', 'assets/research-map.js'])
         if public:
             for relative in config.get('assets', []):
                 if Path(relative).parts[0] in PROTECTED or Path(relative).suffix.lower() not in ('.png', '.jpg', '.jpeg', '.svg', '.webp', '.gif', '.woff', '.woff2'):

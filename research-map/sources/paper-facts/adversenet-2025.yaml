@@ -1,0 +1,94 @@
+version: 1
+paper: adversenet-2025
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: 151ed80596635aef94e3bd4f9f9e6b11fb6b59189e0ff85b202de316d13c41d6
+checked_at: '2026-10-12'
+tags:
+- 雨
+- 雪
+- 雾
+- CTPV
+- 两阶段训练
+- 统一去噪
+task:
+  name: 统一雨雪雾点分类
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: adversenet-2025
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 单一共享参数不足以表达不同天气退化
+  evidence:
+  - paper: adversenet-2025
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-unified
+  name: 多天气特征统一建模
+  description: 采用柱坐标三平面表示，以共享主干和天气特定参数的两阶段训练统一雨雪雾去噪；在 DENSE 气候室数据和 SnowyKITTI 仿真雪上评估。
+  evidence:
+  - paper: adversenet-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-adversenet-2025
+  name: CTPV 与共享/天气特定参数训练
+  role: core-module
+  motivation: 共享天气共性并补充各天气差异
+  evidence:
+  - paper: adversenet-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-weather
+- challenge-density
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 2
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: 运行时间与参数较高；真实道路统一独立测试未报告
+  evidence:
+  - paper: adversenet-2025
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 02 · Research Problem 问题层次 原文故事线 具体问题 概括 识别并删除 LiDAR 检测范围内由雨、雪、雾造成的噪声点。本文实际训练标签包含 Clear、Rain、Fog、Snow，另有未标注标签
+    0。 （Sec. I；III-B） 发生场景 概括 自动驾驶车辆在不同类型及强度的恶劣天气中感知周围三维环境；实验使用气候室雨雾数据及仿真雪天道路数据。 （Sec. I；III-B） 为什么重要
+    作者表述 作者把恶劣天气感知列为少见但安全关键的长尾问题，认为这些天气会引起传感器误感知。 （Sec. I，p. 1） 最终后果 概括 作者提出的因果链是误感知可能导致自动驾驶系统错误决策并威胁乘员安全，因此以点云去噪改善感知。本文所报告的实验是去噪分割实验，未报告车辆安全结果的直接测量。
+    （Sec. I；Sec. III）
+  method: 05 · Method：只看宏观逻辑 Fig. 2，PDF p. 4，原图及图注裁剪。图中 (a)(b)(c) 分别是网络训练阶段 1、训练阶段 2 和测试阶段；与本阅读技能的 Stage
+    1–3 无关。 点击图片查看原尺寸，可横向滚动；按 Esc 关闭。 概括 输入带天气噪声的点云；转换到柱坐标并划分体素，用点级 MLP 和体素内聚合构造特征，再做空间分组池化，形成 (ρ,θ)、(θ,Z)、(Z,ρ)
+    三平面。作者希望兼顾近密远疏与三维结构。 （Sec. II-A；Fig. 2） 概括 训练阶段 1：雨、雪、雾样本联合更新共享 2D 编解码主干，学习 generic weather features。
+    （Sec. II-B1；III-A2） 概括 训练阶段 2：固定共享参数，依据逐层可学习分数与阈值，选择性加入天气特定参数；使用 Lasso 正则控制扩展。目的是补充各天气差异。 （Sec. II-B2；III-A2）
+    概括 TPV aggregator 对三平面特征做插值，按查询点采样并相加，再经轻量分割头预测逐点语义，得到 Clear / Rain / Fog / Snow 标签并保留清洁点。 （Sec. II-C；III-B；Fig.
+    2） 概括 测试时使用已学习的共享与天气特定参数，跳过图中 NULL 的特定参数位置；最终采用精度与成本折中的 AdverseNet-2 版本。 （Sec. II-B3；III-D1） 概括 核心变化的位置：
+    从按天气分别设计的去噪方式，转向 CTPV 表示下共享参数加天气特定扩展的统一训练框架。论文未明确说明部署中如何自动选择天气特定参数，也未报告混合天气路由实验，初读不补造该机制。 （Sec. I；II-B；Fig.
+    2）
+  limitations: 08 · Limitations 作者明确承认的 limitation 作者表述 网络在比较方法中具有较高运行时间和参数量。作者指出，即便编码解码部分使用高效 2D 卷积，分割头仍需密集三维特征计算；其当前优先目标是学习复杂天气噪声特征。
+    （Sec. III-C2，pp. 6–7） 作者表述 Rain55 场景中阶段 1 的 IoU 高于阶段 2 变体，作者将其解释为过拟合。 （Sec. III-D1，p. 9） 作者表述 作者希望未来扩展到更多天气，但当前由于工作量只处理雨、雪、雾三种天气。
+    （Sec. I，pp. 2–3） 图表中直接可见、作者未明确称为 limitation 的现象 直接观察 更多参数没有带来更高整体 MIoU：32.6 M 的 AdverseNet-3 在雨雾与雪的
+    MIoU 都略低于 12.7 M 的 AdverseNet-2；运行时间分别增加到 178.39 与 183.07 ms。 （Tables II–III） 直接观察 最终采用的 AdverseNet-2
+    并非每个子类别都最佳：Rain55 最佳为 AdverseNet-1 的 98.77%；Heavy Snow 中 AdverseNet-3 为 98.81%，略高于 AdverseNet-2 的
+    98.79%。 （Tables II–III） 概括 实验覆盖范围是 DENSE 气候室雨雾和 SnowyKITTI 仿真雪。本文没有报告真实道路雨、雾、雪的统一独立测试，也没有目标检测或语义场景分割等下游实验；这是本文报告范围的记录，不据此推断必然失败。
+    （Sec. III-B–D）

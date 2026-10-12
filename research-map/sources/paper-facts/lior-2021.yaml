@@ -1,0 +1,88 @@
+version: 1
+paper: lior-2021
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: 91451504465d9488cc47b0e52c7114842a3a665f891a5352098745719909c681
+checked_at: '2026-10-12'
+tags:
+- 尘
+- 强度
+- 统计滤波
+- ECSA-8
+task:
+  name: 越野 LiDAR 去尘
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: lior-2021
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+problem:
+  failure_case: 尘埃后向散射污染越野车辆 LiDAR 测量
+  evidence:
+  - paper: lior-2021
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+pipeline:
+  id: pipeline-statistical
+  name: 统计与几何规则过滤
+  description: 将低强度候选筛选与半径邻域复核结合，用于越野车辆扬尘环境的 LiDAR 点云去尘。
+  evidence:
+  - paper: lior-2021
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+modules:
+- id: module-lior-2021
+  name: 低强度筛选与半径复核
+  role: core-module
+  motivation: 将强度及邻域规则用于扬尘回波
+  evidence:
+  - paper: lior-2021
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+challenges:
+- challenge-structure
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: 迁移到去尘的范围需按本文记录核对，不据此声称跨天气泛化
+  evidence:
+  - paper: lior-2021
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+evidence_status: source-checked
+source_excerpt:
+  problem: 二、Research Problem 具体问题 作者表述 尘埃颗粒造成的光后向散射会污染 LiDAR 测量数据，尘埃回波需要从点云中滤除。 Sec. 1，第 1 段。 发生场景 作者表述
+    场景是施工、采矿等工业部门的越野车辆自主化作业环境，特点是存在扬尘等恶劣工况。结论还列举了农业。 Sec. 1，第 1 段；Sec. 4。 为何重要 作者表述 LiDAR 为车辆自主感知提供丰富的几何与强度信息，但在尘土条件下检测性能明显下降。作者同时称此前解决去尘问题的工作较少。
+    Abstract；Sec. 1，第 1 段。 造成后果 作者表述 受污染的测量数据会使整车感知容易失效。 Abstract；Sec. 1，第 1 段。 ↑ 返回目录
+  method: 五、Method：只看宏观逻辑 Input → Output： 带强度值的 3D LiDAR 点云 → LIOR 两阶段筛选 → 删除判为尘埃离群点后的点云。 强度预筛。 逐点比较强度与阈值。强度高于阈值的点直接视作
+    inlier；低于阈值的点进入下一步。 作者表述 原因是尘埃点的强度比其他非尘埃对象低。 Sec. 2，第 1 段；Fig. 1。 对疑似尘埃点执行 ROR。 在指定 search radius（SR）内统计邻点数
+    n；若 n 小于 cutoff value，则删除为 outlier，否则保留为 inlier。 作者表述 第二步用于保留那些强度低、但在第一步被误判为尘埃的非尘埃物体点。 Sec. 2，第 1
+    段；Figs. 1–2。 论文原图裁剪：Fig. 1，PDF 第 2 页。伪代码显示强度判断和低强度点的半径邻域计数流程。 论文原图裁剪：Fig. 2，PDF 第 3 页。图示以 SR 邻域内点数是否低于
+    cutoff value 判定离群点。 作者表述 实验采用的优化参数为：threshold intensity = 7 ，radius search = 0.044 m ，cutoff value
+    = 6 。 Table 1，PDF 第 3 页。 概括 相对已有方法真正变化的位置： 作者没有训练尘埃分类器，而是把既有 LIOR 的“低强度候选筛选 + 局部密度复核”流程应用到扬尘 LiDAR
+    数据，并为所用数据设置参数。论文将方法追溯到文献 [5]，因此本文明确主张的变化重点是 应用到 dust filtering ，而非提出 LIOR 原理本身。 Sec. 1 末段；Sec. 2；Reference
+    [5]。 ↑ 返回目录
+  limitations: 八、Limitations 作者明确承认的 limitation 作者表述 作者指出，若强度阈值设得过高，会删除环境中低强度的非尘埃数据；Fig. 3b 的示例显示少量非尘埃点强度低于
+    10。第二步 ROR 正是为了保留第一步误判为尘埃的低强度非尘埃点。 Sec. 2，第 1–2 段；Fig. 3b。 论文未明确说明 作者没有在独立 limitations 段落中讨论距离、尘埃浓度、不同传感器、跨场景泛化、实时性、参数敏感性或其他失效条件。
+    实验结果中直接可见、但作者未称为 limitation 的现象 直接观察 Precision 的均值 75.44% 低于 Recall 的 92.58%，且逐帧最小 Precision 为 55.43%；只说明本次
+    19 帧评估中两项指标存在差异，不推断原因或普遍失效范围。 Table 2。 直接观察 F1 score 在所评估帧间从 70.055% 到 87.28%，显示该数据包内部存在帧间变化。论文没有解释哪些场景因素对应这些极值。
+    Table 2。 直接观察 最终定量结果仅报告一个 19-frame packet；论文前面提到收集了 18 个约 60 帧的数据包，但没有给出全部数据包的总体指标。这里只陈述报告范围差异，不据此断言泛化性不足。
+    Sec. 2，第 2 段；Sec. 3，第 2 段。 ↑ 返回目录

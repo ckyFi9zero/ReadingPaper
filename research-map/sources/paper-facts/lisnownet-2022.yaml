@@ -1,0 +1,89 @@
+version: 1
+paper: lisnownet-2022
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: fea7d918dc7e889eb3bdb86b2ddfb763acf20058a81c2b84446d8fbb1b434c42
+checked_at: '2026-10-12'
+tags:
+- 雪
+- 无监督学习
+- 范围图
+- 小波变换
+task:
+  name: 无逐点标签实时去雪
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: lisnownet-2022
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 近邻滤波难以实时处理大规模点云，逐点标签昂贵
+  evidence:
+  - paper: lisnownet-2022
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-range
+  name: 范围图学习型过滤
+  description: 把点云投影为距离与强度图，以 DWT/IDWT 多尺度网络和频域稀疏先验，在无逐点标签条件下实时去雪。
+  evidence:
+  - paper: lisnownet-2022
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-lisnownet-2022
+  name: DWT/IDWT 多尺度网络与稀疏损失
+  role: core-module
+  motivation: 通过变换域稀疏先验减少逐点标签依赖
+  evidence:
+  - paper: lisnownet-2022
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-structure
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 3
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: 依赖变换域稀疏假设；CADC 建图仅定性展示
+  evidence:
+  - paper: lisnownet-2022
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 二、Research Problem 具体问题 作者表述 从每帧约 10 万点、10 Hz 的现代 LiDAR 点云中实时移除雪花形成的 ghost measurements。 （Abstract；Sec.
+    I） 发生场景 作者表述 CADC 与 WADS 的真实雪天自动驾驶点云，以及 CADC 上 RTK/LeGO-LOAM 建图。 （Sec. II-A；Sec. IV–V） 为何重要 作者表述 雪点遮蔽真实场景几何并污染
+    mapping 等下游任务；大规模逐点雪标签又昂贵。 （Sec. I） 导致后果 作者表述 现有无监督近邻滤波对 100k+ 点帧难以实时运行；监督 WeatherNet 又需要逐点标签。 （Abstract；Sec.
+    I；Sec. II-B）
+  method: 五、Method：只看宏观逻辑 Input： 单帧点云投影为 h×w×2 range image：Euclidean distance 与 intensity。 投影与缩放 做什么：按
+    LiDAR beam/azimuth 映射到 range image，并用立方根缩放距离/强度。 为什么：组织成适合 CNN 的稠密表示并强调 25 m 内雪点。 （Sec. III-A, Eq.
+    (4)–(6)） void pixel 预处理 做什么：依次做 3×3 dilation、行均值+标准差填充、DoG 与 7×7 average pooling；不改有效像素。 为什么：为空方向提供网络可处理的背景值并抑制孤立噪声幅度。
+    （Sec. III-A） 多尺度残差网络 做什么：基于 MWCNN，以 DWT/IDWT 下采样/上采样，使用含 circular convolution 与 dropout 的小通道残差块。 为什么：DWT
+    保留多尺度稀疏表征，并减少通道以满足 panoramic range image 实时处理。 （Sec. III-B, Fig. 3） 无监督稀疏损失 做什么：共同最小化去噪图 FFT log-magnitude
+    L1、DWT L1，以及残差图 L1。 为什么：在没有雪标签时鼓励去噪信号和噪声残差的稀疏结构。 （Sec. III-C, Eq. (8)–(9)） 残差空间判雪 做什么：要求点在距离残差为前景、强度残差更暗，且联合残差超过阈值。
+    为什么：把网络残差转换回逐点雪/非雪判断。 （Sec. III-E） Output： 去噪 range image、逐点雪标签及移除雪点后的 3D 点云。 真正发生变化的核心位置 概括 核心变化不是新的邻域阈值，而是用
+    FFT/DWT 稀疏先验给多尺度 range-image 残差 CNN 提供无监督训练信号，并避免 kNN。 （Sec. I；Sec. III） 原图 Fig. 3：LiSnowNet 总体网络与
+    modified residual block，DWT/IDWT 用于多尺度变换。 （PDF 第 4 页；来自当前论文 PDF 的页面裁剪） 查看原尺寸
+  limitations: 八、Limitations 作者明确承认的 limitation 作者表述 WADS 在论文写作时是唯一带逐点雪标签的公开数据，因此定量评估只在其子集上完成。 （Sec. IV）
+    作者表述 方法依赖作者假设的变换域稀疏性及阈值化残差判定；论文没有声称它可直接覆盖所有天气类型。 （Sec. I；Sec. III-C,E） 从实验结果中直接可见、但作者没有明确称为 limitation
+    的现象 直接观察 LiSnowNet-L1 的 recall 0.9501 低于 DSOR 0.9811 和 L2 版本 0.9597；高 precision/IoU 不代表所有雪点都被删。 （Table
+    I） 直接观察 CADC 下游 mapping 是定性图，不含地图误差数值。 （Fig. 4；Sec. V）

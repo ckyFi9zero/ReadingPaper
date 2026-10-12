@@ -1,0 +1,90 @@
+version: 1
+paper: dcor-2024
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: f7734848ae06fa5f613f7246dbb79421e00a57c2d7e24a65864d658d3aa7d4be
+checked_at: '2026-10-12'
+tags:
+- 雪
+- 通道几何
+- 统计滤波
+task:
+  name: 路侧 LiDAR 去雪
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: dcor-2024
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 雪花散点损害路侧点云和交通感知输入
+  evidence:
+  - paper: dcor-2024
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-statistical
+  name: 统计与几何规则过滤
+  description: 在各激光通道内使用距离相关的搜索半径，减少邻域计算并适应点云采样密度。
+  evidence:
+  - paper: dcor-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-dcor-2024
+  name: 逐通道动态半径过滤
+  role: core-module
+  motivation: 缩小搜索空间并补偿远处点密度下降
+  evidence:
+  - paper: dcor-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-range
+- challenge-structure
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 3
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: f 与 MinPts 由耗时网格搜索确定；单地点单传感器定量验证
+  evidence:
+  - paper: dcor-2024
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 二、Research Problem 作者表述 具体问题：从恶劣雪天采集的 LiDAR 点云中消除由雪花反射造成的噪声点。 （Abstract；Sec. I 第 2 段；PDF p.
+    1） 作者表述 场景：自动驾驶与路侧交通感知中的 3D LiDAR；实验数据来自美国内华达州 Reno 的道路交叉口强降雪。 （Sec. I 第 1–2 段；Sec. IV-A；Fig. 5；PDF
+    pp. 1, 6–7） 作者表述 重要性：雪花会反向散射激光，使点云质量下降；这类干扰必须在后续交通目标识别、安全评估和决策之前消除。 （Sec. I 第 2 段；Sec. V 第 1 段；PDF
+    pp. 1, 10） 作者表述 后果：噪声会降低数据质量，并可能在交通目标识别中造成 false detections。 （Abstract；PDF p. 1） 原图裁剪：Fig. 6，PDF p.
+    7。作者给出的雪天路侧 LiDAR 鸟瞰示例，红色箭头标出传感器周围的雪花散点；点击查看原尺寸。
+  method: 五、Method：只看宏观逻辑 Input： 按 n 个激光通道组织的点云 P，以及 f 和 MinPts。 为什么： 作者要在单通道内处理，以降低搜索维度并解耦竖直方向雪噪声。 （Sec.
+    III-C；Algorithm 1 Input；PDF p. 5） 做了什么： 逐通道、逐点读取坐标，计算点到传感器的欧氏距离。 为什么： 该距离用于构造与量程成比例的动态搜索半径。 （Algorithm
+    1, lines 1–5；PDF p. 5） 做了什么： 令 SearchRadius = distance × f ，在同一通道内搜索邻点数 k。 为什么： 动态半径适应远处点密度下降；逐通道邻域缩小搜索空间。
+    （Sec. III-C；Algorithm 1, lines 5–6；Eqs. (6)–(7)；PDF pp. 5–6） 做了什么： 若 k < MinPts，把点加入离群集合 O；否则加入过滤后点云
+    F。 为什么： 作者以“雪点孤立、前景点成簇”的几何差异作为判别基础。 （Sec. III-C；Algorithm 1, lines 7–10；PDF pp. 4–5） Output： 返回 O
+    和 F。 为什么： 论文未明确解释 论文未为同时返回两个集合给出额外原因。 （Algorithm 1, line 14；PDF p. 5） 原图裁剪：Algorithm 1，PDF p. 5。DCOR
+    从通道遍历、动态半径计算到邻点阈值判定的伪代码；点击查看原尺寸。 概括 相比 DROR/DSOR，核心变化是邻域搜索在单个 laser channel 内完成；相对固定半径 ROR，半径又按 distance
+    × f 调整。 （Sec. III-C；Algorithm 1；PDF p. 5）
+  limitations: 八、Limitations 作者明确承认的 limitation 作者表述 最优 f 与 MinPts 通过 grid search 获得；作者明确称这种方法 straightforward
+    but time-consuming，并指出需要更有效的参数调节策略来改善效率与鲁棒性。 （Sec. V 末段；PDF p. 11） 从实验结果中直接可见，但作者没有明确称为 limitation
+    的现象 直接观察 DCOR 的 97.4% Precision 低于 variant1、ROR、DROR 与 SOR；0.242 s 的单帧时间也高于 variant1 的 0.188 s。 （Table
+    I；PDF p. 9） 直接观察 定量实验只覆盖同一 Reno 路口、同一 VLP-32C 采集的 150 帧强降雪数据；论文没有报告第二地点或第二种传感器的定量结果。这里只描述覆盖范围，不据此断言泛化失败。
+    （Sec. IV-A；PDF pp. 6–7）

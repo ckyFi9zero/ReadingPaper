@@ -1,0 +1,94 @@
+version: 1
+paper: rpsnownet-2026
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: 930dd5efea36d50ac54a33859dfe76e6bb937efb6f52021e98dd40ae449ad5d0
+checked_at: '2026-10-12'
+tags:
+- 雪
+- 无监督学习
+- 伪标签
+- 实时去噪
+- 点-距离图融合
+task:
+  name: 无监督实时去雪
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: rpsnownet-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 标签稀缺、近邻滤波慢，雪强又改变密度规律
+  evidence:
+  - paper: rpsnownet-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-point
+  name: 点集与点/距离图联合学习
+  description: 以雪强自适应 DMROR 从无标注雪天点云生成伪标签，再训练 point-range 双分支 RPSnowNet，实现兼顾准确率与 15 ms 在线推理的两阶段去雪。
+  evidence:
+  - paper: rpsnownet-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-rpsnownet-2026
+  name: DMROR 伪标签与 point-range 双分支
+  role: core-module
+  motivation: 离线滤波造标签，在线轻量网络兼顾投影效率和点级细节
+  evidence:
+  - paper: rpsnownet-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-density
+- challenge-range
+- challenge-structure
+- challenge-efficiency
+- challenge-downstream
+novelty_assessment:
+  novelty_class: 2
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: 覆雪植被附近误删；跨传感器需重新估计拟合参数
+  evidence:
+  - paper: rpsnownet-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 二、Research Problem 具体问题 作者表述 在雪天 LiDAR 点云中去除被传感器当作有效回波的悬浮雪花点，同时保留真实场景结构。 （Abstract；Sec. I 第
+    1 段） 发生场景 作者表述 自动驾驶与移动机器人等实时户外感知系统；近距离雪花可能比远处真实物体产生更强后向散射，从而形成近场密集噪声。 （Sec. I 第 1 段） 为何重要 作者表述 可靠点云是实时感知基础，去雪方案需要同时满足无监督、快速处理和高准确率；推理延迟还应明显低于下游任务，以满足
+    10 Hz LiDAR 约束。 （Sec. I 第 3 段） 导致后果 作者表述 雪噪声破坏点云结构并降低目标检测、场景生成和语义分割等下游算法表现。 （Abstract；Sec. I 第 1 段）
+  method: 五、Method：只看宏观逻辑 Input：无标注雪天点云。 训练阶段输入未标注 adverse-weather LiDAR scans；部署阶段输入实时雪天扫描。 （Fig. 2；Sec.
+    III-A） Stage 1：DMROR 生成伪标签。 以低强度、近距离、低高度先验筛候选雪点，估计 noise ratio；再按 noise ratio 与点到传感器距离生成非线性搜索半径，以邻居数判定雪点，并取两次判定的交集。作者这样做是为适应雪强引起的环境密度变化。
+    （Sec. III-B；Algorithm 1；Eqs. (1)–(3)） Stage 2：RPSnowNet 学习伪标签。 point branch 保留细粒度点特征，range branch
+    提供高效空间建模；RPFM 在中间跨分支交互，MFHM 融合低层细节与高层语义。作者这样做是为兼顾投影效率和点级精度。 （Sec. III-C1–3；Figs. 5–7） Postprocess。
+    网络预测可调整的强度、距离和高度先验参数，并与初始先验加权融合，用于细化初步预测；作者这样做是为在稳定先验与场景适应之间折中。 （Sec. III-C4；Fig. 8；Eq. (11)） Output：去噪点云。
+    部署时只运行 RPSnowNet，DMROR 的慢速近邻计算在训练前完成。 （Fig. 2；Sec. IV-C1） 原图裁剪：Fig. 2，PDF p. 4。训练时 DMROR 产生伪标签，在线推理只经过
+    RPSnowNet。点击查看原尺寸。 原图裁剪：Fig. 5，PDF p. 6。RPSnowNet 的 point/range 双分支及特征融合。点击查看原尺寸。 相比已有方法，核心变化在哪里 概括
+    核心变化不只是新滤波器或新网络，而是把二者串成“滤波器离线造标签、网络在线去噪”的协同流程；其中 DMROR 首次在本方法内把估计雪噪比例加入非线性搜索半径，RPSnowNet 则用 point-range
+    双分支减少单一 range projection 的损失。 （Sec. III-A–C）
+  limitations: 八、Limitations 作者明确承认的 limitation 作者表述 DMROR 在积雪植被附近会误删有效环境点，因为覆雪枝叶与真实雪噪声在弱强度、局部稀疏和不规则几何上高度重叠。
+    （Sec. IV-G；Fig. 13） 作者表述 拟合参数在传感器或数据集设置变化时需要重新估计；CADC 与 WADS 使用不同参数。 （Sec. III-B；Table II；Sec. IV-F）
+    作者表述 CADC 缺少逐点标签，因此该数据集上的去噪只能定性评估，不能直接计算去噪 mIoU。 （Sec. IV-A1；Sec. IV-B） 原图裁剪：Fig. 13，PDF p. 13。红色虚线框标出覆雪植被附近的主要误删区域。点击查看原尺寸。
+    从实验结果中直接可见、但作者没有明确称为 limitation 的现象 直接观察 Table III 中 RPSnowNet 的 Recall 91.94% 略低于 DMROR 的 92.24%，也低于监督
+    TripleMixer 的 93.93%；作者主要强调其 Precision、F1、mIoU 与速度。 （Table III） 直接观察 Fig. 11 显示去噪对车辆近距离检测提升明显，而在长距离处变化很小；作者在正文中也只把总体结论限定为近距离收益显著。
+    （Sec. IV-D；Fig. 11）

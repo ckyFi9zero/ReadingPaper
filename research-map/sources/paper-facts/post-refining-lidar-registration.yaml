@@ -1,0 +1,93 @@
+version: 1
+paper: post-refining-lidar-registration
+scope: out-of-field
+source_basis: existing-reading-note
+source_sha256: 5846fb04a85aa1252af49957765b406bbd6b35bd3cda0e3e72c3460a547a6fe9
+checked_at: '2026-10-12'
+tags:
+- 点云配准
+- 扩散模型
+- 对应关系
+- 后优化
+task:
+  name: 点云配准后优化
+  input: 本任务输入，见关联初读
+  output: 本任务输出，见关联初读
+  evidence:
+  - paper: post-refining-lidar-registration
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 稀疏、遮挡与视角变化造成对应误差
+  evidence:
+  - paper: post-refining-lidar-registration
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-external
+  name: 领域外技术来源
+  description: 在粗配准之后对目标对应点 residual 做条件扩散去噪，再用 Kabsch 求精化变换，作为可组合的 LiDAR registration post-optimizer。
+  evidence:
+  - paper: post-refining-lidar-registration
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-post-refining-lidar-registration
+  name: 条件扩散对应点 residual 与 Kabsch
+  role: core-module
+  motivation: 精化错误对应点后求相对位姿
+  evidence:
+  - paper: post-refining-lidar-registration
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-structure
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 2
+  confidence: provisional
+  reason: 仅提供原任务的技术洞见；不是恶劣天气去噪首创或已验证迁移。
+limitations:
+- text: 面向已有粗变换；强扰动削弱恢复能力，增加运行成本
+  evidence:
+  - paper: post-refining-lidar-registration
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 02 · Research Problem 问题层次 作者的原文故事线 具体问题 概括 给定两个 LiDAR 点云和一个 coarse relative transformation，如何修正由稀疏采样、遮挡和视角变化造成的错误对应，从而进一步降低配准的
+    RTE / RRE。 （Sec. I；Sec. III-A） 发生场景 作者表述 自动驾驶和移动机器人使用的真实、大规模 outdoor LiDAR 点云；实验覆盖 KITTI、NuScenes
+    和 Apollo-Southbay。 （Abstract；Sec. I；IV-A） 为什么重要 作者表述 ICP 等 local registration 的效果依赖准确 correspondence；LiDAR
+    的 beam-based sampling 使同一空间位置不一定在下一帧被重新采样。学习方法虽然提升 global registration 的鲁棒性，却常在稀疏点集上匹配。 （Sec. I） 最终后果
+    概括 global method 可能给出“正确但不够精确”的变换；错误对应会限制 ICP/GICP 等局部后优化，并降低地图构建、定位和重建的相对位姿精度。 （Sec. I）
+  method: 05 · Method：只看宏观逻辑 概括 输入与初始对应： 给定源/目标点云 PS、PT 和 coarse transform (R̂,t̂)，将源点变换到 target space，并在目标点云中取最近邻形成
+    noisy correspondences。 目的： 把任意 global registration 的输出统一成 DCR 的输入格式。 （Fig. 1；Sec. III-A；IV-A.2） 概括
+    残差扩散建模： 固定源点，只生成目标对应点的 residual ΔxT；对 residual 做归一化，在 forward process 加噪，denoising network 直接预测 clean
+    z0。 目的： 把生成空间压缩到更紧凑的误差分布，并直接得到 refined target points。 （Eq. 1–6；Sec. III-B–C.1） 概括 条件与邻域去噪： 用 cG=[x̂S,xT,x̂S−xT]
+    和 cF=[fS,fT,fS−fT] 控制随机性；用两次 PointNet++ 风格 neighborhood aggregation 建模对应点上下文，再由 MLP 输出 residual。 目的：
+    让生成结果同时受位置误差、特征差异和邻域结构约束。 （Eq. 4–7；Fig. 1；Sec. III-C.2–4） 概括 变换求解与训练： 将 refined correspondences 送入
+    Kabsch 闭式求解 R*,t*；训练损失为 diffusion loss Ld 加 transformation loss Lt。 目的： 使网络输出直接服务于相对位姿精化，而非只拟合 latent
+    distribution。 （Eq. 8–9；Sec. III-C.5；III-D） 概括 真正变化的核心位置： 后优化不再直接在位姿或绝对点坐标上扩散，而是在“固定源点 + 目标对应点 residual”的
+    correspondence 空间中去噪，再由几何闭式求解变换。 （Sec. III） Fig. 1，PDF p. 4，论文原图及图注局部裁剪：扩散式 correspondence refinement
+    的整体架构。 点击图片查看原尺寸。
+  limitations: 08 · Limitations 作者明确承认的 limitation 论文未单列 limitation 小节 结论与噪声实验给出了适用边界，但没有以“Limitations”标题集中陈述。
+    从实验结果中直接可见、作者没有统一称为 limitation 的现象 直接观察 DCR 面向 post-refinement；global transform noise 增至 5.0 m 时 recall
+    约 40%，作者明确说其恢复能力在显著大扰动下减弱。 （Fig. 5；Sec. IV-C.7） 直接观察 扩散步数从 T=3 增至 T=5，精度不再持续改善且时间约增加 47%；作者把性能下降归因于生成随机性增加。
+    （Table X；Sec. IV-C.5） 直接观察 DCR 增加约 43.9 ms（KITTI，SDMNet 输入）并需要额外 GPU memory，虽然小于 0.1 GB；因此效率收益依赖于与粗配准器的组合。
+    （Table II；Sec. IV-B.3） 直接观察 在作者实验中，NDT 没有进一步改善精度；该结果仅说明本文设置下的实验现象。 （Sec. IV-B.1）
+transfer_status: inferred

@@ -1,0 +1,88 @@
+version: 1
+paper: 3d-outdet-2024
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: 7b297daa0b1d713beb661c89e8f3de0eff2d09b57fef2ddb36b70ffe152caa2d
+checked_at: '2026-10-12'
+tags:
+- 雨雪
+- 离群点检测
+- 轻量网络
+- NH Convolution
+task:
+  name: 降水离群点检测
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: 3d-outdet-2024
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 在雪及雨水喷溅中兼顾检测精度、时间与内存
+  evidence:
+  - paper: 3d-outdet-2024
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-point
+  name: 点集与点/距离图联合学习
+  description: 以 NeighborHood Convolution 直接处理无序点云，在保持天气离群点检测能力的同时降低模型体积、运算量与运行时间。
+  evidence:
+  - paper: 3d-outdet-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-3d-outdet-2024
+  name: NeighborHood Convolution
+  role: core-module
+  motivation: 将空间最近邻重排后直接卷积，控制计算和模型成本
+  evidence:
+  - paper: 3d-outdet-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-structure
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 3
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: 并非所有数据集的准确度都最佳
+  evidence:
+  - paper: 3d-outdet-2024
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 二、Research Problem 具体问题 作者表述 识别并移除 3D LiDAR 点云中的降水离群点，包括落雪与车辆激起的雨水喷溅。 （Sec. I, PDF pp. 1–2）
+    发生场景 作者表述 自动驾驶车辆在雪、雨、雾等恶劣天气中使用 LiDAR；本文实验具体覆盖真实/模拟雪与真实雨水喷溅。 （Sec. I；Sec. IV, PDF pp. 1, 4） 为何重要 作者表述
+    作者强调车载应用不仅需要准确率，还要兼顾执行时间、计算复杂度和内存占用。 （Sec. I, PDF p. 1） 导致后果 作者表述 降水使点云更稀疏且更噪，进而造成错误测量、感知误报与漏检。 （Sec.
+    I, PDF p. 1）
+  method: 五、Method：只看宏观逻辑 Input： 单帧 N×4 点云（x, y, z, intensity）；第一层可附加邻点距离。 kNN 与 neighbor map 做什么：为每个点检索
+    k 个最近邻并按距离排列，形成 N×k×4 邻域张量。 为什么：把无序点云的空间邻域转换为适合卷积核处理的局部结构。 （Sec. III-A, Eq. (2), Fig. 2） NH Convolution
+    做什么：在邻域张量上以 einsum 并行执行卷积；第一层可把邻距作为带可学习权重的输入。 为什么：直接处理最近邻，并让网络降低过远、上下文不一致邻点的贡献。 （Sec. III-A） 轻量残差分类器
+    做什么：两个 NH 层组成一个 residual block，之后接 dropout 与 fully connected 层。 为什么：作者用单个残差块生成逐点二分类预测，控制层数和资源消耗。 （Sec.
+    III-B, Fig. 3） Output： 与输入点一一对应的 prediction cloud，区分降水离群点与非离群点。 真正发生变化的核心位置 概括 相较使用投影/体素的 CNN 或以 MLP
+    近似点卷积，3D-OutDet 的核心变化是把卷积直接施加到按空间最近邻构成的 neighbor map，并以极浅残差网络完成逐点判断。 （Sec. II-B.2；Sec. III, Figs.
+    2–3） 原图 Fig. 3：3D-OutDet 架构，两个 NH Convolution 组成 residual block，之后接 Dropout 与 Fully Connected。 （PDF
+    第 4 页；来自当前论文 PDF 的页面裁剪） 查看原尺寸
+  limitations: 八、Limitations 作者明确承认的 limitation 作者表述 作者明确表示模型准确度并非所有数据集都最佳；没有单一模型在全部数据集上表现最好。 （Sec. VII,
+    PDF pp. 6–7） 作者表述 SnowyKITTI 与 SemanticSpray 只有少量类别，作者因此未在这两个数据集上进行多类下游语义分割分析。 （Sec. IV, PDF p. 4）
+    从实验结果中直接可见、但作者没有明确称为 limitation 的现象 直接观察 WADS 上 3D-OutDet 的 mIoU 90.00 略低于 PolarNet 90.16；SnowyKITTI
+    上 mIoU 也低于 Cylinder3D 和 PolarNet。这里仅描述表中数值，不外推原因。 （Tables I, III）

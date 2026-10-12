@@ -1,0 +1,106 @@
+version: 1
+paper: scfnr-2026
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: bfe7e93065d975ccecaa38106d5317fcbc275fabd47c32f7d8ac5c8a85df5001
+checked_at: '2026-10-12'
+tags:
+- 雾尘雪
+- 矿区
+- 几何特征
+- 实时去噪
+task:
+  name: 矿区雾尘雪过滤
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: scfnr-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+problem:
+  failure_case: 矿区天气粒子污染实时点云感知
+  evidence:
+  - paper: scfnr-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+pipeline:
+  id: pipeline-statistical
+  name: 统计与几何规则过滤
+  description: 在矿区雾、尘、雪干扰下，结合球形度特征、多尺度分类与地面邻域上下文，进行实时点云噪声过滤。
+  evidence:
+  - paper: scfnr-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+modules:
+- id: module-scfnr-2026
+  name: 球形度、多尺度分类与地面上下文
+  role: core-module
+  motivation: 以局部几何及地面邻域区分天气噪声和结构
+  evidence:
+  - paper: scfnr-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+challenges:
+- challenge-structure
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 3
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: 边界以当前笔记报告的矿区天气和数据范围为准
+  evidence:
+  - paper: scfnr-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+evidence_status: source-checked
+source_excerpt:
+  problem: 02 Research Problem 具体研究什么？ 作者表述 在露天矿自动驾驶中，LiDAR 会受到雾、沙尘、雪等悬浮颗粒干扰，产生密集伪回波；论文要在保留真实目标点云的同时去除这些噪声，并满足车载实时处理需求。
+    ↗ Abstract；Sec. I，首段 · PDF p. 1 为什么难？ 作者表述 矿区点云密度随空间与距离变化；沙尘强度可能与真实物体相近；同类目标因分辨率和距离呈现不同空间分布；小目标与贴地噪声又可能在局部特征上难以区分。
+    ↗ Sec. I · PDF p. 1 ↗ Sec. III-B，Multi-scale Object Classification · PDF p. 3 为什么重要？ 作者表述 这些伪回波会降低点云质量，并直接削弱下游
+    3D 目标检测可靠性；论文面向矿用无人驾驶的实际感知链路而不是离线点云美化。 ↗ Sec. I；Fig. 1 · PDF p. 1 部署约束是什么？ 作者表述 作者强调嵌入式实时性：完整方法最终在
+    NVIDIA Jetson Xavier NX 上以约 32.12 ms / 帧运行，对应约 31 Hz。 ↗ Table V；Sec. IV-B · PDF p. 8 ↗ Sec. IV-B(d)
+    · PDF p. 9 Fig. 1 · 原论文页面裁剪 · PDF p. 1。雪天矿区中，深绿色表示噪声，浅绿色表示物体点云；该图用于说明恶劣环境伪回波会直接覆盖感知场景。 · 点击查看原尺寸 概括
+    任务本质： 这篇论文不是一般的“离群点删除”，而是在 高密度、非均匀、会与真实结构混淆 的矿区天气 / 作业噪声中做实时二分类式去噪。
+  method: 05 Method：只看宏观逻辑 概括示意 第一遍只看数据如何从输入走到输出，不展开中心矩、协方差矩阵和 Cardano 求根细节。 Fig. 2 · 原论文页面裁剪 · PDF p.
+    4。完整框架：ground / non-ground → preprocessing → coarse classification → large path 的 SCFNR 与 small path
+    的 neighborhood augmentation → noise / object output。 · 点击查看原尺寸 Input → Ground / Non-ground 原始点云先经
+    sector-based ground segmentation 分成 ground 与 non-ground，再都映射到体素网格。作者使用 0.3 × 0.3 × 0.3 m³ 体素；文中解释该尺寸兼顾最小目标结构、协方差稳定性与
+    Jetson 实时预算。 ↗ Sec. III-A；Eq. (2) · PDF p. 3 Non-ground → Multi-scale coarse classification 依据目标体素投影的
+    grid size 把非地面簇分成 large candidate 与 small candidate。部署参数中 grid-size threshold 为 26。 ↗ Sec. III-B；Fig.
+    3；Table I · PDF p. 4 ↗ Table III · PDF p. 7 Large candidate → SCFNR 直接结构判别 每个体素计算协方差特征值并取 s = λ₃/λ₁
+    。超过 noise threshold 的体素判为 noise voxel，再通过 large-noise-voxel ratio 聚合成簇级判断；部署值分别为 0.15 与 0.4。 ↗ Sec.
+    III-B–C；Table I · PDF p. 4 ↗ Algorithm 1；Eq. (10) · PDF p. 5 ↗ Table III · PDF p. 7 Ground voxels
+    → Context query table ground voxel 在 BEV 上建立二维 query table；同一 grid cell 有多个体素时，取其中最大 SCFNR 作为该格的分类信息。非地面体素额外保留
+    z 索引，但二者在 BEV 中对齐。 ↗ Sec. III-D；Fig. 4 · PDF p. 6 Small candidate → Neighborhood feature augmentation
+    小簇按其 grid 位置查询周边 ground context，并统计 noise-dominated 邻格。第一圈邻格被排除，作者理由是目标边界易受贴地噪声与 mixed voxel 污染；从第二圈向外更接近干净地形。部署
+    neighbor-noise-count 为 4。 ↗ Sec. III-D；Fig. 5 · PDF p. 6 ↗ Table III · PDF p. 7 Output → near-ground
+    noise / suspended noise / object 大簇路径主要区分 suspended noise 与 object，小簇路径利用 ground context 补充分辨 near-ground
+    noise 与真实小目标；二者共同组成 cascaded noise-removal pipeline。 ↗ Sec. I，pipeline summary · PDF p. 2 ↗ Fig. 3
+    · PDF p. 4 Fig. 3 · 原论文页面裁剪 · PDF p. 4。多尺度分类细化为两条路径：large voxel clusters 使用 noise-voxel proportion；small
+    voxel clusters 使用 context-query-table 的 neighborhood noise count。 · 点击查看原尺寸 Fig. 5 · 原论文页面裁剪 · PDF
+    p. 6。小目标通过 ground-derived context query table 查询邻域，并明确排除第一圈网格。 · 点击查看原尺寸 概括 方法最核心的结构变化： 不是一个统一阈值处理所有点，而是先按尺度分流——
+    大簇靠自身球形散射结构，小簇靠“自身 + 周围地面” 。
+  limitations: 08 Limitations 作者明确承认的 limitation 作者表述 KITTI 不是现实跨传感器恶劣天气 benchmark。 注入点不会复现 HDL-64E 的
+    ring-line geometry、intensity calibration 或 dual-return statistics，而且只是改变空间占用，并非由真实大气散射在该传感器上生成。 ↗
+    Sec. IV-E · PDF p. 15 ↗ Sec. IV-E 续 · PDF p. 16 作者表述 cluster-level design 处理不了同一簇内部已经混在一起的 object–noise
+    boundary。 作者在矿区数据中识别出 226 个 mixed clusters；其中 68% 出现在 fog，21% dust，11% snow。车辆与自身扬尘混合是最困难情形之一。 ↗ Sec.
+    IV-E · PDF p. 16 实验中直接可见的运行边界 直接观察 在极低体素点密度下，尤其 snow ρ<15，recall 可降至约 30%；论文把它归因于不足以稳定估计 covariance
+    eigenvalues 的几何信息。 ↗ Sec. IV-D2；Fig. 10 · PDF p. 11 直接观察 Point-level binary 结果存在 noise recall 0.99、object
+    recall 0.86 的不对称；论文明确把它解释为优先强力抑制会造成下游 false positive 的密集粒子噪声。 ↗ Sec. IV-B(b) · PDF p. 8 论文未明确说明 正文没有在
+    STF、CADC、WADS 或 SnowyKITTI 上给出真实恶劣天气跨传感器结果；作者把这些 benchmark 留到 future work，因此不能把当前 KITTI 注入实验写成“已完成真实跨传感器泛化验证”。

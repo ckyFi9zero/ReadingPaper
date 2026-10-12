@@ -1,0 +1,91 @@
+version: 1
+paper: implicit-point-to-voxel-lidar-imu-slam
+scope: out-of-field
+source_basis: existing-reading-note
+source_sha256: 1116cc88c7064d0d57a8b0f9340077923b639566d802c051f739717f6534529a
+checked_at: '2026-10-12'
+tags:
+- LiDAR SLAM
+- 隐式体素
+- IESKF
+- 非结构化场景
+task:
+  name: 非结构化环境 SLAM
+  input: 本任务输入，见关联初读
+  output: 本任务输出，见关联初读
+  evidence:
+  - paper: implicit-point-to-voxel-lidar-imu-slam
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 非结构化场景缺乏可靠显式几何约束
+  evidence:
+  - paper: implicit-point-to-voxel-lidar-imu-slam
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-external
+  name: 领域外技术来源
+  description: 用 VE-Net 与 IR-Net 从局部体素点分布直接预测 point-to-voxel residual 和 uncertainty，并在 IESKF 中替代显式点到平面观测。
+  evidence:
+  - paper: implicit-point-to-voxel-lidar-imu-slam
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-implicit-point-to-voxel-lidar-imu-slam
+  name: 隐式体素 residual 与 uncertainty
+  role: core-module
+  motivation: 以学习型局部几何观测替代强平面假设
+  evidence:
+  - paper: implicit-point-to-voxel-lidar-imu-slam
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-structure
+novelty_assessment:
+  novelty_class: 2
+  confidence: provisional
+  reason: 仅提供原任务的技术洞见；不是恶劣天气去噪首创或已验证迁移。
+limitations:
+- text: 未见场景泛化仍是开放问题；不是天气去噪模型
+  evidence:
+  - paper: implicit-point-to-voxel-lidar-imu-slam
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 02 · Research Problem 问题层次 作者的原文故事线 具体问题 概括 在 LiDAR–IMU SLAM 的 scan-to-map 匹配中，如何为非结构化局部几何构造稳定的点到地图观测，而不依赖预先拟合的平面、二次曲面或高斯等显式模型。
+    （Sec. I；Sec. III-A） 发生场景 作者表述 森林、自然地形、植被密集区、杂乱枝叶和不平整地面等 unstructured environments；作者同时把 CPU 端实时部署作为系统约束。
+    （Abstract；Note to Practitioners；Sec. I） 为什么重要 作者表述 显式观测模型依赖强局部几何假设；在缺少稳定平面时，点到平面约束数量减少，近似平面或杂乱区域的拟合又会引入
+    modeling bias，降低观测一致性和定位精度。 （Abstract；Sec. I；Sec. II-C） 最终后果 概括 可用约束不足会造成状态估计退化、不稳定和轨迹漂移；过于复杂的在线隐式系统则会增加计算、内存和系统集成负担。
+    （Sec. I–II）
+  method: 05 · Method：只看宏观逻辑 概括 输入与地图： 新 LiDAR scan 先去畸变和下采样；iVoxMap 用 hash voxel 保存固定容量点缓冲、64 维隐式特征和更新计数。
+    目的： 以稀疏且可在线更新的体素结构检索局部几何。 （Sec. III-A；V-A；Fig. 2） 概括 局部编码： VE-Net 将体素点缓冲编码为 64 维特征；IR-Net 对查询点所在体素及其
+    26 个邻居做位置编码、相对位移编码和注意力聚合。 目的： 避免只依赖单个体素，保留查询点附近的空间上下文。 （Sec. IV-A–B；Sec. V-B） 概括 观测预测： IR-Net 输出三维
+    residual δv 和 uncertainty σv；将 residual 设为隐式观测，按预测 uncertainty 构造协方差。 目的： 把非平面局部关系转成可加权的伪测量。 （Eq.
+    5–9；Sec. III-D；Sec. IV-C） 概括 状态与地图更新： IESKF 在 IMU 传播后利用这些观测迭代更新状态；状态更新后异步、事件驱动地重算满足阈值的 voxel feature。
+    目的： 不替换经典状态估计，并避免地图维护阻塞 tracking。 （Fig. 2；Algorithm 1；Sec. V-C） 概括 真正变化的核心位置： 从“查询点与显式拟合 primitive
+    的残差”改为“查询点与局部隐式体素几何之间由网络预测的 residual + uncertainty”，状态估计仍在 IESKF 中完成。 （Sec. III–V） Fig. 2，PDF p. 3，论文原图及图注局部裁剪：P2V-SLAM
+    总体 pipeline。 点击图片查看原尺寸。
+  limitations: 08 · Limitations 作者明确承认的 limitation 作者表述 学习到的 implicit residual model 受 training data distribution
+    影响；同域数据可能提升相似场景，但略微降低其他数据集表现，真正 unseen environments 的 generalization 仍是 open question。 （Sec. VII-D；Sec.
+    VIII） 作者表述 在系统启动初期，体素尚未积累到 Nmin 个点，可能没有足够的有效隐式观测，前几帧主要依赖 IMU pre-integration。 （Sec. V-C） 从实验结果中直接可见、作者没有统一称为
+    limitation 的现象 直接观察 residual prediction 约占总运行时间 95%，是主要瓶颈；仍满足 50 ms / frame 的测试设置。 （Table IV；Sec.
+    VII-C） 直接观察 当 voxel size 增大到 0.5 m 时可能出现较大漂移或失败；Nmin 大于 25 时有效匹配过少，出现明显退化甚至定位失败。 （Table V；Fig. 11；Appendix
+    B）
+transfer_status: inferred

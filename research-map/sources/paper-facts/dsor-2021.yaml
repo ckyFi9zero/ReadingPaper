@@ -1,0 +1,96 @@
+version: 1
+paper: dsor-2021
+scope: in-field
+source_basis: existing-reading-note
+source_sha256: ebd63d68292eda5f2d9dad2da9aa8acba19292c783b06eb775bcab6cd3500e1e
+checked_at: '2026-10-12'
+tags:
+- 雪
+- 统计滤波
+- WADS
+task:
+  name: 单帧去雪
+  input: 恶劣天气 LiDAR 点云
+  output: 逐点标签及过滤点云
+  evidence:
+  - paper: dsor-2021
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+problem:
+  failure_case: 严重冬季天气的落雪杂波过滤与可扩展计算
+  evidence:
+  - paper: dsor-2021
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+pipeline:
+  id: pipeline-statistical
+  name: 统计与几何规则过滤
+  description: 以随距离调整的统计阈值过滤落雪杂波，同时提出严重冬季天气逐点标注数据集 WADS。
+  evidence:
+  - paper: dsor-2021
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+modules:
+- id: module-dsor-2021
+  name: 距离相关统计阈值与 WADS 标注
+  role: core-module
+  motivation: 让统计阈值随距离调整，并建立逐点雪标签评估
+  evidence:
+  - paper: dsor-2021
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+challenges:
+- challenge-density
+- challenge-range
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 3
+  confidence: provisional
+  reason: 依据当前笔记的方法差异作贡献层级候选；未检索领域首创/引文图，不能据此称 seminal work。
+limitations:
+- text: 结论范围以当前阅读页中的实验设置为准
+  evidence:
+  - paper: dsor-2021
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+evidence_status: source-checked
+source_excerpt:
+  problem: 02 Research Problem 具体问题是什么？ 作者表述 落雪被 LiDAR 探测到后形成 clutter-noise；滤波需要尽量去除雪点，同时不误删环境中重要的点。 ↗
+    Sec. I，首段，p. 1 ↗ Sec. V.C，p. 5 发生在什么场景？ 作者表述 中到重度降雪的冬季驾驶场景，包括郊区道路、双车道公路和居民区。作者把 severe winter weather
+    定义为能见度下降或路面状态不确定、足以让有经验的驾驶员改变驾驶行为的天气。 ↗ Sec. I，p. 2 ↗ Sec. III，p. 3 为什么重要？ 作者表述 自动驾驶依赖 LiDAR 进行 perception、mapping
+    和 localization；这些系统需要在可能突然出现、且人类驾驶员仍会应对的天气中可靠运行。作者还指出冬季恶劣天气数据不足。 ↗ Sec. I，pp. 1–2 会导致什么后果？ 作者表述 雪杂波既可能引入
+    false-positive detections，也可能遮蔽真实障碍物并导致 false-negative detections；通用滤波又有丢失环境关键点的风险。 ↗ Sec. I，p. 1
+    ↗ Sec. I，滤波动机段，p. 2 Fig. 1 · 原论文页面裁剪 · PDF p. 1 图注概括：问题示例：上图为落雪杂波场景，下图为 DSOR 过滤后。作者称上图两辆迎面车辆被雪遮蔽。
+    · 点击查看原尺寸 作者表述 Fig. 1 的案例来自 Hancock，降雪率为 0.6 in/hr（1.5 cm/hr）；作者称两辆迎面车辆被雪遮蔽，未被 Autoware 的 Euclidean
+    clustering 检出。这是问题示例，不等于论文提供了完整的下游检测性能评测。 ↗ Sec. I 首段及 Fig. 1，p. 1
+  method: 05 Method：只看宏观逻辑 概括 下面为原文流程的概括示意；方法步骤与阅读 Stage 无关。全部依据 Sec. IV.A 与 Algorithm 1（PDF p. 4）。 Input
+    · 含落雪噪声的 LiDAR 点云 P 做什么：输入点的三维坐标及用户指定的 k、s、r。 为什么：将雪污染的点云送入去噪滤波器。 步骤 1 · 统计每个点的近邻距离 做什么：点云装入 k-d tree；对每个点搜索
+    k 个近邻，计算平均近邻距离。 为什么：这些距离用于后续的统计阈值计算；为什么选用当前 k 值，论文未明确解释，也未报告实验取值。 步骤 2 · 计算全局统计阈值 T g 做什么：汇总上述平均距离的均值
+    μ 和标准差 σ，结合倍数 s 得到全局阈值。 为什么：生成随后逐点动态调整所使用的基础阈值；这一具体统计组合的设计理由，论文未明确解释。 步骤 3 · 按距离生成逐点动态阈值 T d 做什么：在
+    T g 基础上加入 r 和点到传感器的距离，获得每个点的阈值。 为什么：作者明确说是为了考虑非均匀的点间距。 步骤 4 · 比较平均近邻距离与阈值 做什么：据比较结果区分待保留点和待删除点；原文的判定方向存在下述差异。
+    为什么：去除雪与离群噪声，同时保留环境特征。 Output · 过滤后的点云 F 做什么：输出保留的点集合。 为什么：得到去噪点云；论文这里没有进一步定义一个下游网络输出。 ↗ Sec. IV.A；Algorithm
+    1，p. 4 直接观察 保留原文差异，不替作者修正： 式 (2) 后的正文说平均距离小于 T d 的点是 outliers，予以删除；Algorithm 1 第 11–12 行却把同一条件 mean_distances
+    < Td 下的点作为 Inliers 加入 F。两处对保留／删除的表述相反。初读只记录，第二遍再核对。 ↗ Sec. IV.A，式 (2) 后；Algorithm 1，lines 11–12，p.
+    4 核心变化在哪里？ 概括 相对 SOR，变化位于判别阈值：从全局统计阈值转为随距离变化的逐点阈值；相对 DROR，作者使用 k-nearest neighbor 搜索与动态统计阈值，而 DROR
+    动态调整的是搜索半径。 ↗ Sec. IV、IV.A，p. 4
+  limitations: 08 Limitations 作者明确承认的 limitation 作者表述 DSOR 的 Precision（65.1%）低于 DROR（71.5%），即删除了更多非雪点或环境特征。
+    ↗ Sec. V.C，p. 6 作者表述 20 m 之外出现树梢、杆和悬空电线等特征被过滤；作者说这些特征稀疏，冬季可能只产生少量返回点。 ↗ Sec. V.C，p. 6 作者表述 任何滤波器都可能以破坏环境特征为代价获得
+    100% Recall，但这不是本文目标；需要兼顾雪点去除与环境保留。 ↗ Sec. V.C，p. 5 作者表述 作者还提到 precision 降低“也可能”源于去除 noisy measurements；这只是原文给出的可能解释，不能改成已验证原因。
+    ↗ Sec. V.C，p. 6 实验中直接可见，但作者未明确称为 limitation 的现象 直接观察 Fig. 6 中 DSOR 的 Recall 和 Precision 都没有达到 100%；这里仅记录数值，不扩展到未测试天气或传感器。
+    ↗ Fig. 6，p. 5 直接观察 Table II 中 DSOR 平均每帧耗时 369.68 ms，与 SOR 的 371.98 ms 相近；相对 SOR 的原表差值为 2.3 ms。作者没有把这些数值称为实时性限制，本次也不据此补充部署判断。
+    ↗ Table II，p. 6
