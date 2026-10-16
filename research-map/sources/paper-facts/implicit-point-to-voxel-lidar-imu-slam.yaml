@@ -89,3 +89,155 @@ source_excerpt:
     VII-C） 直接观察 当 voxel size 增大到 0.5 m 时可能出现较大漂移或失败；Nmin 大于 25 时有效匹配过少，出现明显退化甚至定位失败。 （Table V；Fig. 11；Appendix
     B）
 transfer_status: inferred
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 点到平面等显式局部几何模型要求可用的平面或预定义 primitive。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: implicit-point-to-voxel-lidar-imu-slam
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 森林、植被和曲面可能不满足单一平面假设，导致可用约束减少或拟合偏差。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: implicit-point-to-voxel-lidar-imu-slam
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 保留经典状态估计结构，以可学习的局部几何观测补充显式模型的不足。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: implicit-point-to-voxel-lidar-imu-slam
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 隐式体素 residual 与 uncertainty
+    module_ids:
+    - module-implicit-point-to-voxel-lidar-imu-slam
+    motivation:
+      text: 以学习型局部几何观测替代强平面假设
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: implicit-point-to-voxel-lidar-imu-slam
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 用 VE-Net 与 IR-Net 从局部体素点分布直接预测 point-to-voxel residual 和 uncertainty，并在 IESKF 中替代显式点到平面观测。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: implicit-point-to-voxel-lidar-imu-slam
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 体素特征与查询点共同预测 displacement residual 和 uncertainty，作为 IESKF 的观测。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: implicit-point-to-voxel-lidar-imu-slam
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 利用非平面几何并表达观测不确定性；不确定性用于天气去噪仍未验证。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: implicit-point-to-voxel-lidar-imu-slam
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 公开及自采序列分别报告 APE、地图熵和 valid residual；自采六段 valid residual 约为 VoxelMap 的 2–3 倍（Tables II–III）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: implicit-point-to-voxel-lidar-imu-slam
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: implicit-point-to-voxel-lidar-imu-slam
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 消融分析体素大小、NLL uncertainty 和训练分布，附录另分析初始位姿扰动等；不是直接端到端学习位姿。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: implicit-point-to-voxel-lidar-imu-slam
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 设计对照支持所比较配置之间的差异；累计配置不能隔离任意单个模块，机制解释仍需与具体对照条件一起阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: implicit-point-to-voxel-lidar-imu-slam
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 未见场景泛化仍是开放问题；不是天气去噪模型
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: implicit-point-to-voxel-lidar-imu-slam
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

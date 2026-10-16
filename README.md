@@ -20,6 +20,8 @@ ReadingPaper 以论文为单位保存阅读记录，将独立的 HTML 笔记组�
 
 网站采用 HTML、CSS 和 JavaScript，无需后端服务；也可通过 GitHub Pages 托管。
 
+从 [研究地图](research-map.html) 可以浏览任务与方法树、技术挑战与 insight 树，以及按五个分支展开的单篇论文解析。解析中的笔记转述、阅读者归纳和待核验内容分别标注；点击证据可返回原阅读位置。数据格式与维护规则见 [研究地图说明](research-map/README.md)。
+
 ## 内容维护
 
 阅读笔记以 HTML 为主，也支持 Markdown。所有论文统一存放在 `papers/` 下。新增内容时，将笔记放入 `papers/论文名-年份/`，在 `papers.json` 中登记论文信息和阅读阶段，再通过构建脚本更新首页与总览页面。

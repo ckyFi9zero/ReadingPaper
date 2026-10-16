@@ -92,3 +92,155 @@ source_excerpt:
     并非每个子类别都最佳：Rain55 最佳为 AdverseNet-1 的 98.77%；Heavy Snow 中 AdverseNet-3 为 98.81%，略高于 AdverseNet-2 的
     98.79%。 （Tables II–III） 概括 实验覆盖范围是 DENSE 气候室雨雾和 SnowyKITTI 仿真雪。本文没有报告真实道路雨、雾、雪的统一独立测试，也没有目标检测或语义场景分割等下游实验；这是本文报告范围的记录，不据此推断必然失败。
     （Sec. III-B–D）
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 天气特定网络各自学习参数；单一共享参数又可能不足以表达不同天气退化。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: adversenet-2025
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 共享结构与天气差异并存，过强共享或完全独立都难同时满足表示与成本要求。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: adversenet-2025
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 先学习共性，再有选择地增加条件特定能力。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: adversenet-2025
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: CTPV 与共享/天气特定参数训练
+    module_ids:
+    - module-adversenet-2025
+    motivation:
+      text: 共享天气共性并补充各天气差异
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: adversenet-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 采用柱坐标三平面表示，以共享主干和天气特定参数的两阶段训练统一雨雪雾去噪；在 DENSE 气候室数据和 SnowyKITTI 仿真雪上评估。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: adversenet-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 柱坐标三平面构造特征，两阶段训练共享与天气特定参数，并用正则限制参数扩展。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: adversenet-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 在共享表示上保留天气差异，但可能增加开销或在个别天气过拟合。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: adversenet-2025
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: DENSE 上 AdverseNet-2 MIoU 94.67%、平均时间 123.65 ms；SnowyKITTI 的雪结果来自仿真（Tables II–III）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: adversenet-2025
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: adversenet-2025
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 两阶段总体提高平均指标，但 Rain55 IoU 存在下降；另比较单/三平面和扩展正则，不能概括成所有条件都改善（Tables II–V）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: adversenet-2025
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 设计对照支持所比较配置之间的差异；累计配置不能隔离任意单个模块，机制解释仍需与具体对照条件一起阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: adversenet-2025
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 运行时间与参数较高；真实道路统一独立测试未报告
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: adversenet-2025
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

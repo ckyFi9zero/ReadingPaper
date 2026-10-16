@@ -84,3 +84,155 @@ source_excerpt:
   limitations: 八、Limitations 作者明确承认的 limitation 作者表述 作者明确指出 graph construction 对大规模点云仍计算密集；原始点到顶点的 O(M·N)
     映射造成运行劣势，因此实验把 N 限制为 5000、R 限制为 25。 （Sec. 4.7；Sec. 5；PDF p. 8） 从实验结果中直接可见，但作者没有明确称为 limitation 的现象
     直接观察 核心逐点定量表使用 WADS；CADC 以及雨/雾部分主要用于定性展示。 （Table 2；Figs. 5、7；PDF pp. 5–8）
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 规则投影 CNN 受到投影信息损失和分辨率限制；单帧判断缺少跨帧线索。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: desnow-gnn-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 非均匀点云的真实空间关系难由规则网格完整表达，天气噪声还具有时序模式。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: desnow-gnn-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 保留不规则邻接结构，并将跨帧关系作为另一组判别证据。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: desnow-gnn-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 时空图、跨帧配准与顶点重建
+    module_ids:
+    - module-desnow-gnn-2026
+    motivation:
+      text: 用空间邻接和时序差分联合识别伪回波
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: desnow-gnn-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 以动态半径图、轻量跨帧注册和运动门控联合建模 LiDAR 点云的空间与时序噪声线索。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: desnow-gnn-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 构建空间与时序分支，更新顶点状态并将预测映射回原始点。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: desnow-gnn-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 联合结构与时间信息，但图构造和点到顶点映射仍产生开销。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: desnow-gnn-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: WADS 上报告 Precision 97.4%、F1 95.3%；雨雾适配在当前笔记中为定性可视化（Table 2；Fig. 7）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: desnow-gnn-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: desnow-gnn-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 移除空间或时序组件降低指标，完整模型结果最高；另分析顶点数和 denoising range（Table 3；Fig. 6）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: desnow-gnn-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 设计对照支持所比较配置之间的差异；累计配置不能隔离任意单个模块，机制解释仍需与具体对照条件一起阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: desnow-gnn-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 图构造和原始点到顶点映射成本较高；雨雾主要定性展示
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: desnow-gnn-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

@@ -87,3 +87,155 @@ source_excerpt:
     V-D.1） 作者表述 论文的强度曲线与阈值围绕特定 Ouster OS-1、865 nm 波长和所设雪粒参数推导；作者没有报告跨 LiDAR 型号的定量验证。 （Sec. III-B；Sec.
     IV-B；Sec. V-A） 从实验结果中直接可见、但作者没有明确称为 limitation 的现象 直接观察 速度上限 10 FPS 与本实验 LiDAR 的 10 Hz 转速一致；表中无法说明在更高帧率传感器上实际端到端速度。
     （Sec. V-D.1） 直接观察 准确率核心比较仅用 10 个时间匹配扫描；随后 50 帧验证未提供与 DROR 相同的完整精确率/召回率表。 （Sec. V-D.2；Table 5）
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: SOR、DROR 基于邻域距离过滤；单一低强度阈值也会删除低反射率真实点。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: lior-snow-2020
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 雪点与真实物体的强度分布有重叠，仅凭低强度不能确定该点是噪声。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: lior-snow-2020
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 先用便宜的物理线索筛候选，再用几何上下文挽救候选中的真实结构。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: lior-snow-2020
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 强度阈值与 Radius Inlier Saving
+    module_ids:
+    - module-lior-snow-2020
+    motivation:
+      text: 先筛低强度候选，再救回局部稠密的低反射物体点
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: lior-snow-2020
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 先用低强度阈值筛出候选雪点，再以 Radius Inlier Saving 邻域规则救回非雪物体点。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: lior-snow-2020
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 先按随距离变化的强度阈值筛点，再以 RIS 对候选点计数邻居并救回局部稠密点。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: lior-snow-2020
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 缩小近邻复核范围，同时降低单纯强度过滤对低反射物体的误删风险。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: lior-snow-2020
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 10 帧人工标注对比中，DROR 平均删除 32097.7 点，LIOR 删除 1700.9 点；另报告 ROI 裁剪后的处理率（Table 4；Sec. V-D）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: lior-snow-2020
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: lior-snow-2020
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: design-choice
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 笔记记录仅强度阈值造成的误删，以及加入 RIS 后的分步效果；未给出统一的模块消融表。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: lior-snow-2020
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 这是设计或分步对照的证据关联；它不等于独立拆除模块的消融，不能将整体或迭代变化直接解释为某一模块的因果增益。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: lior-snow-2020
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 阈值围绕 Ouster OS-1；10 FPS 依赖车前 ROI 裁剪
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: lior-snow-2020
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

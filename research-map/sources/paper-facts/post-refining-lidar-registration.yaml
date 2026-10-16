@@ -91,3 +91,155 @@ source_excerpt:
     （Table X；Sec. IV-C.5） 直接观察 DCR 增加约 43.9 ms（KITTI，SDMNet 输入）并需要额外 GPU memory，虽然小于 0.1 GB；因此效率收益依赖于与粗配准器的组合。
     （Table II；Sec. IV-B.3） 直接观察 在作者实验中，NDT 没有进一步改善精度；该结果仅说明本文设置下的实验现象。 （Sec. IV-B.1）
 transfer_status: inferred
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 粗配准后优化可在位姿或点坐标空间进行，错误对应仍影响精化变换。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: post-refining-lidar-registration
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 错误对应具有结构化残差，直接生成绝对目标点的空间过大；随机生成还与确定性配准冲突。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: post-refining-lidar-registration
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 在更紧凑的误差空间中修正对应关系，再由几何求解器恢复目标变换。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: post-refining-lidar-registration
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 条件扩散对应点 residual 与 Kabsch
+    module_ids:
+    - module-post-refining-lidar-registration
+    motivation:
+      text: 精化错误对应点后求相对位姿
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: post-refining-lidar-registration
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 在粗配准之后对目标对应点 residual 做条件扩散去噪，再用 Kabsch 求精化变换，作为可组合的 LiDAR registration post-optimizer。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: post-refining-lidar-registration
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 对目标对应点 residual 做条件扩散，几何与特征条件约束输出，再用 Kabsch 求变换。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: post-refining-lidar-registration
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 把学习模型与几何闭式求解结合；仍需要可用的初始粗变换并增加运行成本。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: post-refining-lidar-registration
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: KITTI 中 SDMNet RTE 0.043 m，加入 DCR 后 0.024 m；时间从 108.6 增至 152.5 ms（Table II）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: post-refining-lidar-registration
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: post-refining-lidar-registration
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 比较残差与绝对坐标、条件信号、邻域聚合、步数和损失；残差 latent 的 KITTI RTE/RRE 0.024/0.059 优于绝对坐标 0.036/0.137（Tables V–XI）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: post-refining-lidar-registration
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 设计对照支持所比较配置之间的差异；累计配置不能隔离任意单个模块，机制解释仍需与具体对照条件一起阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: post-refining-lidar-registration
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 面向已有粗变换；强扰动削弱恢复能力，增加运行成本
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: post-refining-lidar-registration
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

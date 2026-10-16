@@ -87,3 +87,155 @@ source_excerpt:
     作者表述 方法依赖作者假设的变换域稀疏性及阈值化残差判定；论文没有声称它可直接覆盖所有天气类型。 （Sec. I；Sec. III-C,E） 从实验结果中直接可见、但作者没有明确称为 limitation
     的现象 直接观察 LiSnowNet-L1 的 recall 0.9501 低于 DSOR 0.9811 和 L2 版本 0.9597；高 precision/IoU 不代表所有雪点都被删。 （Table
     I） 直接观察 CADC 下游 mapping 是定性图，不含地图误差数值。 （Fig. 4；Sec. V）
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: DROR、DSOR 依赖近邻搜索；监督 range-image 网络依赖逐点标注。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: lisnownet-2022
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 逐点近邻搜索造成计算负担，逐点监督标签又限制学习方法对无标注雪天数据的利用。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: lisnownet-2022
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 如果清洁信号在变换域比受污染信号更稀疏，可把这种假设变成无标签训练约束。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: lisnownet-2022
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: DWT/IDWT 多尺度网络与稀疏损失
+    module_ids:
+    - module-lisnownet-2022
+    motivation:
+      text: 通过变换域稀疏先验减少逐点标签依赖
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: lisnownet-2022
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 把点云投影为距离与强度图，以 DWT/IDWT 多尺度网络和频域稀疏先验，在无逐点标签条件下实时去雪。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: lisnownet-2022
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 网络估计残差噪声图，以清洁图的 FFT/DWT 稀疏项和残差稀疏项共同约束训练。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: lisnownet-2022
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 降低逐点标注依赖，并将推理转成适合 GPU 的范围图计算；稀疏性仍是设计假设。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: lisnownet-2022
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: WADS 上 LiSnowNet-L1 的 IoU 为 0.8812、runtime 为 6.8 ms；对应 DROR 为 0.8163、1071.2 ms（Table I）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: lisnownet-2022
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: lisnownet-2022
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: L1 与 L2 对照中 L1 的 precision、IoU 更高；另比较 FFT/DWT 权重 β，包含为各 β 搜索 α 的设置（Tables I–II）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: lisnownet-2022
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 设计对照支持所比较配置之间的差异；累计配置不能隔离任意单个模块，机制解释仍需与具体对照条件一起阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: lisnownet-2022
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 依赖变换域稀疏假设；CADC 建图仅定性展示
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: lisnownet-2022
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

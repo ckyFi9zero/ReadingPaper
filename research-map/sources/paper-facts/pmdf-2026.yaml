@@ -84,3 +84,154 @@ source_excerpt:
   limitations: 八、Limitations 作者明确承认的 limitation 作者表述 作者明确指出：体素化提高效率，但会降低传感器近处、尤其树木等低密度目标的过滤精度；真实雪天数据收集和标注也很困难。
     （Sec. IV-B、IV-D；Fig. 8；PDF pp. 12, 15） 从实验结果中直接可见，但作者没有明确称为 limitation 的现象 直接观察 主过滤对比排除了 cold-start
     结果，报告的是 steady-state performance。 （Sec. IV-B；Table I 前后正文；PDF p. 11）
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 固定或线性规则依赖历史参数，跨雪强、传感器和场景时难直接复用。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: pmdf-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 噪声空间分布会变化，固定阈值不能持续反映当前数据。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: pmdf-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 让粗筛得到的噪声样本反过来更新细筛模型，并用历史窗口持续估计参数。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: pmdf-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 参数分布拟合与历史窗口更新
+    module_ids:
+    - module-pmdf-2026
+    motivation:
+      text: 以噪声距离/高度分布更新半径和密度阈值
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: pmdf-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 从当前雪噪声空间概率分布估计过滤参数，以迭代自优化适应不同 LiDAR 与降雪强度。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: pmdf-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 粗去噪后拟合距离与高度分布，以分布参数更新半径和密度阈值，再做细过滤。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: pmdf-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 减少对固定先验参数的依赖，但粗筛误差和体素化仍会影响后续估计。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: pmdf-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: CADC、BOREAS、WADS 的 F1 均超过 90%；下游检测分别报告正常天气训练与过滤数据训练的设置（Tables I–V）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: pmdf-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: pmdf-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: not-reported-in-note
+    contribution_ids: []
+    result:
+      text: 笔记未记录独立模块消融；区分 cold-start 与 steady-state，以及有无训练数据约束的设置。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: pmdf-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 保留已记录的对照类型；缺少独立模块验证时，不把整体效果当成模块有效性的因果证明。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: pmdf-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 体素化降低近处低密度结构精度；主表排除 cold start
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: pmdf-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

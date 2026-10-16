@@ -92,3 +92,155 @@ source_excerpt:
     从实验结果中直接可见、但作者没有明确称为 limitation 的现象 直接观察 Table III 中 RPSnowNet 的 Recall 91.94% 略低于 DMROR 的 92.24%，也低于监督
     TripleMixer 的 93.93%；作者主要强调其 Precision、F1、mIoU 与速度。 （Table III） 直接观察 Fig. 11 显示去噪对车辆近距离检测提升明显，而在长距离处变化很小；作者在正文中也只把总体结论限定为近距离收益显著。
     （Sec. IV-D；Fig. 11）
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 近邻规则过滤推理慢，监督网络需要标签，单一 range projection 还会损失点级细节。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: rpsnownet-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 雪强改变环境点的距离—密度关系；规则生成监督与在线推理承担的成本要求也不同。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: rpsnownet-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 把高成本先验计算留在离线造标签阶段，让轻量网络承担在线判别。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: rpsnownet-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: DMROR 伪标签与 point-range 双分支
+    module_ids:
+    - module-rpsnownet-2026
+    motivation:
+      text: 离线滤波造标签，在线轻量网络兼顾投影效率和点级细节
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rpsnownet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 以雪强自适应 DMROR 从无标注雪天点云生成伪标签，再训练 point-range 双分支 RPSnowNet，实现兼顾准确率与 15 ms 在线推理的两阶段去雪。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rpsnownet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: DMROR 以估计噪声比例调整非线性半径生成伪标签，RPSnowNet 融合 point/range 分支完成在线去雪。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rpsnownet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 分开解决标签来源与部署效率，但不能忽略伪标签质量和跨传感器参数调整。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rpsnownet-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: WADS 上 DMROR mIoU 88.06%、897 ms；RPSnowNet 88.92%、15 ms。CADC 逐点去雪为定性，检测另有 box 定量（Table III）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rpsnownet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rpsnownet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: Table VII 逐步加入 point branch、RPFM、MFHM 等；Table VIII 比较不同滤波器伪标签。不同方法的速度硬件来源并非全部一致。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rpsnownet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 设计对照支持所比较配置之间的差异；累计配置不能隔离任意单个模块，机制解释仍需与具体对照条件一起阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rpsnownet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 覆雪植被附近误删；跨传感器需重新估计拟合参数
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: rpsnownet-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

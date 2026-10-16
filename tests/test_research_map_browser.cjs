@@ -1,0 +1,119 @@
+// Optional real-browser checks, without npm dependencies (Node 22+).
+// Start Firefox with --headless --remote-debugging-port 9333 and a fresh profile,
+// then FIREFOX_BIDI_URL=ws://127.0.0.1:9333/session node --test tests/test_research_map_browser.cjs
+const {test, before, after} = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const {pathToFileURL} = require('node:url');
+const endpoint = process.env.FIREFOX_BIDI_URL;
+let ws, context, sequence = 0;
+const pending = new Map();
+function command(method, params = {}) {
+  return new Promise((resolve, reject) => {
+    const id = ++sequence;
+    const timer = setTimeout(() => {pending.delete(id); reject(new Error(`BiDi timeout: ${method}`));}, 15000);
+    pending.set(id, {resolve(value) {clearTimeout(timer); resolve(value);}, reject(error) {clearTimeout(timer); reject(error);}});
+    ws.send(JSON.stringify({id, method, params}));
+  });
+}
+async function evaluate(expression) {
+  const result = await command('script.evaluate', {expression:`JSON.stringify(${expression})`, target:{context}, awaitPromise:true});
+  assert.equal(result.type, 'success', JSON.stringify(result));
+  return JSON.parse(result.result.value);
+}
+async function open(name, hash = '') {
+  await command('browsingContext.navigate', {context, url:pathToFileURL(path.resolve(__dirname, '..', name)).href + hash, wait:'complete'});
+}
+async function screenshot(name) {
+  if (!process.env.MAP_SCREENSHOTS) return;
+  fs.mkdirSync(process.env.MAP_SCREENSHOTS, {recursive:true});
+  const result = await command('browsingContext.captureScreenshot', {context, origin:'viewport'});
+  fs.writeFileSync(path.join(process.env.MAP_SCREENSHOTS, `${name}.png`), Buffer.from(result.data, 'base64'));
+}
+before(async () => {
+  if (!endpoint) return;
+  ws = new WebSocket(endpoint);
+  await new Promise((resolve, reject) => {ws.onopen=resolve; ws.onerror=reject;});
+  ws.onmessage = event => {
+    const message = JSON.parse(event.data);
+    const task = pending.get(message.id);
+    if (!task) return;
+    pending.delete(message.id);
+    if (message.type === 'error') task.reject(new Error(JSON.stringify(message)));
+    else task.resolve(message.result);
+  };
+  await command('session.new', {capabilities:{alwaysMatch:{}}});
+  ({context} = await command('browsingContext.create', {type:'tab'}));
+});
+after(async () => {
+  if (!ws) return;
+  try {await command('browsingContext.close', {context}); await command('session.end');}
+  finally {ws.close();}
+});
+const browserTest = (name, fn) => test(name, {skip:!endpoint, timeout:30000}, fn);
+
+browserTest('paper hash opens the five-branch tree and expand/collapse controls work', async () => {
+  await command('browsingContext.setViewport', {context, viewport:{width:1440,height:1000}, devicePixelRatio:1});
+  await open('research-map.html', '#paper-dror-2018');
+  assert.deepEqual(await evaluate(`({count:document.querySelectorAll('.paper-analysis-tree').length, open:document.getElementById('paper-dror-2018').open, branches:document.querySelectorAll('#paper-dror-2018 .analysis-branch').length})`), {count:26,open:true,branches:5});
+  await screenshot('paper-tree-desktop');
+  assert.equal(await evaluate(`(()=>{document.querySelector('#paper-dror-2018 [data-analysis-action="expand"]').click();return document.querySelectorAll('#paper-dror-2018 .analysis-branch[open]').length})()`), 5);
+  assert.equal(await evaluate(`(()=>{document.querySelector('#paper-dror-2018 [data-analysis-action="collapse"]').click();return document.querySelectorAll('#paper-dror-2018 .analysis-branch[open]').length})()`), 0);
+});
+
+browserTest('nested contribution hash opens all enclosing details', async () => {
+  await open('research-map.html', '#analysis-lisnownet-2022-contribution-main');
+  assert.deepEqual(await evaluate(`({paper:document.getElementById('paper-lisnownet-2022').open,method:document.getElementById('analysis-lisnownet-2022-method').open})`), {paper:true,method:true});
+});
+
+browserTest('search indexes insight text and empty search restores all papers', async () => {
+  await open('research-map.html');
+  assert.equal(await evaluate(`(()=>{const q=document.getElementById('map-search');q.value='排列不变性';q.dispatchEvent(new Event('input'));return !document.getElementById('paper-pointnet-2017').hidden})()`), true);
+  assert.equal(await evaluate(`(()=>{const q=document.getElementById('map-search');q.value='';q.dispatchEvent(new Event('input'));return document.querySelectorAll('.map-fact:not([hidden])').length})()`), 26);
+});
+
+browserTest('graph hash restores selection, evidence and analysis navigation', async () => {
+  await open('literature-tree.html', '#module-dror-2018');
+  assert.equal(await evaluate(`document.querySelector('.is-selected').dataset.nodeId`), 'module-dror-2018');
+  assert.equal(await evaluate(`Boolean(document.querySelector('#map-inspector a[href="research-map.html#paper-dror-2018"]'))`), true);
+  assert.equal(await evaluate(`document.getElementById('map-inspector').textContent.includes('判断点是否孤立')`), true);
+  await evaluate(`new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(true))))`);
+  assert.equal(await evaluate(`(()=>{const rect=document.querySelector('.is-selected').getBoundingClientRect();return rect.bottom>0&&rect.top<innerHeight})()`), true);
+  await screenshot('literature-inspector-desktop');
+  await evaluate(`(()=>{document.querySelector('#map-inspector [data-select-node="pipeline-statistical"]').click();return true})()`);
+  assert.equal(await evaluate(`document.querySelector('.is-selected').dataset.nodeId`), 'pipeline-statistical');
+});
+
+browserTest('graph filtering retains ancestors and hides SVG edges; trunk and expand work', async () => {
+  await open('literature-tree.html');
+  await evaluate(`(()=>{const q=document.getElementById('map-search');q.value='DROR';q.dispatchEvent(new Event('input'));return true})()`);
+  assert.equal(await evaluate(`document.querySelector('[data-node-id="module-dror-2018"]').hasAttribute('hidden')`), false);
+  assert.equal(await evaluate(`document.querySelector('[data-node-id="pipeline-statistical"]').hasAttribute('hidden')`), false);
+  assert.equal(await evaluate(`Boolean([...document.querySelectorAll('.map-edge')].some(edge=>getComputedStyle(edge).display==='none'))`), true);
+  await evaluate(`(()=>{document.getElementById('map-reset').click();document.querySelector('[data-map-action="trunk"]').click();return true})()`);
+  assert.equal(await evaluate(`getComputedStyle(document.querySelector('[data-node-id="module-dror-2018"]')).display`), 'none');
+  await evaluate(`(()=>{document.querySelector('[data-map-action="expand"]').click();return true})()`);
+  assert.notEqual(await evaluate(`getComputedStyle(document.querySelector('[data-node-id="module-dror-2018"]')).display`), 'none');
+});
+
+browserTest('challenge inspector separates principle, technique and transfer boundary', async () => {
+  await open('challenge-insight-tree.html', '#insight-hierarchy');
+  const text = await evaluate(`document.getElementById('map-inspector').textContent`);
+  assert.match(text, /可复用的技术认识/);
+  assert.match(text, /阅读者归纳/);
+  assert.match(text, /MSG\/MRG/);
+  assert.match(text, /迁移边界/);
+  await screenshot('challenge-inspector-desktop');
+});
+
+browserTest('mobile paper tree fits viewport and graphs scroll inside their container', async () => {
+  await command('browsingContext.setViewport', {context, viewport:{width:390,height:844}, devicePixelRatio:1});
+  await open('research-map.html', '#paper-dror-2018');
+  assert.equal(await evaluate(`document.documentElement.scrollWidth<=innerWidth`), true);
+  await screenshot('paper-tree-mobile');
+  await open('challenge-insight-tree.html', '#insight-hierarchy');
+  assert.equal(await evaluate(`document.documentElement.scrollWidth<=innerWidth`), true);
+  assert.equal(await evaluate(`document.getElementById('map-graph').scrollWidth>document.getElementById('map-graph').clientWidth`), true);
+  await screenshot('challenge-tree-mobile');
+});

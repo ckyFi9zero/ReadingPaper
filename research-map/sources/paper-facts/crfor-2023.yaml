@@ -84,3 +84,155 @@ source_excerpt:
   limitations: 八、Limitations 作者明确承认的 limitation 作者表述 作者明确指出：仍会保留稀疏雪点、误删低密度非雪点；irregularity 约占运行时间的三分之二；检测器自身造成的错误不一定能由去雪修复。
     （Sec. IV-C–E；Figs. 4–5；PDF pp. 6–7） 从实验结果中直接可见，但作者没有明确称为 limitation 的现象 直接观察 主要逐点定量验证集中在 WADS；下游检测只提供一个定性案例。
     （Tables II–IV；Fig. 5；PDF pp. 6–7）
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 强度、密度等硬阈值分别判断雪点，难处理低强度真实点等反例。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: crfor-2023
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 单一特征存在类别重叠，独立判点还丢掉邻域标签之间的关联。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: crfor-2023
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 把可靠点的判别证据通过空间关系传递给不确定点。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: crfor-2023
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 联合特征与 kNN-CRF 标签推断
+    module_ids:
+    - module-crfor-2023
+    motivation:
+      text: 以邻域标签关系复核 uncertain 点；CRFOR-t 加入对齐历史帧
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: crfor-2023
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 结合强度、密度和局部不规则度初始化置信度，并以时空 CRF 从高置信邻居传播标签。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: crfor-2023
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 联合强度、密度和不规则度形成初始置信度，在 kNN 图上用 CRF 推断；时序扩展另合并对齐历史帧。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: crfor-2023
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 利用联合特征和标签上下文复核模糊点，但依赖先验和邻接关系的可靠性。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: crfor-2023
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: WADS 比较中 CRFOR 的 F1 高于所比规则基线，CRFOR-t 进一步提高；下游 SECOND 仅展示定性案例（Tables II–III；Fig. 5）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: crfor-2023
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: crfor-2023
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 移除 CRF 时性能下降；同时移除 density 与 irregularity 的下降大于仅移除其中之一（Table IV）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: crfor-2023
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 设计对照支持所比较配置之间的差异；累计配置不能隔离任意单个模块，机制解释仍需与具体对照条件一起阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: crfor-2023
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 稀疏雪点仍会保留；低密度非雪点仍可能误删
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: crfor-2023
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

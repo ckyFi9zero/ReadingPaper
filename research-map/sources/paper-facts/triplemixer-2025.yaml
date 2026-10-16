@@ -90,3 +90,155 @@ source_excerpt:
     limitation 的现象 直接观察 SemanticSTF 的 bicyclist/motorcyclist 等稀有类别 IoU 接近零；作者把极端类别不平衡（<0.01%）及跨数据偏差列为可能因素。
     （Sec. V-B；Tables VIII–X） 直接观察 WADS 上最高 precision 属于 LSK3DNet 97.16，而 TripleMixer 的优势在 recall/F1/mIoU；并非每个指标都最高。
     （Table V）
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 单一二维投影损失三维细节，原始近邻方法又有搜索开销；下游适应路线常需重训。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: triplemixer-2025
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 局部几何、频率变化和通道上下文提供不同信息，单一表示难同时覆盖这些线索。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: triplemixer-2025
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 组合互补表示，并直接检查同一前处理对多个下游任务的影响。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: triplemixer-2025
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 几何/频率/通道三域混合
+    module_ids:
+    - module-triplemixer-2025
+    motivation:
+      text: 联合三种特征线索，作为不重训下游模型的前处理
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: triplemixer-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 混合几何、频率和通道特征，结合模拟天气数据集与多种下游感知任务进行评估。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: triplemixer-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 串联几何混合、三平面可学习小波频率混合和通道混合，输出逐点噪声标签。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: triplemixer-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 让前处理支持多个既有感知模型；高频对应噪声只是作者建模出发点，不能排除高频真实结构。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: triplemixer-2025
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 在去噪、语义分割、地点识别与检测上分别评估；真实 SemanticSTF 的下游模型不重训，三模型平均 mIoU 提高 2.38 点（Tables VIII–X）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: triplemixer-2025
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: triplemixer-2025
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 逐一移除 GMX、FMX、CMX，并分析投影分辨率、小波层数和损失组成；只能在对应设置内解释增益（Table XIII 等）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: triplemixer-2025
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 设计对照支持所比较配置之间的差异；累计配置不能隔离任意单个模块，机制解释仍需与具体对照条件一起阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: triplemixer-2025
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 参数量限制部署；合成天气不覆盖全部真实复杂性
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: triplemixer-2025
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

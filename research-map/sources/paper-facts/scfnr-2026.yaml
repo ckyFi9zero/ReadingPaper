@@ -104,3 +104,155 @@ source_excerpt:
     eigenvalues 的几何信息。 ↗ Sec. IV-D2；Fig. 10 · PDF p. 11 直接观察 Point-level binary 结果存在 noise recall 0.99、object
     recall 0.86 的不对称；论文明确把它解释为优先强力抑制会造成下游 false positive 的密集粒子噪声。 ↗ Sec. IV-B(b) · PDF p. 8 论文未明确说明 正文没有在
     STF、CADC、WADS 或 SnowyKITTI 上给出真实恶劣天气跨传感器结果；作者把这些 benchmark 留到 future work，因此不能把当前 KITTI 注入实验写成“已完成真实跨传感器泛化验证”。
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 统一的距离、强度或几何阈值难同时区分悬浮大簇、小目标和贴地噪声。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: scfnr-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  technical_reason:
+    text: 大簇可提供稳定形状统计，小簇自身信息不足；稀疏体素的协方差特征还可能不稳定。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: scfnr-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  insight:
+    text: 按证据充分程度分流：大簇使用自身结构，小簇引入周边地面上下文。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: scfnr-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  contributions:
+  - id: contribution-main
+    name: 球形度、多尺度分类与地面上下文
+    module_ids:
+    - module-scfnr-2026
+    motivation:
+      text: 以局部几何及地面邻域区分天气噪声和结构
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: scfnr-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    implementation:
+      text: 在矿区雾、尘、雪干扰下，结合球形度特征、多尺度分类与地面邻域上下文，进行实时点云噪声过滤。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: scfnr-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    mechanism:
+      text: 大候选簇用球形度和噪声体素比例判断，小候选簇查询 ground context 进行邻域增强。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: scfnr-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    advantage:
+      text: 让不同尺度使用不同判据，但低点密度雪噪声仍是明确失败边界。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: scfnr-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 矿区点级与簇级实验分开报告；KITTI 检测测试由矿区噪声注入生成，不能写成真实跨传感器天气基准。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: scfnr-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: scfnr-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 簇级对照中加入 SCFNR 后 Recall 0.617→0.932，再加入邻域增强后 Precision 0.808→0.867；低密度雪噪声仍失效（Table IX；Fig. 10）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: scfnr-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    interpretation:
+      text: 设计对照支持所比较配置之间的差异；累计配置不能隔离任意单个模块，机制解释仍需与具体对照条件一起阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: scfnr-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+  boundary:
+    text: 边界以当前笔记报告的矿区天气和数据范围为准
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: scfnr-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered

@@ -86,3 +86,154 @@ source_excerpt:
     19 帧评估中两项指标存在差异，不推断原因或普遍失效范围。 Table 2。 直接观察 F1 score 在所评估帧间从 70.055% 到 87.28%，显示该数据包内部存在帧间变化。论文没有解释哪些场景因素对应这些极值。
     Table 2。 直接观察 最终定量结果仅报告一个 19-frame packet；论文前面提到收集了 18 个约 60 帧的数据包，但没有给出全部数据包的总体指标。这里只陈述报告范围差异，不据此断言泛化性不足。
     Sec. 2，第 2 段；Sec. 3，第 2 段。 ↑ 返回目录
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 本文讨论体素机器学习和深度分类的训练数据负担，并把既有雪天 LIOR 路线用于扬尘。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: lior-2021
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  technical_reason:
+    text: 示例中尘埃多为低强度，但部分非尘埃点也很暗，强度阈值存在误删环境点的风险。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: lior-2021
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  insight:
+    text: 物理属性用于筛选疑似噪声，局部密度用于复核歧义点。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: lior-2021
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  contributions:
+  - id: contribution-main
+    name: 低强度筛选与半径复核
+    module_ids:
+    - module-lior-2021
+    motivation:
+      text: 将强度及邻域规则用于扬尘回波
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: lior-2021
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    implementation:
+      text: 将低强度候选筛选与半径邻域复核结合，用于越野车辆扬尘环境的 LiDAR 点云去尘。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: lior-2021
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    mechanism:
+      text: 低强度预筛后对疑似点执行 ROR，保留邻域内有足够支持的低强度环境点。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: lior-2021
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    advantage:
+      text: 以少量规则参数处理扬尘，但效果受当前传感器和尘埃分布约束。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: lior-2021
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 一个 19 帧数据包的平均 Accuracy 为 98.49%、Precision 为 75.44%、Recall 为 92.58%、F1 为 82.88%（Table 2）。没有同数据其他方法的定量基线。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: lior-2021
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: lior-2021
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: not-reported-in-note
+    contribution_ids: []
+    result:
+      text: 未单独比较仅强度阈值、仅 ROR 与完整流程，无法由现有结果隔离两步各自的增益。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: lior-2021
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    interpretation:
+      text: 保留已记录的对照类型；缺少独立模块验证时，不把整体效果当成模块有效性的因果证明。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: lior-2021
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+  boundary:
+    text: 迁移到去尘的范围需按本文记录核对，不据此声称跨天气泛化
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: lior-2021
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered

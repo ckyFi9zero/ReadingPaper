@@ -93,3 +93,155 @@ source_excerpt:
     C.4，p.4） 直接观察 MNIST 0.51%的错误率高于 NiN 的0.47%；ShapeNet part 的85.1%总体均值也不表示各类别都最好。（正文 Table 1；补充 Table
     1） PointNet++ 补充Table 4，补充PDF p.4。原表及表注裁剪：模型大小与batch size 8设置下的前向时间。 点击可按原尺寸查看。
 transfer_status: inferred
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: PointNet 直接聚合整体点集，没有显式递归建模多尺度局部关系。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: pointnet-plus-plus-2017
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 全局聚合缺少局部几何组织；固定小邻域在稀疏区又可能没有足够样本。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: pointnet-plus-plus-2017
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 递归组合局部结构，并为密度变化提供不同尺度的信息。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: pointnet-plus-plus-2017
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 层次局部 PointNet、MSG/MRG 与 dropout
+    module_ids:
+    - module-pointnet-plus-plus-2017
+    motivation:
+      text: 组合局部到全局特征并适应采样密度
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: pointnet-plus-plus-2017
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 以度量邻域递归应用PointNet学习局部层次特征，使用MSG/MRG及随机输入丢点训练应对点密度变化。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: pointnet-plus-plus-2017
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 层次 set abstraction 使用采样、分组和局部 PointNet；MSG/MRG 是替代设计，结合随机输入 dropout。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: pointnet-plus-plus-2017
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 提高局部表达与稀疏输入适应性，但不等于已经验证天气去噪迁移。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: pointnet-plus-plus-2017
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: ModelNet40 同为 1024 点 XYZ 时，PointNet 89.2%、层次模型 90.7%；5000 点加法向量的 91.9% 不能全部归于结构（Table 2）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: pointnet-plus-plus-2017
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: pointnet-plus-plus-2017
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 比较 SSG、MSG、MRG 与输入 dropout；MSG+DP 从 1024 降到 256 点时准确率下降不足 1 个百分点，ScanNet 密度偏移仍有下降（Figs. 4–5）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: pointnet-plus-plus-2017
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 设计对照支持所比较配置之间的差异；累计配置不能隔离任意单个模块，机制解释仍需与具体对照条件一起阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: pointnet-plus-plus-2017
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: MSG 计算量较大，密度偏移仍有性能下降
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: pointnet-plus-plus-2017
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

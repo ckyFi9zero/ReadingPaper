@@ -86,3 +86,155 @@ source_excerpt:
   limitations: 八、Limitations 作者明确承认的 limitation 论文未明确说明 论文没有单列或明确承认 limitation。 （Conclusion；PDF p. 7）
     从实验结果中直接可见，但作者没有明确称为 limitation 的现象 直接观察 DDI 依赖 synthetic paired clean/degraded 数据；真实天气部分以 detection
     AP 而非 clean 几何对应评估。 （IQA3D；Tables 1–2；PDF pp. 4–6）
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 规则或学习过滤主要删除天气伪点，不能补回衰减和遮挡造成的缺失。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: ltdnet-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 天气退化同时包含多余回波与有效几何缺失，删除操作只处理了前一部分。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: ltdnet-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 把目标从删噪声扩展到结构恢复，并把几何质量与下游感知收益分开验证。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: ltdnet-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 空频块、天气 embedding 与概率裁剪
+    module_ids:
+    - module-ltdnet-2026
+    motivation:
+      text: 重建缺失几何并删除生成伪影
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: ltdnet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 学习从天气退化点云到干净几何的映射，并以 IQA3D 同时评测结构恢复与下游检测。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: ltdnet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 空频特征与天气 embedding 支持恢复，概率裁剪处理生成伪影；IQA3D 分别测配对质量与真实检测。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: ltdnet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 有机会恢复任务所需几何，但生成结果仍需检验，去噪指标和检测收益并非等价。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: ltdnet-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: IQA3D 使用合成配对测质量、真实序列测检测；LTDNet 的 NR-F1 并非所有天气组合最高（Tables 1–2）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: ltdnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: ltdnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: PE-only AP 40.2，逐步加入 SFB、PPB、WAB 后为 42.4、43.1、43.6；这是累计配置增益（Table 3）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: ltdnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 设计对照支持所比较配置之间的差异；累计配置不能隔离任意单个模块，机制解释仍需与具体对照条件一起阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: ltdnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: DDI 依赖合成配对数据；真实天气用检测 AP 评估
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: ltdnet-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

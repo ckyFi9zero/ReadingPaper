@@ -86,3 +86,155 @@ source_excerpt:
     11 的水泥隔离带造成漏删。 （Sec. IV-D；Fig. 11；PDF p. 8） 从实验结果中直接可见，但作者没有明确称为 limitation 的现象 直接观察 ‘优于人工标签’只由 Fig.
     6 的模糊区域定性展示支持，不能视为全序列总体定量优势。 （Sec. IV-B；Fig. 6；PDF p. 6）
 transfer_status: inferred
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 单尺度 visibility association 依赖正确配准，一次性动态点删除会误伤静态结构。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: removert-2020
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 位姿误差可能造成错误可见性关联，强删除操作使静态点误删难以逆转。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: removert-2020
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 将删除与恢复分开，用不同关联尺度重新审查被删点。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: removert-2020
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: Remove then Revert 与多分辨率范围图
+    module_ids:
+    - module-removert-2020
+    motivation:
+      text: 恢复保守删除阶段误删的静态点
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: removert-2020
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 先保守删除疑似动态点，再以多分辨率 range image 扩大关联窗口并恢复误删静态点。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: removert-2020
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 先批量 remove，再逐步降低 range-image 分辨率扩大关联窗口并 revert 静态点。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: removert-2020
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 保留修正初次判断的机会；动态地图清理与天气回波分类仍是不同任务。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: removert-2020
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: KITTI、MulRan 提供地图可视化，另报告 remove/revert 迭代的 TP、FP、FN 变化（Figs. 6–9）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: removert-2020
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: removert-2020
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: design-choice
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 未报告传统模块消融；remove/revert 的迭代演化不等于独立控制所有组件的对照实验。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: removert-2020
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 这是设计或分步对照的证据关联；它不等于独立拆除模块的消融，不能将整体或迭代变化直接解释为某一模块的因果增益。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: removert-2020
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 静态地图机制与天气噪声不同，迁移未验证
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: removert-2020
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

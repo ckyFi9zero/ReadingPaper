@@ -86,3 +86,155 @@ source_excerpt:
     作者计划扩大到雨、更重降雪等条件，说明当前条件覆盖有限。 （Sec. VI） 从实验结果中直接可见、但作者没有明确称为 limitation 的现象 直接观察 Fig. 8 中 DROR 在远距离仍增加删点，峰值低于
     40% 而非零；当前证据只支持相对 ROR 改善。 （Fig. 8） 直接观察 PR 图来自参数 Monte Carlo 后删除 inferior points 的“最佳可能”包络，不是单一固定参数点。
     （Sec. V-A.2）
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: ROR 以固定半径内的邻点数判断离群点。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: dror-2018
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 同样的固定半径在远处覆盖的有效邻点更少，低邻点数会同时来自天气噪声和正常的稀疏采样。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: dror-2018
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 判断点是否孤立，需要把邻域尺度与传感器的采样尺度联系起来。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: dror-2018
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 距离相关半径
+    module_ids:
+    - module-dror-2018
+    motivation:
+      text: 补偿旋转 LiDAR 随距离变稀的采样
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dror-2018
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 将 Radius Outlier Removal 的固定搜索半径改为随量测距离增大，以去除落雪点并保留远处环境特征。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dror-2018
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 按距离扩大搜索半径，补偿旋转扫描的点间距增长，再用邻点数判定孤立性。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dror-2018
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 减轻远距离结构误删；并不意味着所有结构都能保留。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dror-2018
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 98 帧按距离统计中，ROR 在约 18 m 的删点比例接近 100%；DROR 的远处删点比例峰值低于 40%（Fig. 8）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dror-2018
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dror-2018
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: design-choice
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 未报告独立模块消融；固定 ROR 与动态 DROR 对照、参数采样及 PR 包络用于观察半径设计的影响。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dror-2018
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 这是设计或分步对照的证据关联；它不等于独立拆除模块的消融，不能将整体或迭代变化直接解释为某一模块的因果增益。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dror-2018
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 当前实现未达到 10 Hz；下游应用指标未评估
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: dror-2018
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

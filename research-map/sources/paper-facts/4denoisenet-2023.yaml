@@ -85,3 +85,155 @@ source_excerpt:
     IV-D） 作者表述 作者报告带 intensity 的模型在跨传感器域迁移时会受强度通道偏置影响，需去掉该通道重新训练；且该设置未用于定量实验。 （Sec. IV-D, PDF p. 7） 从实验结果中直接可见、但作者没有明确称为
     limitation 的现象 直接观察 Fig. 4 显示某些训练子集下 SalsaNext 可与 4DenoiseNet 持平；作者没有把单一模型在所有训练子集上绝对领先作为结论。 （Fig.
     4；Sec. IV-B）
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 单帧投影 CNN 主要使用二维图像邻域；规则过滤主要使用单帧空间统计。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: 4denoisenet-2023
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 投影邻近不等于三维度量邻近，单帧观测也无法利用物体与天气粒子在运动上的差异。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: 4denoisenet-2023
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 联合局部三维结构与跨帧运动规律，可以给单帧难分的点提供额外判别证据。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: 4denoisenet-2023
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 空间/时间 kNN 与 motion-guided attention
+    module_ids:
+    - module-4denoisenet-2023
+    motivation:
+      text: 结合空间邻域和相邻帧运动线索
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: 4denoisenet-2023
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 联合空间邻域与相邻帧信息，用时空一致性辅助区分雪噪声和真实环境点。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: 4denoisenet-2023
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 空间 kNN 编码几何，时间 kNN 编码当前 anchor 到前帧邻点的差向量，再由 MGA 融合。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: 4denoisenet-2023
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 利用时空互补性减少歧义，但真实跨传感器效果仍受到通道偏置和评测标签限制。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: 4denoisenet-2023
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: SnowyKITTI 上报告不同雪强的 IoU、runtime 与参数量；真实 CADC 的证据为定性去噪展示（Table II；Figs. 4–5）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: 4denoisenet-2023
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: 4denoisenet-2023
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 将 kNN 替换成传统 2D convolution 或去掉时间分支均降低 IoU，支持空间与时间信息在这些设置下有贡献（Table III）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: 4denoisenet-2023
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 设计对照支持所比较配置之间的差异；累计配置不能隔离任意单个模块，机制解释仍需与具体对照条件一起阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: 4denoisenet-2023
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: CADC 无逐点标注；强度通道存在跨传感器偏置
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: 4denoisenet-2023
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

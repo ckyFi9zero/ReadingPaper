@@ -84,3 +84,155 @@ source_excerpt:
   limitations: 八、Limitations 作者明确承认的 limitation 作者表述 作者明确指出：扇区边界会降低性能；分区过细会产生稀疏扇区和索引/线程管理开销；高线程数存在 parallelization
     overhead。 （Results 与 Discussion；PDF pp. 11, 15–17） 从实验结果中直接可见，但作者没有明确称为 limitation 的现象 直接观察 Rain 条件下
     SDOR 的 F1 略低于 DROR，且不同数据集上的绝对运行时间并不相同。 （Tables 7–10；PDF pp. 13–15）
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 固定或仅随距离调整的半径无法描述不同方位、高度区域的密度差异。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: sdor-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 相近距离处仍可能存在局部密度不均；划分独立扇区又会截断跨边界邻域。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: sdor-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 用局部统计调整判据，同时在分区加速时补偿被切断的邻域信息。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: sdor-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 扇区密度半径、边界补偿与并行
+    module_ids:
+    - module-sdor-2026
+    motivation:
+      text: 处理局部密度差异并降低分区边缘邻点缺失
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sdor-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 将点云划分为空间扇区，以局部密度和距离自适应半径并行过滤天气噪声。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sdor-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 按方位角和高度分扇区，以局部密度及距离调整半径，加入 blending 与 boundary band 后并行过滤。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sdor-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 兼顾空间适应性和并行效率，但边界误差与任务管理开销仍存在。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sdor-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: WADS 上报告 F1 90.53%、runtime 0.662 s；Weather-KITTI Rain 的 F1 85.27%，与 DROR 85.30% 接近（Tables 7、9）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sdor-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sdor-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: design-choice
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 未单列传统模块消融；提供分区、线程、λ 和边界带分析。boundary band F1 90.70%，interior 92.53%。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sdor-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 这是设计或分步对照的证据关联；它不等于独立拆除模块的消融，不能将整体或迭代变化直接解释为某一模块的因果增益。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sdor-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 扇区边界影响精度；细分与高线程存在管理开销
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: sdor-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

@@ -101,3 +101,156 @@ source_excerpt:
     对照，L1/mAPH 与 ID 0 同为 25.5；该表未展示其另外两项 LET 指标，也不能据此判断全部指标都没有变化。 直接观察 Table V 的最高 mIoU 75.4 来自包含图像 Painting、时间输入、集成、专家模型和后处理的最终配置；原始
     SPVCNN 基线是 67.4。表本身没有给出这些配置的延迟或资源列。 Table IV，p. 12；Table V，p. 13。以上仅描述已见数据，不外推失效范围或泛化能力。
 transfer_status: inferred
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 相机、LiDAR 的 BEV 路线及不同训练配方，在表示、运动对齐和计算成本上有差异。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: bev-devils-2024
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 统一空间表示并不自动解决运动目标错位、细结构丢失和训练设置差异。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: bev-devils-2024
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 共享空间坐标可作为跨模态与跨时间的信息接口，但对齐和训练配方仍需单独设计。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: bev-devils-2024
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: Camera/LiDAR/Fusion 表征比较
+    module_ids:
+    - module-bev-devils-2024
+    motivation:
+      text: 梳理空间表征及不同模态的互补和代价
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: bev-devils-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 梳理 Camera、LiDAR 与 Fusion 三条 BEV 感知路线，并以 Waymo 检测和分割消融整理数据增强、编码器及损失等实践配方。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: bev-devils-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 综述并比较 BEV 表示，在 BEVFormer 与 SPVCNN 上给出时间融合及结构等配方对照。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: bev-devils-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 提供可迁移的空间组织与评测思路；不能将综述中的所有方法当成同设置重跑结果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: bev-devils-2024
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: Table IV 的配方对照与已有方法汇总性质不同；mini/full、head、backbone、训练轮数必须分别读取。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: bev-devils-2024
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: bev-devils-2024
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: BEVFormer mini R101 12 epochs 中扩大时间交互后 LET-mAPL 34.6→35.9；SPVCNN 加 V-SPV 后 mIoU 72.4→73.5（Tables
+        IV–V）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: bev-devils-2024
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 设计对照支持所比较配置之间的差异；累计配置不能隔离任意单个模块，机制解释仍需与具体对照条件一起阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: bev-devils-2024
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 综述及消融提供思路，不证明天气去噪有效
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: bev-devils-2024
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

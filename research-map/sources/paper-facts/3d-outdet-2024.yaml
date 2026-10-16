@@ -86,3 +86,154 @@ source_excerpt:
     PDF pp. 6–7） 作者表述 SnowyKITTI 与 SemanticSpray 只有少量类别，作者因此未在这两个数据集上进行多类下游语义分割分析。 （Sec. IV, PDF p. 4）
     从实验结果中直接可见、但作者没有明确称为 limitation 的现象 直接观察 WADS 上 3D-OutDet 的 mIoU 90.00 略低于 PolarNet 90.16；SnowyKITTI
     上 mIoU 也低于 Cylinder3D 和 PolarNet。这里仅描述表中数值，不外推原因。 （Tables I, III）
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 投影或体素网络引入中间表示，部分直接点处理方法依赖较重的 MLP。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: 3d-outdet-2024
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 无序存储不直接提供规则卷积邻域，中间表示与复杂点算子还带来计算和内存开销。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: 3d-outdet-2024
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 先显式组织空间近邻，就能让简单卷积利用点云的局部结构。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: 3d-outdet-2024
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: NeighborHood Convolution
+    module_ids:
+    - module-3d-outdet-2024
+    motivation:
+      text: 将空间最近邻重排后直接卷积，控制计算和模型成本
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: 3d-outdet-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 以 NeighborHood Convolution 直接处理无序点云，在保持天气离群点检测能力的同时降低模型体积、运算量与运行时间。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: 3d-outdet-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: kNN 按距离构造 neighbor map，对其执行 NH Convolution，再以浅层残差网络分类。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: 3d-outdet-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 控制网络规模与运算量；总耗时仍包含近邻预处理，不能只看网络推理时间。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: 3d-outdet-2024
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: WADS 上报告 mIoU 90.00、总时间 82 ms、参数 11.02K；PolarNet mIoU 为 90.16（Table I）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: 3d-outdet-2024
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: 3d-outdet-2024
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: not-reported-in-note
+    contribution_ids: []
+    result:
+      text: 笔记明确记录未报告模块消融，正文未给系统参数曲线；整体比较不能隔离 NH Convolution 的独立作用。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: 3d-outdet-2024
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 保留已记录的对照类型；缺少独立模块验证时，不把整体效果当成模块有效性的因果证明。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: 3d-outdet-2024
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 并非所有数据集的准确度都最佳
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: 3d-outdet-2024
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

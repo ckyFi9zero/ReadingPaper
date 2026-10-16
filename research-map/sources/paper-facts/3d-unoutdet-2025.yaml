@@ -88,3 +88,155 @@ source_excerpt:
     limitation 的现象 直接观察 3D-UnOutDet Recall 为 92.68%，低于 LiSnowNet-L2 的 98.22%；其 Precision 则为 95.77%，高于后者
     83.94%。作者也在讨论中指出二者侧重不同。 （Table I；Sec. VII） 直接观察 下游总体 mIoU 上升并不表示每类都上升：SalsaNext 的 road IoU 从 64.37
     降至 63.15，fence 从 23.85 降至 18.91。 （Table II，p. 5）
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 监督 3D-OutDet 需要逐点标签；统计滤波无需标签但规则表达能力有限。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: 3d-unoutdet-2025
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 人工监督代价高，而单点低强度与雪并非一一对应，需要邻域信息构造初始判断。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: 3d-unoutdet-2025
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 将可计算的邻域先验转成伪标签，再用网络学习更具描述性的判别特征。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: 3d-unoutdet-2025
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: SSR 伪标签与未改结构的 3D-OutDet
+    module_ids:
+    - module-3d-unoutdet-2025
+    motivation:
+      text: 将邻域强度统计判断变成学习型后端的监督
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: 3d-unoutdet-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 以邻域强度统计滤波 SSR 生成伪标签，训练保留原结构的 3D-OutDet；在 WADS/CADC 评估去雪精度、执行成本及下游分割和检测。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: 3d-unoutdet-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: SSR 聚合邻域强度并以 FFT 输出范数生成伪标签，训练结构保留的 3D-OutDet 后端。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: 3d-unoutdet-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 减少人工训练标注，保留轻量网络；伪标签偏差与 kNN 预处理成本仍然存在。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: 3d-unoutdet-2025
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: WADS 上 3D-UnOutDet mIoU 89.04%，SSR 81.76%，监督 3D-OutDet 90.00%；总耗时 82 ms（Table I）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: 3d-unoutdet-2025
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: 3d-unoutdet-2025
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: Table V 比较 FFT、可选 ISL、强度改距离、伪标签来源和后端；统计假设与网络作用应分别阅读。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: 3d-unoutdet-2025
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 设计对照支持所比较配置之间的差异；累计配置不能隔离任意单个模块，机制解释仍需与具体对照条件一起阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: 3d-unoutdet-2025
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: SSR 依赖雪先验；最近邻计算仍是瓶颈；跨传感器需调配置
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: 3d-unoutdet-2025
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

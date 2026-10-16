@@ -21,6 +21,8 @@ KINDS = {'task': 1, 'pipeline': 2, 'module': 3, 'follow-up': 4}
 ID = re.compile(r'[a-z0-9]+(?:-[a-z0-9]+)*\Z')
 LABELS = {'source-checked': '已核对现有笔记', 'inferred': '跨论文推断', 'unverified': '待核验',
           'provisional': '暂定', 'confirmed': '已确认', 'pending': '待检索'}
+BASES = {'note-summary': '笔记转述', 'analyst-inference': '阅读者归纳', 'not-assessed': '尚未核验'}
+EXPERIMENT_KINDS = {'comparison': '整体评估 / 方法对比', 'ablation': '模块对照', 'design-choice': '设计选择'}
 e = html.escape
 
 
@@ -134,6 +136,20 @@ def validate(data, root, papers, rendered=None):
         evidence(item.get('evidence'), item['id'])
         require(set(slugs) <= {ev['paper'] for ev in item['evidence']}, f'Source paper without evidence: {item["id"]}')
 
+    def claim(item, where, slug=None):
+        require(isinstance(item, dict), f'Missing analysis claim: {where}')
+        text(item.get('text'), where)
+        basis = item.get('basis')
+        expected = {'note-summary': 'source-checked', 'analyst-inference': 'inferred', 'not-assessed': 'unverified'}
+        require(basis in expected and item.get('status') == expected[basis], f'Claim basis/status mismatch: {where}')
+        values = item.get('evidence')
+        if basis == 'not-assessed':
+            require(values == [], f'Unassessed claim must not imply checked evidence: {where}')
+        else:
+            evidence(values, where)
+            if slug:
+                require(all(ev['paper'] == slug for ev in values), f'Analysis evidence must belong to paper: {where}')
+
     for document in [data['literature'], data['challenges'], *facts.values()]:
         forbid_key(document, 'novelty_gate_case')
     forbid_key(data['gate'], 'novelty_class')
@@ -158,6 +174,35 @@ def validate(data, root, papers, rendered=None):
         require(isinstance(fact.get('limitations'), list), f'Missing limitations: {slug}')
         for item in fact['limitations']:
             text(item.get('text'), slug); evidence(item.get('evidence'), slug)
+        analysis = fact.get('analysis')
+        if analysis is not None:
+            require(isinstance(analysis, dict), f'Invalid analysis: {slug}')
+            for key in ('previous_methods', 'technical_reason', 'insight', 'boundary'):
+                claim(analysis.get(key), f'{slug}/{key}', slug)
+            contributions = analysis.get('contributions')
+            identifiers(contributions, f'{slug}/contributions', set())
+            require(contributions, f'Missing contributions: {slug}')
+            contribution_ids = {item['id'] for item in contributions}
+            module_ids = {item['id'] for item in fact['modules']}
+            for item in contributions:
+                require(isinstance(item.get('module_ids'), list) and item['module_ids'] and set(item['module_ids']) <= module_ids,
+                        f'Unknown contribution module: {slug}/{item["id"]}')
+                for key in ('motivation', 'implementation', 'mechanism', 'advantage'):
+                    claim(item.get(key), f'{slug}/{item["id"]}/{key}', slug)
+            experiments = analysis.get('experiments')
+            identifiers(experiments, f'{slug}/experiments', set())
+            require(experiments, f'Missing experiment assessment: {slug}')
+            for item in experiments:
+                require(item.get('kind') in EXPERIMENT_KINDS, f'Invalid experiment kind: {slug}')
+                require(item.get('assessment') in {'reported', 'not-reported-in-note', 'not-assessed'}, f'Invalid experiment assessment: {slug}')
+                refs = item.get('contribution_ids')
+                require(isinstance(refs, list) and set(refs) <= contribution_ids, f'Unknown experiment contribution: {slug}')
+                claim(item.get('result'), f'{slug}/{item["id"]}/result', slug)
+                claim(item.get('interpretation'), f'{slug}/{item["id"]}/interpretation', slug)
+                if item['assessment'] != 'reported':
+                    require(not refs, f'Unreported experiment cannot support contribution: {slug}')
+                if item['assessment'] == 'not-assessed':
+                    require(item['result']['status'] == 'unverified', f'Unassessed experiment needs unverified result: {slug}')
 
     all_ids = set()
     nodes = data['literature'].get('nodes')
@@ -203,6 +248,10 @@ def validate(data, root, papers, rendered=None):
         for ins in c['insights']:
             require(ins.get('status') in STATUSES, f'Invalid insight status: {ins["id"]}')
             strings(ins.get('techniques'), ins['id']); sources(ins)
+            if 'principle' in ins:
+                claim(ins['principle'], ins['id'])
+                require({ev['paper'] for ev in ins['principle']['evidence']} <= set(ins['source_papers']),
+                        f'Principle evidence outside insight sources: {ins["id"]}')
             insight_sources.update(ins['source_papers'])
     for slug,f in facts.items():
         strings(f.get('challenges'), slug)
@@ -246,26 +295,40 @@ CHALLENGE_COLUMNS = {'challenge': 220, 'insight': 760}
 GRAPH_COLORS = ['#176758', '#2f7180', '#8a6a2f', '#6d7d69', '#76538a', '#92713c', '#3b6875']
 
 
-def _source_detail(slug, facts, catalogue):
+def _evidence_detail(values, catalogue):
+    return [{
+        'href': f'papers/{ev["paper"]}/{ev["stage"]}.html#{quote(ev["anchor"], safe="-._~")}',
+        'label': f'{catalogue[ev["paper"]]["name"]} · {ev["stage"]} · #{ev["anchor"]}',
+        'status': LABELS[ev['status']],
+    } for ev in values]
+
+
+def _claim_detail(item, catalogue):
+    return dict(item, evidence=_evidence_detail(item['evidence'], catalogue), basis_label=BASES[item['basis']])
+
+
+def _source_detail(slug, facts, catalogue, values=None):
     fact = facts[slug]
-    evidence = []
-    for item in (fact.get('task', {}).get('evidence', []) + fact.get('pipeline', {}).get('evidence', [])):
-        evidence.append({
-            'href': f'papers/{slug}/{item["stage"]}.html#{quote(item["anchor"], safe="-._~")}',
-            'label': f'{item["stage"]} · #{item["anchor"]}',
-            'status': LABELS.get(item.get('status'), item.get('status', '待核验')),
-        })
+    evidence = _evidence_detail(values if values is not None else fact['pipeline']['evidence'], catalogue)
+    analysis = fact.get('analysis')
     return {
         'slug': slug,
         'name': catalogue[slug]['name'],
         'year': catalogue[slug].get('year'),
         'href': f'papers/{slug}/index.html',
+        'analysis_href': f'research-map.html#paper-{slug}',
+        'scope': '领域内' if fact['scope'] == 'in-field' else '领域外来源 · 天气迁移未验证',
+        'chain': ([{'label': '失败现象', 'text': fact['problem']['failure_case'], 'basis_label': '笔记转述',
+                    'evidence': _evidence_detail(fact['problem']['evidence'], catalogue)}] +
+                  [dict(_claim_detail(analysis[key], catalogue), label=label) for key, label in
+                   [('technical_reason', '技术原因'), ('insight', '通用 insight')]]) if analysis else [],
         'evidence': evidence,
     }
 
 
 def _node_detail(node, facts, catalogue, *, challenge=None, insight=None):
-    sources = [_source_detail(slug, facts, catalogue) for slug in node.get('source_papers', [])]
+    values = (insight or challenge or node).get('evidence', [])
+    sources = [_source_detail(slug, facts, catalogue, [ev for ev in values if ev['paper'] == slug]) for slug in node.get('source_papers', [])]
     detail = {
         'id': node['id'],
         'name': node.get('name', node.get('title', node['id'])),
@@ -280,13 +343,15 @@ def _node_detail(node, facts, catalogue, *, challenge=None, insight=None):
         'techniques': node.get('techniques', []),
         'motivation': node.get('motivation', ''),
         'transfer_boundary': node.get('transfer_boundary', ''),
+        'evidence': _evidence_detail(values, catalogue),
     }
     if challenge:
         detail.update({'description': challenge.get('description', ''),
                        'observable_failures': challenge.get('observable_failures', [])})
     if insight:
         detail.update({'description': insight.get('transfer_boundary', ''),
-                       'techniques': insight.get('techniques', [])})
+                       'techniques': insight.get('techniques', []),
+                       'principle': _claim_detail(insight['principle'], catalogue) if 'principle' in insight else None})
     return detail
 
 
@@ -298,7 +363,7 @@ def _filter_fields(source_papers, facts, catalogue, challenge_ids=()):
         'weather': weather,
         'route': [route for route in routes if route],
         'challenge': sorted(set(challenge_ids)),
-        'search': ' '.join([tags] + [catalogue[slug]['name'] for slug in source_papers]).lower(),
+        'search': ' '.join([tags] + [catalogue[slug]['name'] + ' ' + analysis_search(facts[slug]) for slug in source_papers]).lower(),
     }
 
 
@@ -309,13 +374,29 @@ def build_literature_graph(data, facts, catalogue):
         if node.get('parent'):
             children[node['parent']].append(node['id'])
     by_id = {node['id']: node for node in nodes}
-    grouped = {kind: [node for node in nodes if node['kind'] == kind] for kind in KINDS}
     positions = {}
-    for kind, group in grouped.items():
-        step = 94 if len(group) <= 1 else max(74, min(112, 520 / (len(group) - 1)))
-        start = 72 if len(group) <= 5 else 42
-        for index, node in enumerate(group):
-            positions[node['id']] = {'x': LITERATURE_COLUMNS[kind], 'y': round(start + index * step)}
+    # Reserve vertical space by subtree, keeping module/follow-up siblings distinct.
+    cursor = 48
+    def place(ident):
+        nonlocal cursor
+        node = by_id[ident]
+        if node['kind'] == 'module' and children[ident]:
+            y = cursor
+            cursor += 92
+            for child in children[ident]:
+                place(child)
+        elif children[ident]:
+            ys = [place(child) for child in children[ident]]
+            y = (ys[0] + ys[-1]) / 2
+        else:
+            y = cursor
+            cursor += 92
+        positions[ident] = {'x': LITERATURE_COLUMNS[node['kind']], 'y': round(y)}
+        return positions[ident]['y']
+    for node in nodes:
+        if not node.get('parent'):
+            place(node['id'])
+            cursor += 30
     edges = [{'from': node['parent'], 'to': node['id']} for node in nodes if node.get('parent')]
     details = {}
     for node in nodes:
@@ -391,8 +472,69 @@ def render_svg_graph(graph, graph_type):
 
 
 def render_node_detail(node, graph, catalogue):
-    """Return JSON data consumed by the safe textContent-based inspector."""
-    return graph['details']
+    """Return one node's data; the inspector escapes its HTML representation."""
+    return graph['details'][node['id']]
+
+
+def analysis_search(fact):
+    """Only index claim text, not evidence paths or machine labels."""
+    def collect(value):
+        if isinstance(value, dict):
+            return [value['text']] if 'text' in value else [s for k, v in value.items() if k != 'evidence' for s in collect(v)]
+        if isinstance(value, list):
+            return [s for v in value for s in collect(v)]
+        return []
+    return ' '.join(collect(fact.get('analysis', {})))
+
+
+def render_claim(item, catalogue, label=None):
+    heading = f'<strong>{e(label)}</strong>' if label else ''
+    status = BASES[item['basis']]
+    return f'<div class="analysis-claim claim-{e(item["status"])}">{heading}<p>{e(item["text"])}</p><span class="analysis-basis">{status}</span>{evidence_links(item["evidence"], catalogue) if item["evidence"] else ""}</div>'
+
+
+def render_paper_analysis(slug, fact, catalogue):
+    analysis = fact.get('analysis')
+    if not analysis:
+        return '<p class="map-transfer">本篇尚未按模板补充因果解析。</p>'
+    task = fact['task']
+    contribution_names = '；'.join(item['name'] for item in analysis['contributions'])
+    # This is a reader's synthesis, never a reconstruction of the author's abstract.
+    abstract = f'<p>任务：{e(task["name"])}；失败现象：{e(fact["problem"]["failure_case"])}</p>'
+    abstract += render_claim(analysis['insight'], catalogue, '核心思路')
+    abstract += f'<p>本轮整理的技术贡献：{e(contribution_names)}。实验结果与支持边界见 Experiments 分支。</p>'
+    intro = render_claim(analysis['previous_methods'], catalogue, '前人怎么做')
+    intro += f'<div class="analysis-claim"><strong>失败现象</strong><p>{e(fact["problem"]["failure_case"])}</p>{evidence_links(fact["problem"]["evidence"], catalogue)}</div>'
+    intro += render_claim(analysis['technical_reason'], catalogue, '技术原因')
+    intro += render_claim(analysis['insight'], catalogue, '可复用的 insight')
+    method = f'<div class="analysis-io"><p><strong>输入：</strong>{e(task["input"])}</p><p><strong>输出：</strong>{e(task["output"])}</p></div>'
+    method += '<p class="analysis-caption">以下拆解本轮整理的主要贡献，不代表已经穷尽论文所有模块。</p>'
+    for item in analysis['contributions']:
+        method += f'<article class="analysis-contribution" id="analysis-{slug}-{item["id"]}"><h4>{e(item["name"])}</h4>'
+        for key, label in [('motivation', '为什么需要它'), ('implementation', '具体做法'), ('mechanism', '为什么可能起作用'), ('advantage', '预期优势')]:
+            method += render_claim(item[key], catalogue, label)
+        method += '</article>'
+    experiments = '<p class="analysis-caption">整体方法对比不能单独证明某个模块的作用；下列“关联贡献”是阅读者的证据映射。</p>'
+    contributions = {item['id']: item['name'] for item in analysis['contributions']}
+    for item in analysis['experiments']:
+        assessment = {'reported': '笔记已记录', 'not-reported-in-note': '笔记未记录独立验证', 'not-assessed': '待核验'}[item['assessment']]
+        experiments += f'<article class="analysis-experiment"><h4>{e(item["name"])}</h4><p class="analysis-caption">{EXPERIMENT_KINDS[item["kind"]]} · {assessment}</p>'
+        experiments += render_claim(item['result'], catalogue, '实验记录') + render_claim(item['interpretation'], catalogue, '能支持到哪里')
+        if item['contribution_ids']:
+            experiments += '<p>关联贡献：' + ' · '.join(f'<a href="#analysis-{slug}-{ident}">{e(contributions[ident])}</a>' for ident in item['contribution_ids']) + '</p>'
+        experiments += '</article>'
+    limits = render_claim(analysis['boundary'], catalogue, '当前适用边界')
+    for item in fact['limitations']:
+        limits += f'<p>{e(item["text"])}</p>{evidence_links(item["evidence"], catalogue)}'
+    branches = [('abstract', 'Abstract · 速览', task['name'], abstract),
+                ('introduction', 'Introduction · 问题与思路', fact['problem']['failure_case'], intro),
+                ('method', 'Method · 技术实现', contribution_names, method),
+                ('experiments', 'Experiments · 贡献与证据', f'{len(analysis["experiments"])} 组记录 · 分开看整体效果与模块证据', experiments),
+                ('limitation', 'Limitation · 边界', analysis['boundary']['text'], limits)]
+    tree = '<div class="analysis-toolbar"><button type="button" data-analysis-action="expand">展开五个分支</button><button type="button" data-analysis-action="collapse">收起五个分支</button></div><div class="paper-analysis-tree"><div class="analysis-root">论文解析树</div><div class="analysis-branches">'
+    for key, title, hint, body in branches:
+        tree += f'<details class="analysis-branch branch-{key}" id="analysis-{slug}-{key}"><summary>{title}<span class="analysis-summary">{e(hint)}</span></summary>{body}</details>'
+    return tree + '</div></div>'
 
 
 def render(root, papers, shell, rendered=None):
@@ -405,7 +547,7 @@ def render(root, papers, shell, rendered=None):
         tags = ' '.join(t for f in fs for t in f.get('tags',[]))
         weather = [w for w in ['雨','雪','雾','尘'] if w in tags]
         cs = {cid} if cid else {c for f in fs for c in f['challenges']}
-        terms = words+' '+tags+' '+' '.join(catalogue[s]['name'] for s in sources)
+        terms = words+' '+tags+' '+' '.join(catalogue[s]['name']+' '+analysis_search(facts[s]) for s in sources)
         return f'data-map-item data-weather="{e("|".join(weather))}" data-route="{e("|".join(sorted({f["pipeline"]["id"] for f in fs})))}" data-challenge="{e("|".join(sorted(cs)))}" data-search="{e(terms.lower(), quote=True)}"'
     def refs(n):
         links = ' · '.join(f'<a href="papers/{s}/index.html">{e(catalogue[s]["name"])} ({catalogue[s]["year"]})</a>' for s in sorted(n['source_papers'], key=lambda s:(catalogue[s]['year'],s)))
@@ -425,21 +567,23 @@ def render(root, papers, shell, rendered=None):
         sources=list(dict.fromkeys(s for ins in c['insights'] for s in ins['source_papers']))
         challengebody+=f'<section class="map-challenge" id="{c["id"]}" {attrs(sources,c["id"],c["name"])}><h2>{e(c["name"])}</h2><p>{e(c["description"])} · {LABELS[c["status"]]}</p><p>可能出现的现象：{e("；".join(c["observable_failures"]))}</p><details><summary>挑战的关联证据</summary>{evidence_links(c["evidence"],catalogue)}</details><div class="map-children">'
         for ins in c['insights']:
-            challengebody+=f'<article class="map-insight" id="{ins["id"]}" {attrs(ins["source_papers"],c["id"],ins["name"]+" "+" ".join(ins["techniques"]))}><h3>{e(ins["name"])}</h3><p>{e(" · ".join(ins["techniques"]))}</p><p>{LABELS[ins["status"]]} · {e(ins["transfer_boundary"])}</p>{refs(ins)}</article>'
+            principle = render_claim(ins['principle'], catalogue, '可复用的技术认识') if 'principle' in ins else ''
+            analyses = ' · '.join(f'<a href="research-map.html#paper-{s}">{e(catalogue[s]["name"])} 解析</a>' for s in ins['source_papers'])
+            challengebody+=f'<article class="map-insight" id="{ins["id"]}" {attrs(ins["source_papers"],c["id"],ins["name"]+" "+" ".join(ins["techniques"]))}><h3>{e(ins["name"])}</h3>{principle}<p>实现技术：{e(" · ".join(ins["techniques"]))}</p><p>{LABELS[ins["status"]]} · {e(ins["transfer_boundary"])}</p>{refs(ins)}<p>{analyses}</p></article>'
         challengebody+='</div></section>'
-    factbody='<h2 id="paper-facts">逐篇事实与边界</h2><p>新抽取核对对象是现有笔记，不是重新核验 PDF。原文核对登记与本次笔记核对分别显示。</p>'
-    for s,f in facts.items():
+    factbody='<h2 id="paper-facts">单篇论文解析树</h2><p>按模板分为 Abstract、Introduction、Method、Experiments、Limitation 五个分支。速览由现有笔记重组，不表示复原作者的摘要写法；本次核对对象是已有笔记。</p><p class="analysis-key"><span>笔记转述：已核对现有阅读页</span><span>阅读者归纳：解释与证据映射，未经独立验证</span><span>尚未核验：明确保留空缺</span></p>'
+    for s,f in sorted(facts.items(), key=lambda pair: (pair[0] != 'dror-2018', pair[1]['scope'] != 'in-field', pair[0])):
         scope='领域内' if f['scope']=='in-field' else '领域外技术来源'
-        factbody+=f'<details class="map-fact" id="paper-{s}" {attrs([s],words=f["task"]["name"]+" "+f["problem"]["failure_case"])}><summary>{e(catalogue[s]["name"])} · {scope} · 贡献候选 {f["novelty_assessment"]["novelty_class"]} 类（暂定）</summary><p>任务：{e(f["task"]["name"])}。输入：{e(f["task"]["input"])}；输出：{e(f["task"]["output"])}</p><p>问题：{e(f["problem"]["failure_case"])}</p>{evidence_links(f["problem"]["evidence"],catalogue)}<p>方法：{e(f["pipeline"]["description"])}</p>{evidence_links(f["pipeline"]["evidence"],catalogue)}<p>模块：{e(f["modules"][0]["name"])}。动机：{e(f["modules"][0]["motivation"])}</p><p>分类依据：{e(f["novelty_assessment"]["reason"])}</p>'
-        for limit in f['limitations']:
-            factbody+=f'<p>边界：{e(limit["text"])}</p>{evidence_links(limit["evidence"],catalogue)}'
+        factbody+=f'<details class="map-fact" id="paper-{s}" {"open" if s == "dror-2018" else ""} {attrs([s],words=f["task"]["name"]+" "+f["problem"]["failure_case"])}><summary>{e(catalogue[s]["name"])} · {scope} · 贡献候选 {f["novelty_assessment"]["novelty_class"]} 类（暂定）</summary><p><a href="papers/{s}/index.html">打开论文阅读页</a> · <a href="papers/{s}/first-pass.html">打开初读</a></p><p class="analysis-caption">分类依据：{e(f["novelty_assessment"]["reason"])}</p>{render_paper_analysis(s,f,catalogue)}'
+        positions = [n for n in nodes if s in n['source_papers']]
+        factbody += '<p>方法树位置：' + (' · '.join(f'<a href="literature-tree.html#{n["id"]}">{e(n["name"])}</a>' for n in positions) if positions else '领域外技术来源，不并入领域内方法树') + '</p>'
         factbody+='<p>关联挑战：'+' · '.join(f'<a href="challenge-insight-tree.html#{c}">{e(next(x["name"] for x in challenges if x["id"]==c))}</a>' for c in f['challenges'])+'</p></details>'
     gates='<section id="novelty-gate"><h2>候选课题与四种情况闸门</h2><p>情况 1：同任务已有好方案；情况 2：技术内核已在多个领域解决；情况 3：仅少数其他领域解决；情况 4：相关领域均缺少好方案。它们与上面的四类贡献标签不同。</p>'
     for c in data['gate']['candidates']:
         g=c['gate']; case=g['novelty_gate_case']; verdict={'needs-more-retrieval':'需更多检索','change-topic':'换题','go':'可进入方案评估'}.get(c['verdict'],c['verdict'])
         gates+=f'<article class="map-insight" id="{c["id"]}"><h3>{e(c["title"])}</h3><p>示例候选 · 尚未选为研究主线</p><p>输入 → 输出：{e(c["setting"]["input"])} → {e(c["setting"]["output"])}</p><p>待验证 failure case：{e(c["failure_case"])}</p><p>技术挑战假设：{e(c["core_technical_challenge"])}</p><p>四种情况判定：{LABELS.get(case, str(case))} · {e(verdict)}</p>{evidence_links(c["evidence"],catalogue)}<p>问题重要性、技术就绪度及候选 pipeline：尚未评估</p><ul>'+''.join(f'<li>{e(q)}</li>' for q in c.get('retrieval_required',[]))+'</ul></article>'
     gates+='</section>'
-    intro=f'<p class="notice">{sum(f["scope"]=="in-field" for f in facts.values())} 篇领域内论文 · {sum(f["scope"]=="out-of-field" for f in facts.values())} 篇领域外技术来源 · {len(challenges)} 类技术挑战。点击树节点、论文或证据链接，回到已有阅读笔记。</p><div class="stage-grid"><a class="stage-card" href="literature-tree.html"><h2>Literature tree</h2><p>任务 → 方法路线 → 模块 / 后续工作</p></a><a class="stage-card" href="challenge-insight-tree.html"><h2>Challenge–insight tree</h2><p>技术挑战 → insight → 论文来源</p></a><a class="stage-card" href="#novelty-gate"><h2>Novelty gate</h2><p>具体 failure case 的四种情况判定</p></a></div>'
+    intro=f'<p class="notice">{sum(f["scope"]=="in-field" for f in facts.values())} 篇领域内论文 · {sum(f["scope"]=="out-of-field" for f in facts.values())} 篇领域外技术来源 · {len(challenges)} 类技术挑战。单篇解析为两棵跨论文研究树提供证据。</p><div class="stage-grid"><a class="stage-card" href="literature-tree.html"><h2>Literature tree</h2><p>任务 → 方法路线 → 模块 / 后续工作</p></a><a class="stage-card" href="challenge-insight-tree.html"><h2>Challenge–insight tree</h2><p>技术挑战 → insight → 论文来源</p></a><a class="stage-card" href="#paper-facts"><h2>单篇论文解析树</h2><p>失败原因 → insight → 实现 → 实验与边界</p></a><a class="stage-card" href="#novelty-gate"><h2>Novelty gate</h2><p>具体 failure case 的四种情况判定</p></a></div><p>先看示例：<a href="#paper-dror-2018">DROR</a> · <a href="#paper-lisnownet-2022">LiSnowNet</a> · <a href="#paper-4denoisenet-2023">4DenoiseNet</a> · <a href="#paper-pointnet-plus-plus-2017">PointNet++</a></p>'
     literature_graph = build_literature_graph(data, facts, catalogue)
     challenge_graph = build_challenge_graph(data, facts, catalogue)
 
@@ -453,7 +597,7 @@ def render(root, papers, shell, rendered=None):
   <script id="map-details" type="application/json">{details}</script>
 </section>'''
     outputs={}
-    pages = [('research-map.html', '研究地图', intro+gates+filters()+factbody),
+    pages = [('research-map.html', '研究地图', intro+filters()+factbody+gates),
              ('literature-tree.html', 'Literature tree', graph_section(literature_graph, 'Literature tree 总览', 'task → pipeline / representation → module / follow-up') + filters() + litbody),
              ('challenge-insight-tree.html', 'Challenge–insight tree', graph_section(challenge_graph, 'Challenge–insight tree 总览', 'technical challenge → insight / technique → source papers') + filters() + challengebody)]
     for name,title,body in pages:

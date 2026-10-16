@@ -94,3 +94,154 @@ source_excerpt:
     ↗ Sec. V.C，p. 6 实验中直接可见，但作者未明确称为 limitation 的现象 直接观察 Fig. 6 中 DSOR 的 Recall 和 Precision 都没有达到 100%；这里仅记录数值，不扩展到未测试天气或传感器。
     ↗ Fig. 6，p. 5 直接观察 Table II 中 DSOR 平均每帧耗时 369.68 ms，与 SOR 的 371.98 ms 相近；相对 SOR 的原表差值为 2.3 ms。作者没有把这些数值称为实时性限制，本次也不据此补充部署判断。
     ↗ Table II，p. 6
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: SOR 使用全局邻距统计；DROR 已经按距离调整搜索半径。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: dsor-2021
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  technical_reason:
+    text: 点间距与雪噪声分布随距离变化，全局统计阈值不能充分描述不同距离区域。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: dsor-2021
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  insight:
+    text: 统计离群判据应考虑距离引起的非均匀采样，而不只使用一个全局阈值。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: dsor-2021
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  contributions:
+  - id: contribution-main
+    name: 距离相关统计阈值与 WADS 标注
+    module_ids:
+    - module-dsor-2021
+    motivation:
+      text: 让统计阈值随距离调整，并建立逐点雪标签评估
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dsor-2021
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    implementation:
+      text: 以随距离调整的统计阈值过滤落雪杂波，同时提出严重冬季天气逐点标注数据集 WADS。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dsor-2021
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    mechanism:
+      text: 在 SOR 统计阈值上引入 range-dependent 调整；当前笔记不支持把乘法形式说成由雪分布严格推导。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dsor-2021
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    advantage:
+      text: 可以提高去雪召回，但阈值变化仍可能增加误删。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dsor-2021
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: WADS 比较中 DSOR Recall 为 95.6%、Precision 为 65.1%；DROR 分别为 91.9%、71.5%（Sec. V.C；Fig. 6）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dsor-2021
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dsor-2021
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: not-reported-in-note
+    contribution_ids: []
+    result:
+      text: 笔记未记录独立拆除或替换 DSOR 内部组成的消融；与 SOR、DROR 的对比是整体方法比较。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dsor-2021
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    interpretation:
+      text: 保留已记录的对照类型；缺少独立模块验证时，不把整体效果当成模块有效性的因果证明。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dsor-2021
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+  boundary:
+    text: 结论范围以当前阅读页中的实验设置为准
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: dsor-2021
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered

@@ -86,3 +86,155 @@ source_excerpt:
     （Sec. V-A） 作者表述 自动标注只适用于受控静态可重复场景；论文用 ±35 cm 宽阈值减少 false negatives，并报告参考自测像素误差 0.367±0.053%。 （Sec.
     III-B） 从实验结果中直接可见、但作者没有明确称为 limitation 的现象 直接观察 Fig. 6 显示主要混淆发生在 rain 与 fog；作者指出这不影响把二者都过滤，但会影响天气类型分类。
     （Fig. 6；Sec. V） 直接观察 自然小雨道路结果为少量定性关键帧，正文没有该域的逐点 IoU。 （Fig. 8；Sec. V-B）
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: SOR、ROR、DROR 利用局部稀疏性；通用语义分割网络成本较高。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: weathernet-2020
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 浓雾和雨水可形成稠密杂波，而远处真实物体很稀疏，局部密度不再能可靠分开两类点。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: weathernet-2020
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 利用强度与更大范围的场景上下文，学习天气回波和真实结构的区别。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: weathernet-2020
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 二维 LiDAR 表示与 CNN 分割
+    module_ids:
+    - module-weathernet-2020
+    motivation:
+      text: 在受控静态采集条件下构造标签并学习天气点特征
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: weathernet-2020
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 在二维 LiDAR 表示中学习天气噪声特征，探索 CNN 在恶劣天气去噪中的作用。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: weathernet-2020
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 受控参考帧构造天气标签，配合道路天气增强，训练带扩张卷积的轻量 range-image CNN。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: weathernet-2020
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 扩大局部规则无法覆盖的判别信息；标签构造和动态道路验证仍有条件限制。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: weathernet-2020
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 气候舱报告逐类 IoU、运行时与参数量；动态自然小雨和浓雾场景使用定性示例（Table I；Figs. 7–8）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: weathernet-2020
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: weathernet-2020
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: design-choice
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 三种训练数据组合比较道路数据及天气增强的作用，未逐一消融网络模块（Table I）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: weathernet-2020
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 这是设计或分步对照的证据关联；它不等于独立拆除模块的消融，不能将整体或迭代变化直接解释为某一模块的因果增益。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: weathernet-2020
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 动态场景只能定性评估；静态可重复采集是自动标注前提
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: weathernet-2020
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

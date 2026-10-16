@@ -92,3 +92,156 @@ source_excerpt:
     的 AP 都下降；SET-Det 在各距离段保持相对优势，但绝对性能仍受稀疏点限制。 直接观察 Waymo L2（点更稀疏）比 L1 更具挑战，作者报告的优势在 L2 更明显；这显示方法依赖更强的补全来处理少点目标，但不是作者明确承认的失效边界。
     直接观察 EMD-Loss 与 CD-Loss 在 F-score/Fidelity/MMD 上接近，但 EMD 训练 memory 约高 2 倍、训练时长约高 27 倍（Sec. IV-G-2）。
 transfer_status: inferred
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 通用补全主要优化独立物体重建质量，检测器又会受到 RoI 内不完整形状影响。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: shape-enhanced-set-det-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 形状缺失影响框回归，而视觉上完整的重建不一定提供检测所需的有效特征。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: shape-enhanced-set-det-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 把补全放入任务内部，让恢复的形状直接服务下游决策。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: shape-enhanced-set-det-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: RoI Transformer 补全与 HAF 融合
+    module_ids:
+    - module-shape-enhanced-set-det-2026
+    motivation:
+      text: 让补全形状服务 box regression
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: shape-enhanced-set-det-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 在 3D detection 的 RoI refinement 中用 Transformer-based shape completion 恢复遮挡目标形状，再以 Hybrid Attention
+        Fusion 融合 shape 与 spatial features。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: shape-enhanced-set-det-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: RoI 内 Transformer 补全生成形状，用 PointNet++ 提取形状特征，再通过 HAF 与空间特征融合回归框。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: shape-enhanced-set-det-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 使补全与检测目标建立联系；遮挡补全的证据不能直接证明天气结构恢复有效。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: shape-enhanced-set-det-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: KITTI、Waymo 上分别报告检测指标与补全指标，另比较不同距离、遮挡与效率（Sec. IV）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: shape-enhanced-set-det-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: shape-enhanced-set-det-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 移除 shape completion、替换 HAF、改变补全点数和 GNN 补全均有对照；各表输入与配置需分别核对（Tables V、VIII–X）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: shape-enhanced-set-det-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 设计对照支持所比较配置之间的差异；累计配置不能隔离任意单个模块，机制解释仍需与具体对照条件一起阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: shape-enhanced-set-det-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 远距离稀疏仍影响检测；未证明天气恢复迁移
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: shape-enhanced-set-det-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

@@ -88,3 +88,155 @@ source_excerpt:
     的现象 直接观察 DCOR 的 97.4% Precision 低于 variant1、ROR、DROR 与 SOR；0.242 s 的单帧时间也高于 variant1 的 0.188 s。 （Table
     I；PDF p. 9） 直接观察 定量实验只覆盖同一 Reno 路口、同一 VLP-32C 采集的 150 帧强降雪数据；论文没有报告第二地点或第二种传感器的定量结果。这里只描述覆盖范围，不据此断言泛化失败。
     （Sec. IV-A；PDF pp. 6–7）
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: ROR 使用固定半径；DROR 等在三维空间搜索近邻。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: dcor-2024
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 远处采样更稀疏，而全点三维搜索带来计算负担；同通道点共享固定仰角。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: dcor-2024
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 利用传感器通道组织减少搜索范围，同时让邻域尺度适应距离。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: dcor-2024
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 逐通道动态半径过滤
+    module_ids:
+    - module-dcor-2024
+    motivation:
+      text: 缩小搜索空间并补偿远处点密度下降
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dcor-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 在各激光通道内使用距离相关的搜索半径，减少邻域计算并适应点云采样密度。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dcor-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 逐通道计数动态半径内的邻点，以 MinPts 判离群。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dcor-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 在当前路侧降雪设置下兼顾综合准确率与计算量，代价是通道内判断的适用约束。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dcor-2024
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 150 帧对比中 DCOR F1 98.3%、0.242 s/frame；DROR F1 96.4%、2.221 s/frame（Table I）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dcor-2024
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dcor-2024
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 固定 0.5 m 半径 variant1 的 F1 为 96.2%，动态半径 DCOR 为 98.3%；variant1 更快（Table I）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dcor-2024
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 设计对照支持所比较配置之间的差异；累计配置不能隔离任意单个模块，机制解释仍需与具体对照条件一起阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dcor-2024
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: f 与 MinPts 由耗时网格搜索确定；单地点单传感器定量验证
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: dcor-2024
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

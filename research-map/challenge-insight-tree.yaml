@@ -84,6 +84,35 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+    principle:
+      text: 局部采样和天气强度改变统计基准时，应让邻域或判别参数随观测分布调整；各方法采用的局部估计与更新机制并不相同。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sdor-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: pmdf-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: rpsnownet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: desnow-gnn-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
   - id: insight-hierarchy
     name: 多尺度局部集合表示
     techniques:
@@ -100,6 +129,17 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+    principle:
+      text: 密集区域需要细节，稀疏区域需要更大上下文；提供多尺度局部表示可减少单一邻域对采样密度的依赖。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: pointnet-plus-plus-2017
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
 - id: challenge-range
   name: 远近距离采样不均
   description: 近密远疏会影响半径与强度判别
@@ -173,6 +213,35 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+    principle:
+      text: 旋转扫描的点间距随距离增长，离群判据应考虑采样尺度；动态半径、统计阈值和强度曲线是不同实现。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dror-2018
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: dsor-2021
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+      - paper: lior-snow-2020
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: dcor-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
 - id: challenge-structure
   name: 噪声与真实结构混淆
   description: 低反射和稀疏真实结构与粒子噪声可能共享局部特征
@@ -267,6 +336,35 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: unregistered
+    principle:
+      text: 单一物理属性存在真假结构重叠时，用几何或邻域上下文复核歧义点；强度先验和球形度先验适用的噪声分布并不相同。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: lior-snow-2020
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: lior-2021
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+      - paper: crfor-2023
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: scfnr-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
   - id: insight-frequency
     name: 范围图频域先验
     techniques:
@@ -283,6 +381,17 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+    principle:
+      text: 在清洁信号的变换域稀疏假设下，可以用结构与残差约束提供无标签训练信号；不能把所有高频都当成噪声。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: lisnownet-2022
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
   - id: insight-geometry
     name: 集合表示与隐式几何
     techniques:
@@ -314,6 +423,29 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+    principle:
+      text: 表示与观测模型应匹配数据结构：集合聚合处理排列，隐式局部几何处理非平面，残差空间处理对应误差。这些是相关工具，不是已证等价的统一解法。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: pointnet-2017
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: implicit-point-to-voxel-lidar-imu-slam
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: post-refining-lidar-registration
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
   - id: insight-completion
     name: 任务内形状补全
     techniques:
@@ -331,6 +463,17 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+    principle:
+      text: 恢复的几何应进入目标任务的特征和决策流程，补全质量与下游收益需要分别验证。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: shape-enhanced-set-det-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
 - id: challenge-temporal
   name: 单帧信息不足
   description: 当前局部观测难区分短暂粒子与稳定场景
@@ -382,6 +525,35 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+    principle:
+      text: 同一点在单帧中难以判别时，可利用跨帧运动或可见性证据；配准误差和动态物体会限制这类证据的可靠性。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: 4denoisenet-2023
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: desnow-gnn-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: crfor-2023
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: removert-2020
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
 - id: challenge-weather
   name: 多天气与跨域差异
   description: 不同天气和传感器的退化分布不同
@@ -464,6 +636,35 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+    principle:
+      text: 跨天气建模需处理共性与差异。共享参数、天气条件和互补表征是不同设计选择，现有分组不能证明任一机制在所有天气都有效。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: adversenet-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: triplemixer-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: ltdnet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: weathernet-2020
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
   - id: insight-bev
     name: 跨模态空间表征思路
     techniques:
@@ -480,6 +681,17 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+    principle:
+      text: 统一空间坐标可作为跨模态与跨时间的信息接口，但运动对齐与表示分辨率仍需单独设计和评测。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: bev-devils-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
 - id: challenge-downstream
   name: 去噪与下游收益不一致
   description: 逐点或重建指标不保证所有下游类别改善
@@ -526,6 +738,41 @@ challenges:
     - *id012
     - *id013
     - *id014
+    principle:
+      text: 点云质量改善与下游任务收益不是同一个指标，应将恢复或过滤接入目标任务并分别检查两类证据。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: ltdnet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: 3d-unoutdet-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: rpsnownet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: triplemixer-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: shape-enhanced-set-det-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
 - id: challenge-efficiency
   name: 精度与计算成本冲突
   description: 近邻查询、图构造和密集特征消耗资源
@@ -567,3 +814,32 @@ challenges:
     - *id017
     - *id012
     - *id018
+    principle:
+      text: 区分训练前的监督构造、在线模型推理和预后处理成本，再安排算法资源；不能只用网络前向时间声称整个流程实时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: 3d-outdet-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: 3d-unoutdet-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: rpsnownet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sdor-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked

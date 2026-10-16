@@ -86,3 +86,155 @@ source_excerpt:
     sofa AP 为4.76，低于6.78；不能把作者对检测改善的概括改写为所有类别都提升。（Table 4，PDF p.6） 直接观察 Fig. 6 中缺失、离群点或高斯扰动继续增大时，准确率明显下降；这里只描述这些受控实验曲线，不推及未经测试的天气或传感器条件。（Fig.
     6，PDF p.8）
 transfer_status: inferred
+analysis:
+  updated_at: '2026-10-15'
+  previous_methods:
+    text: 体素、多视图或有序序列方法为点集引入中间表示或额外顺序。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: pointnet-2017
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 点集本身没有固定排列，依赖输入顺序的聚合会引入不必要的敏感性。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: pointnet-2017
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 把集合的排列不变性直接写进网络聚合形式。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: pointnet-2017
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 共享逐点编码与对称最大池化
+    module_ids:
+    - module-pointnet-2017
+    motivation:
+      text: 学习对点排列不敏感的集合表示
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: pointnet-2017
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 直接以共享逐点编码和对称最大池化学习无序点集表示，统一物体分类、部件分割与场景语义分割。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: pointnet-2017
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 共享逐点变换后使用对称最大池化，逐点预测结合局部特征与全局上下文。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: pointnet-2017
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 直接建模点集，避免强制排序；理论稳定性与鲁棒性仍有各自前提。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: pointnet-2017
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 整体效果与评测条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: ModelNet40 overall accuracy 89.2%，部件 mean IoU 83.7%；这些是点集识别实验，不是天气去噪验证（Tables 1–2）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: pointnet-2017
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持评价该方法在已报告数据与配置下的整体效果；不单独证明某个模块的独立作用，也不自动推广到其他天气或传感器。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: pointnet-2017
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 模块与设计选择的证据
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 比较排序、RNN、不同聚合、输入/特征变换与正则；max pooling 87.1%，average pooling 83.8%（Fig. 5；Table 5）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: pointnet-2017
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 设计对照支持所比较配置之间的差异；累计配置不能隔离任意单个模块，机制解释仍需与具体对照条件一起阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: pointnet-2017
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 作为点集表示技术来源，未验证天气去噪迁移
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: pointnet-2017
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
