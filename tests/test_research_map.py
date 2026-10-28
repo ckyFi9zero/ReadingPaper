@@ -115,13 +115,20 @@ class ResearchMapTests(unittest.TestCase):
         self.assertTrue(all(detail['source_count'] > 0 for detail in literature['details'].values()))
         self.assertTrue(all(detail['source_count'] > 0 for detail in challenge['details'].values()))
 
-    def test_svg_has_stable_nodes_and_unverified_novelty_is_not_confirmed(self):
+    def test_flow_tree_preserves_every_node_edge_and_complete_label(self):
         catalogue = {p['slug']: p for p in self.papers}
-        graph = research_map.build_literature_graph(self.data, self.data['facts'], catalogue)
-        svg = research_map.render_svg_graph(graph, 'literature')
-        self.assertEqual(svg.count('data-node-id='), len(graph['nodes']))
-        self.assertEqual(svg.count('data-edge-from='), len(graph['edges']))
-        self.assertNotIn('node-confirmed', svg)
+        for build in (research_map.build_literature_graph, research_map.build_challenge_graph):
+            graph = build(self.data, self.data['facts'], catalogue)
+            markup = research_map.render_tree_graph(graph, graph['type'])
+            self.assertEqual(markup.count('data-node-id='), len(graph['nodes']))
+            self.assertEqual(markup.count('data-edge-from='), len(graph['edges']))
+            self.assertNotIn('node-confirmed', markup)
+            self.assertNotIn('<svg', markup)
+            for node in graph['nodes']:
+                self.assertIn(research_map.e(graph['details'][node['id']]['name']), markup)
+            for edge in graph['edges']:
+                self.assertIn(f'data-edge-from="{edge["from"]}" data-edge-to="{edge["to"]}"', markup)
+
 
     def test_missing_anchor_is_rejected(self):
         bad = copy.deepcopy(self.data)

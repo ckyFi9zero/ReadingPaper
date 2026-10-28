@@ -15,7 +15,8 @@
   const status = document.querySelector("#map-results");
   const empty = document.querySelector("#map-empty");
   let payload = {details: {}};
-  let graphMode = "all";
+  const collapsed = new Set();
+  const inspectorHome = inspector?.parentElement;
   try { if (detailsScript) payload = JSON.parse(detailsScript.textContent); } catch { payload = {details: {}}; }
 
   const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
@@ -46,14 +47,18 @@
     const matches = new Set(graphNodes.filter(nodeMatches).map(node => node.dataset.nodeId));
     const visible = graphAncestors(matches);
     const filtering = Boolean(search?.value.trim() || controls.some(control => control.value));
-    if (graphMode === "trunk" && !filtering && payload.type === "literature") {
-      for (const node of graphNodes) {
-        if (["module", "follow-up"].includes(node.dataset.nodeKind)) visible.delete(node.dataset.nodeId);
-      }
-    }
     for (const node of graphNodes) {
       node.toggleAttribute("hidden", !visible.has(node.dataset.nodeId));
-      node.setAttribute("tabindex", visible.has(node.dataset.nodeId) ? "0" : "-1");
+      node.closest(".map-tree-item").hidden = !visible.has(node.dataset.nodeId);
+      const childList = node.closest(".map-tree-item").querySelector(":scope > .map-node-children");
+      const toggle = node.parentElement.querySelector("[data-toggle-branch]");
+      if (childList && toggle) {
+        const open = filtering || !collapsed.has(node.dataset.nodeId);
+        childList.hidden = !open;
+        toggle.setAttribute("aria-expanded", String(open));
+        toggle.textContent = open ? "−" : "+";
+        toggle.setAttribute("aria-label", `${open ? "收起" : "展开"} ${node.querySelector(".map-node-name").textContent} 的分支`);
+      }
     }
     for (const edge of edges) edge.toggleAttribute("hidden", !(visible.has(edge.dataset.edgeFrom) && visible.has(edge.dataset.edgeTo)));
   }
@@ -74,6 +79,7 @@
       }
     }
     syncFiltersToGraph();
+    if (inspector?.closest(".map-tree-item[hidden]")) closeInspector();
     const visible = items.filter(item => !item.hasAttribute("hidden")).length;
     if (status) status.textContent = `${visible} 个节点或论文记录匹配`;
     if (empty) empty.hidden = visible !== 0;
@@ -108,7 +114,7 @@
       if (edge.dataset.edgeTo === nodeId) related.add(edge.dataset.edgeFrom);
     }
     const relatedMarkup = related.size ? `<h4>关联节点</h4><div class="map-related">${[...related].filter(id => payload.details[id]).map(id => `<button type="button" data-select-node="${esc(id)}">${esc(payload.details[id].name)}</button>`).join("")}</div>` : "";
-    inspector.innerHTML = `<div class="map-inspector-content"><p class="map-inspector-type">${esc(typeLine)}</p><h3>${esc(detail.name)}</h3><p>${esc(detail.description || "")}</p>${claimMarkup(detail.principle, "可复用的技术认识")}${techniques}${failures}${detail.motivation ? `<p><strong>动机：</strong>${esc(detail.motivation)}</p>` : ""}${detail.transfer_boundary ? `<p class="map-transfer"><strong>迁移边界：</strong>${esc(detail.transfer_boundary)}</p>` : ""}${relatedMarkup}${evidenceMarkup(detail.evidence)}${sources}</div>`;
+    inspector.innerHTML = `<button type="button" class="map-inspector-close" data-close-inspector>收起证据</button><div class="map-inspector-content"><p class="map-inspector-type">${esc(typeLine)}</p><h3>${esc(detail.name)}</h3><p>${esc(detail.description || "")}</p>${claimMarkup(detail.principle, "可复用的技术认识")}${techniques}${failures}${detail.motivation ? `<p><strong>动机：</strong>${esc(detail.motivation)}</p>` : ""}${detail.transfer_boundary ? `<p class="map-transfer"><strong>迁移边界：</strong>${esc(detail.transfer_boundary)}</p>` : ""}${relatedMarkup}${evidenceMarkup(detail.evidence)}${sources}</div>`;
   }
 
   function highlightNeighbors(nodeId) {
@@ -121,9 +127,34 @@
     for (const edge of edges) edge.classList.toggle("is-related", edge.dataset.edgeFrom === nodeId || edge.dataset.edgeTo === nodeId);
   }
 
-  function selectNode(nodeId, updateUrl = true) {
+  function closeInspector() {
+    graphNodes.forEach(node => { node.classList.remove("is-selected", "is-related"); node.setAttribute("aria-expanded", "false"); });
+    edges.forEach(edge => edge.classList.remove("is-related"));
+    if (inspectorHome && inspector) inspectorHome.append(inspector);
+    updateInspector("");
+  }
+
+  function selectNode(nodeId, updateUrl = true, target = null) {
     if (!nodeId || !payload.details?.[nodeId]) return;
-    for (const node of graphNodes) node.classList.toggle("is-selected", node.dataset.nodeId === nodeId);
+    const selected = target || graphNodes.find(node => node.dataset.nodeId === nodeId);
+    if (selected && !nodeMatches(selected)) {
+      if (search) search.value = "";
+      controls.forEach(control => { control.value = ""; });
+      updateFilters();
+    }
+    // Navigation must also reach nodes inside a manually collapsed branch.
+    for (let parent = selected?.parentElement; parent && parent !== graph; parent = parent.parentElement) {
+      if (parent.classList.contains("map-tree-item")) {
+        const button = parent.querySelector(":scope > .map-node-row > [data-node-id]");
+        if (button) collapsed.delete(button.dataset.nodeId);
+      }
+    }
+    syncFiltersToGraph();
+    for (const node of graphNodes) {
+      node.classList.toggle("is-selected", node === selected);
+      node.setAttribute("aria-expanded", String(node === selected));
+    }
+    if (selected && inspector) selected.parentElement.after(inspector);
     highlightNeighbors(nodeId); updateInspector(nodeId);
     if (updateUrl) {
       try { history.replaceState(null, "", `${location.pathname}${location.search}#${encodeURIComponent(nodeId)}`); } catch { /* file:// */ }
@@ -137,14 +168,7 @@
       selectNode(id, false);
       const node = graphNodes.find(item => item.dataset.nodeId === id);
       if (node) {
-        const rect = node.getBoundingClientRect();
-        const bounds = graph.getBoundingClientRect();
-        let left = graph.scrollLeft;
-        if (rect.right > bounds.right - 12) left += rect.right - bounds.right + 12;
-        else if (rect.left < bounds.left + 12) left += rect.left - bounds.left - 12;
-        graph.scrollTo({left,
-          top:graph.scrollTop + rect.top - bounds.top - (graph.clientHeight - rect.height) / 2, behavior:"instant"});
-        graph.closest(".map-overview")?.scrollIntoView({block:"start", behavior:"instant"});
+        node.scrollIntoView({block:"start", behavior:"instant"});
       }
     } else if (id) {
       const target = document.getElementById(id);
@@ -158,18 +182,23 @@
   }
 
   function resetMapView() {
-    graphMode = "all";
+    collapsed.clear();
+    closeInspector();
     if (search) search.value = "";
     controls.forEach(control => { control.value = ""; });
-    graphNodes.forEach(node => node.classList.remove("is-selected", "is-related"));
-    edges.forEach(edge => edge.classList.remove("is-related"));
-    updateInspector(""); updateFilters();
+    updateFilters();
     try { history.replaceState(null, "", `${location.pathname}${location.search}`); } catch { /* file:// */ }
   }
 
   graphNodes.forEach(node => {
-    node.addEventListener("click", () => selectNode(node.dataset.nodeId));
-    node.addEventListener("keydown", event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); selectNode(node.dataset.nodeId); } });
+    node.addEventListener("click", () => selectNode(node.dataset.nodeId, true, node));
+  });
+  graph?.addEventListener("click", event => {
+    const toggle = event.target.closest("[data-toggle-branch]");
+    if (!toggle) return;
+    const nodeId = toggle.parentElement.querySelector("[data-node-id]").dataset.nodeId;
+    if (collapsed.has(nodeId)) collapsed.delete(nodeId); else collapsed.add(nodeId);
+    syncFiltersToGraph();
   });
   search?.addEventListener("input", updateFilters);
   controls.forEach(control => control.addEventListener("change", updateFilters));
@@ -177,13 +206,23 @@
   document.querySelectorAll("[data-map-action]").forEach(button => button.addEventListener("click", () => {
     const action = button.dataset.mapAction;
     if (action === "reset") resetMapView();
-    if (action === "expand") { graphMode = "all"; document.querySelectorAll(".map-branch,.map-challenge,.map-fact").forEach(item => { item.open = true; }); }
-    if (action === "trunk") { graphMode = "trunk"; document.querySelectorAll(".map-branch,.map-challenge,.map-fact").forEach(item => { item.open = item.classList.contains("map-branch") && !item.parentElement.closest(".map-branch"); }); }
+    if (action === "expand") { collapsed.clear(); document.querySelectorAll(".map-branch,.map-challenge,.map-fact").forEach(item => { item.open = true; }); }
+    if (action === "trunk") { closeInspector(); collapsed.clear(); graphNodes.filter(node => ["pipeline", "module", "challenge"].includes(node.dataset.nodeKind)).forEach(node => collapsed.add(node.dataset.nodeId)); document.querySelectorAll(".map-branch,.map-challenge,.map-fact").forEach(item => { item.open = item.classList.contains("map-branch") && !item.parentElement.closest(".map-branch"); }); }
     syncFiltersToGraph();
   }));
   inspector?.addEventListener("click", event => {
     const button = event.target.closest("[data-select-node]");
-    if (button) selectNode(button.dataset.selectNode);
+    if (button) {
+      selectNode(button.dataset.selectNode);
+      const selected = graph.querySelector(".is-selected");
+      selected?.focus({preventScroll:true});
+      selected?.scrollIntoView({block:"start", behavior:"instant"});
+    }
+    if (event.target.closest("[data-close-inspector]")) {
+      const selected = graph.querySelector(".is-selected");
+      closeInspector();
+      selected?.focus({preventScroll:true});
+    }
   });
   document.addEventListener("click", event => {
     const button = event.target.closest("[data-analysis-action]");

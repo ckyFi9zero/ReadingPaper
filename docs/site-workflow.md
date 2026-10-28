@@ -150,3 +150,11 @@ python3 scripts/check_site.py --root _site-public
 项目站点可能位于 `用户名.github.io/仓库名/`，所有链接保留相对路径；检查器拒绝 `/assets/...` 这类会绕过仓库名前缀的站内绝对路径。发布后仍需从实际网址验证图片、刷新及设备访问，当前未执行远端部署。
 
 实现参照 [GitHub Pages 自定义工作流文档](https://docs.github.com/zh/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages) 与 [GitHub 官方静态网站工作流](https://github.com/actions/starter-workflows/blob/main/pages/static.yml)，动作版本按 2026-09-17 检查的官方模板选择。
+
+## 研究树布局回归
+
+研究地图入口的单篇五分支树，以及任务与方法树、技术挑战树，均使用页面自然高度。两棵总览树由 `scripts/build_research_map.py` 生成 HTML 层级列表，完整节点名称换行显示；分支连线通过 CSS 随内容伸展，证据在所选节点下方展开。修改时不要恢复固定画布最小宽度、图容器高度上限或证据框内部滚动，也不要用裁剪／隐藏滚动条掩盖溢出。
+
+仅修改地图时运行 `python3 scripts/build_research_map.py`，随后执行 `python3 scripts/build_research_map.py --check`、完整 Python 测试和 JavaScript 语法检查。`tests/test_research_map_browser.cjs` 保留可选 Firefox BiDi 回归入口；无浏览器连接时不视为已完成浏览器验收。发布前后都须在 1440px 桌面与 390px 手机视口实际检查：全部展开后 27 个任务树节点、19 个挑战树节点均可访问，页面无横向溢出，图与证据框无内部滚动，标题完整；同时检查单独分支、只看主干、筛选、重置、键盘选择、关联节点／哈希导航和单篇五分支展开。节点数量随源数据变化时，以生成的完整节点集为准。
+
+2026-10-28 布局修复验证：65 项 Python 回归通过，图文与分类发布门禁通过；桌面和手机浏览器实测上述完整节点与布局。完整站点检查另有两条已有的 `papers/3d-unoutdet-2025/linked-reader.html` 对私有 `source.pdf` 的缺失引用，与修复前 main 一致，未改动该阅读内容。GitHub Pages 公网验收仍须在对应提交部署成功后进行。

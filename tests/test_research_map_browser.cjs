@@ -85,16 +85,16 @@ browserTest('graph hash restores selection, evidence and analysis navigation', a
   assert.equal(await evaluate(`document.querySelector('.is-selected').dataset.nodeId`), 'pipeline-statistical');
 });
 
-browserTest('graph filtering retains ancestors and hides SVG edges; trunk and expand work', async () => {
+browserTest('graph filtering retains ancestors and hides unmatched branches; trunk and expand work', async () => {
   await open('literature-tree.html');
   await evaluate(`(()=>{const q=document.getElementById('map-search');q.value='DROR';q.dispatchEvent(new Event('input'));return true})()`);
   assert.equal(await evaluate(`document.querySelector('[data-node-id="module-dror-2018"]').hasAttribute('hidden')`), false);
   assert.equal(await evaluate(`document.querySelector('[data-node-id="pipeline-statistical"]').hasAttribute('hidden')`), false);
   assert.equal(await evaluate(`Boolean([...document.querySelectorAll('.map-edge')].some(edge=>getComputedStyle(edge).display==='none'))`), true);
   await evaluate(`(()=>{document.getElementById('map-reset').click();document.querySelector('[data-map-action="trunk"]').click();return true})()`);
-  assert.equal(await evaluate(`getComputedStyle(document.querySelector('[data-node-id="module-dror-2018"]')).display`), 'none');
+  assert.equal(await evaluate(`document.querySelector('[data-node-id="module-dror-2018"]').getClientRects().length`), 0);
   await evaluate(`(()=>{document.querySelector('[data-map-action="expand"]').click();return true})()`);
-  assert.notEqual(await evaluate(`getComputedStyle(document.querySelector('[data-node-id="module-dror-2018"]')).display`), 'none');
+  assert.notEqual(await evaluate(`document.querySelector('[data-node-id="module-dror-2018"]').getClientRects().length`), 0);
 });
 
 browserTest('challenge inspector separates principle, technique and transfer boundary', async () => {
@@ -107,13 +107,31 @@ browserTest('challenge inspector separates principle, technique and transfer bou
   await screenshot('challenge-inspector-desktop');
 });
 
-browserTest('mobile paper tree fits viewport and graphs scroll inside their container', async () => {
-  await command('browsingContext.setViewport', {context, viewport:{width:390,height:844}, devicePixelRatio:1});
-  await open('research-map.html', '#paper-dror-2018');
-  assert.equal(await evaluate(`document.documentElement.scrollWidth<=innerWidth`), true);
-  await screenshot('paper-tree-mobile');
-  await open('challenge-insight-tree.html', '#insight-hierarchy');
-  assert.equal(await evaluate(`document.documentElement.scrollWidth<=innerWidth`), true);
-  assert.equal(await evaluate(`document.getElementById('map-graph').scrollWidth>document.getElementById('map-graph').clientWidth`), true);
-  await screenshot('challenge-tree-mobile');
+browserTest('expanded trees and inline evidence fit desktop and mobile without nested scrolling', async () => {
+  for (const width of [1440, 390]) {
+    await command('browsingContext.setViewport', {context, viewport:{width,height:844}, devicePixelRatio:1});
+    for (const name of ['literature-tree.html', 'challenge-insight-tree.html']) {
+      await open(name);
+      await evaluate(`(()=>{document.querySelector('[data-map-action="expand"]').click();return true})()`);
+      assert.equal(await evaluate(`document.documentElement.scrollWidth<=innerWidth`), true);
+      assert.equal(await evaluate(`(()=>{const g=document.getElementById('map-graph');return g.scrollWidth<=g.clientWidth && g.scrollHeight<=g.clientHeight})()`), true);
+      assert.equal(await evaluate(`(()=>{const expected=Object.keys(JSON.parse(document.getElementById('map-details').textContent).details); const visible=[...document.querySelectorAll('[data-node-id]')].filter(n=>n.getClientRects().length).map(n=>n.dataset.nodeId);return expected.every(id=>visible.includes(id))})()`), true);
+      await evaluate(`(()=>{document.querySelector('[data-node-id]').click();return true})()`);
+      assert.equal(await evaluate(`(()=>{const e=document.getElementById('map-inspector');return Boolean(e.closest('.map-tree-item')) && e.scrollWidth<=e.clientWidth && e.scrollHeight<=e.clientHeight})()`), true);
+      await screenshot(`${name}-${width}`);
+    }
+    await open('research-map.html', '#paper-dror-2018');
+    await evaluate(`(()=>{document.querySelector('#paper-dror-2018 [data-analysis-action="expand"]').click();return true})()`);
+    assert.equal(await evaluate(`document.documentElement.scrollWidth<=innerWidth`), true);
+    assert.equal(await evaluate(`document.querySelectorAll('#paper-dror-2018 .analysis-branch[open]').length`), 5);
+    await screenshot(`paper-tree-${width}`);
+  }
+});
+
+browserTest('individual branches collapse and hash navigation reopens ancestors', async () => {
+  await open('literature-tree.html');
+  await evaluate(`(()=>{document.querySelector('[data-node-id="pipeline-statistical"]').parentElement.querySelector('[data-toggle-branch]').click();return true})()`);
+  assert.equal(await evaluate(`document.querySelector('[data-node-id="module-dror-2018"]').getClientRects().length`), 0);
+  await command('browsingContext.navigate', {context, url:pathToFileURL(path.resolve(__dirname, '..', 'literature-tree.html')).href+'#module-dror-2018', wait:'complete'});
+  assert.notEqual(await evaluate(`document.querySelector('[data-node-id="module-dror-2018"]').getClientRects().length`), 0);
 });

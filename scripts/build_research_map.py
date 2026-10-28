@@ -479,36 +479,39 @@ def build_challenge_graph(data, facts, catalogue):
             'edges': edges, 'positions': positions, 'details': details, 'columns': CHALLENGE_COLUMNS}
 
 
-def render_svg_graph(graph, graph_type):
-    node_width, node_height = 246, 62
-    positions = graph['positions']
-    paths = []
+def render_tree_graph(graph, graph_type):
+    """Render complete labels in document flow; shared insights keep every edge."""
+    by_id = {node['id']: node for node in graph['nodes']}
+    children = {ident: [] for ident in by_id}
+    targets = set()
     for edge in graph['edges']:
-        source = positions[edge['from']]; target = positions[edge['to']]
-        x1, x2 = source['x'] + node_width, target['x']
-        y1, y2 = source['y'] + node_height / 2, target['y'] + node_height / 2
-        mid = (x1 + x2) / 2
-        color = edge.get('color', '#a7bbb0')
-        paths.append(f'<path class="map-edge" data-edge-from="{e(edge["from"])}" data-edge-to="{e(edge["to"])}" d="M{x1:.1f},{y1:.1f} C{mid:.1f},{y1:.1f} {mid:.1f},{y2:.1f} {x2:.1f},{y2:.1f}" style="--edge-color:{e(color)}"/>')
-    nodes = []
-    for node in graph['nodes']:
-        pos = positions[node['id']]
-        detail = graph['details'][node['id']]
+        children[edge['from']].append(edge)
+        targets.add(edge['to'])
+
+    def branch(ident, edge=None, path=''):
+        node = by_id[ident]
+        detail = graph['details'][ident]
         kind = node.get('kind', 'insight')
-        novelty = node.get('novelty_class', '')
         confidence = node.get('confidence', node.get('status', 'inferred'))
-        meta = f'{novelty} 类层级 · {LABELS.get(confidence, confidence)}' if graph_type == 'literature' else ('challenge' if kind == 'challenge' else f'insight · {detail["source_count"]} 个来源')
-        label = detail['name']
-        if len(label) > 19:
-            label = label[:18] + '…'
+        meta = (f'{node.get("novelty_class", "")} 类层级 · {LABELS.get(confidence, confidence)}'
+                if graph_type == 'literature' else
+                ('技术挑战' if kind == 'challenge' else f'insight · {detail["source_count"]} 个来源'))
         filters = detail.get('filters', {})
-        search = ' '.join([detail['name'], detail.get('description', ''), ' '.join(detail.get('techniques', [])), filters.get('search', '')]).lower()
-        nodes.append(f'''<g class="map-svg-node node-{e(kind)} {'node-confirmed' if confidence == 'confirmed' else 'node-provisional'}" data-map-item data-node-id="{e(node['id'])}" data-node-kind="{e(kind)}" data-source-count="{detail['source_count']}" data-search="{e(search, quote=True)}" data-weather="{e('|'.join(filters.get('weather', [])))}" data-route="{e('|'.join(filters.get('route', [])))}" data-challenge="{e('|'.join(filters.get('challenge', [])))}" tabindex="0" role="button" aria-label="{e(detail['name'])}">
-  <rect x="{pos['x']}" y="{pos['y']}" width="{node_width}" height="{node_height}" rx="9"/>
-  <text class="map-node-name" x="{pos['x'] + 14}" y="{pos['y'] + 25}">{e(label)}</text>
-  <text class="map-node-meta" x="{pos['x'] + 14}" y="{pos['y'] + 46}">{e(meta)}</text>
-</g>''')
-    return f'<svg class="map-svg" role="img" aria-label="{e("Literature tree" if graph_type == "literature" else "Challenge–insight tree")}" viewBox="0 0 {graph["width"]} {graph["height"]}" preserveAspectRatio="xMinYMin meet"><g class="map-edges">{"".join(paths)}</g><g class="map-nodes">{"".join(nodes)}</g></svg>'
+        search = ' '.join([detail['name'], detail.get('description', ''),
+                           ' '.join(detail.get('techniques', [])), filters.get('search', '')]).lower()
+        edge_attrs = (f' data-edge-from="{e(edge["from"])}" data-edge-to="{e(ident)}"'
+                      if edge else '')
+        branch_id = f'graph-children-{path}{ident}'
+        toggle = (f'<button type="button" class="map-branch-toggle" data-toggle-branch aria-expanded="true" '
+                  f'aria-controls="{e(branch_id)}" aria-label="收起 {e(detail["name"])} 的分支">−</button>'
+                  if children[ident] else '')
+        nested = (f'<ul class="map-node-children" id="{e(branch_id)}">' +
+                  ''.join(branch(item['to'], item, f'{path}{ident}-') for item in children[ident]) + '</ul>'
+                  if children[ident] else '')
+        return f'''<li class="map-tree-item{' map-edge' if edge else ''}"{edge_attrs}>
+<div class="map-node-row"><button type="button" class="map-tree-node node-{e(kind)} {'node-confirmed' if confidence == 'confirmed' else 'node-provisional'}" data-map-item data-node-id="{e(ident)}" data-node-kind="{e(kind)}" data-source-count="{detail['source_count']}" data-search="{e(search, quote=True)}" data-weather="{e('|'.join(filters.get('weather', [])))}" data-route="{e('|'.join(filters.get('route', [])))}" data-challenge="{e('|'.join(filters.get('challenge', [])))}" aria-expanded="false" aria-controls="map-inspector"><span class="map-node-name">{e(detail['name'])}</span><span class="map-node-meta">{e(meta)}</span></button>{toggle}</div>{nested}</li>'''
+
+    return '<ul class="map-flow-tree">' + ''.join(branch(ident) for ident in by_id if ident not in targets) + '</ul>'
 
 
 def render_node_detail(node, graph, catalogue):
@@ -643,8 +646,9 @@ def render(root, papers, shell, rendered=None):
         legend = ('<span class="map-legend-item legend-novelty-1">1 类 task</span><span class="map-legend-item legend-novelty-2">2 类 pipeline</span><span class="map-legend-item legend-novelty-3">3 类 module</span><span class="map-legend-item legend-novelty-4">4 类 follow-up</span>' if graph['type'] == 'literature' else '<span class="map-legend-item legend-challenge">challenge</span><span class="map-legend-item legend-insight">insight</span><span class="map-legend-item legend-external">领域外技术来源</span>')
         return f'''<section class="map-overview" data-graph-type="{graph['type']}">
   <div class="map-overview-head"><div><h2>{e(title)}</h2><p>{e(subtitle)}</p></div><div class="map-overview-toolbar"><button type="button" data-map-action="reset">重置视图</button><button type="button" data-map-action="expand">全部展开</button><button type="button" data-map-action="trunk">只看主干</button></div></div>
+  <p class="map-layout-hint">树随页面展开，完整标题自动换行。点击节点，证据会显示在该节点下方。</p>
   <div class="map-legend">{legend}<span class="map-legend-item legend-provisional">虚线 = 暂定</span></div>
-  <div class="map-graph-layout"><div class="map-graph" id="map-graph" aria-label="{e(title)}总览图">{render_svg_graph(graph, graph['type'])}</div><aside class="map-inspector" id="map-inspector" aria-live="polite"><p class="map-inspector-empty">点击图中的节点查看定义、关联论文和证据。</p></aside></div>
+  <div class="map-graph-layout"><div class="map-graph" id="map-graph" aria-label="{e(title)}总览图">{render_tree_graph(graph, graph['type'])}</div><aside class="map-inspector" id="map-inspector" aria-live="polite"><p class="map-inspector-empty">点击节点查看定义、关联论文和证据；用 − / + 收起或展开分支。</p></aside></div>
   <script id="map-details" type="application/json">{details}</script>
 </section>'''
     outputs={}
