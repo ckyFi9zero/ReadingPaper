@@ -8,6 +8,7 @@ import argparse
 import html
 import json
 import re
+from datetime import date
 from pathlib import Path
 from urllib.parse import quote
 
@@ -23,6 +24,14 @@ LABELS = {'source-checked': '已核对现有笔记', 'inferred': '跨论文推�
           'provisional': '暂定', 'confirmed': '已确认', 'pending': '待检索'}
 BASES = {'note-summary': '笔记转述', 'analyst-inference': '阅读者归纳', 'not-assessed': '尚未核验'}
 EXPERIMENT_KINDS = {'comparison': '整体评估 / 方法对比', 'ablation': '模块对照', 'design-choice': '设计选择'}
+# Papers already mapped before the 2026-10-28 classification repair. A pending
+# registration is not a mechanism to silently withdraw existing map coverage.
+BASELINE_MAPPED = frozenset({
+    '3d-outdet-2024', '3d-unoutdet-2025', '4denoisenet-2023', 'adversenet-2025',
+    'crfor-2023', 'dcor-2024', 'desnow-gnn-2026', 'dror-2018', 'dsor-2021',
+    'lior-2021', 'lior-snow-2020', 'lisnownet-2022', 'ltdnet-2026', 'pmdf-2026',
+    'rpsnownet-2026', 'scfnr-2026', 'sdor-2026', 'triplemixer-2025', 'weathernet-2020',
+})
 e = html.escape
 
 
@@ -79,7 +88,9 @@ def load(root):
         slug = fact.get('paper')
         require(slug == path.stem and slug not in facts, f'Duplicate/mismatched fact paper: {path.name}')
         facts[slug] = fact
-    return dict(literature=literature, challenges=challenges, gate=gate, facts=facts)
+    pending_path = folder / 'pending-papers.yaml'
+    pending = read_yaml(pending_path) if pending_path.exists() else {'version': 1, 'papers': []}
+    return dict(literature=literature, challenges=challenges, gate=gate, facts=facts, pending=pending)
 
 
 def validate(data, root, papers, rendered=None):
@@ -232,7 +243,36 @@ def validate(data, root, papers, rendered=None):
         require((parent['kind'] if parent else None) in allowed[n['kind']], f'Invalid parent layer: {n["id"]}')
     expected = {s for s,p in catalogue.items() if p.get('category') == 'in-field'}
     represented = {s for n in nodes for s in n['source_papers']}
-    require(expected <= represented and expected <= facts.keys(), f'Missing in-field coverage: {sorted(expected - (represented & facts.keys()))}')
+    pending_document = data.get('pending', {'version': 1, 'papers': []})
+    require(isinstance(pending_document, dict) and pending_document.get('version') == 1,
+            'Expected version 1 pending-paper registration')
+    pending_items = pending_document.get('papers')
+    require(isinstance(pending_items, list), 'Expected pending papers list')
+    pending = set()
+    for item in pending_items:
+        require(isinstance(item, dict), 'Expected pending paper object')
+        slug = item.get('paper')
+        require(isinstance(slug, str) and slug in catalogue, f'Unknown pending paper: {slug}')
+        require(slug not in pending, f'Duplicate pending paper: {slug}')
+        require(slug in expected, f'Pending paper must be in-field: {slug}')
+        require(slug not in BASELINE_MAPPED, f'Previously mapped paper cannot be pending: {slug}')
+        require(slug not in represented and slug not in facts,
+                f'Mapped paper cannot also be pending: {slug}')
+        require(item.get('status') == 'pending', f'Invalid pending status: {slug}')
+        text(item.get('reason'), f'{slug}/pending reason')
+        registered = item.get('registered_at')
+        require(isinstance(registered, str) and bool(re.fullmatch(r'\d{4}-\d{2}-\d{2}', registered)),
+                f'Invalid pending registration date: {slug}')
+        try:
+            date.fromisoformat(registered)
+        except ValueError as exc:
+            raise ValueError(f'Invalid pending registration date: {slug}') from exc
+        pending.add(slug)
+    mapped = represented & facts.keys()
+    require(BASELINE_MAPPED <= mapped,
+            f'Missing previously mapped coverage: {sorted(BASELINE_MAPPED - mapped)}')
+    require(expected <= mapped | pending,
+            f'Missing in-field coverage: {sorted(expected - (mapped | pending))}')
 
     challenges = data['challenges'].get('challenges')
     identifiers(challenges, 'challenges', all_ids)
@@ -584,6 +624,17 @@ def render(root, papers, shell, rendered=None):
         gates+=f'<article class="map-insight" id="{c["id"]}"><h3>{e(c["title"])}</h3><p>示例候选 · 尚未选为研究主线</p><p>输入 → 输出：{e(c["setting"]["input"])} → {e(c["setting"]["output"])}</p><p>待验证 failure case：{e(c["failure_case"])}</p><p>技术挑战假设：{e(c["core_technical_challenge"])}</p><p>四种情况判定：{LABELS.get(case, str(case))} · {e(verdict)}</p>{evidence_links(c["evidence"],catalogue)}<p>问题重要性、技术就绪度及候选 pipeline：尚未评估</p><ul>'+''.join(f'<li>{e(q)}</li>' for q in c.get('retrieval_required',[]))+'</ul></article>'
     gates+='</section>'
     intro=f'<p class="notice">{sum(f["scope"]=="in-field" for f in facts.values())} 篇领域内论文 · {sum(f["scope"]=="out-of-field" for f in facts.values())} 篇领域外技术来源 · {len(challenges)} 类技术挑战。单篇解析为两棵跨论文研究树提供证据。</p><div class="stage-grid"><a class="stage-card" href="literature-tree.html"><h2>Literature tree</h2><p>任务 → 方法路线 → 模块 / 后续工作</p></a><a class="stage-card" href="challenge-insight-tree.html"><h2>Challenge–insight tree</h2><p>技术挑战 → insight → 论文来源</p></a><a class="stage-card" href="#paper-facts"><h2>单篇论文解析树</h2><p>失败原因 → insight → 实现 → 实验与边界</p></a><a class="stage-card" href="#novelty-gate"><h2>Novelty gate</h2><p>具体 failure case 的四种情况判定</p></a></div><p>先看示例：<a href="#paper-dror-2018">DROR</a> · <a href="#paper-lisnownet-2022">LiSnowNet</a> · <a href="#paper-4denoisenet-2023">4DenoiseNet</a> · <a href="#paper-pointnet-plus-plus-2017">PointNet++</a></p>'
+    pending_items = data.get('pending', {}).get('papers', [])
+    pending_notice = ''
+    if pending_items:
+        pending_notice = (f'<aside class="notice map-pending" id="map-pending"><h2>地图待整理 · {len(pending_items)} 篇领域内论文</h2>'
+                          '<p>这些论文已在论文库分类，但尚未建立跨论文事实层和两棵树的关联；不计入本地图的已整理来源数量。</p><ul>')
+        for item in pending_items:
+            slug = item['paper']
+            pending_notice += (f'<li><a href="papers/{slug}/index.html">{e(catalogue[slug]["name"])}</a>：'
+                               f'{e(item["reason"])} <small>登记：{e(item["registered_at"])}</small></li>')
+        pending_notice += '</ul></aside>'
+    intro += pending_notice
     literature_graph = build_literature_graph(data, facts, catalogue)
     challenge_graph = build_challenge_graph(data, facts, catalogue)
 
@@ -598,8 +649,8 @@ def render(root, papers, shell, rendered=None):
 </section>'''
     outputs={}
     pages = [('research-map.html', '研究地图', intro+filters()+factbody+gates),
-             ('literature-tree.html', 'Literature tree', graph_section(literature_graph, 'Literature tree 总览', 'task → pipeline / representation → module / follow-up') + filters() + litbody),
-             ('challenge-insight-tree.html', 'Challenge–insight tree', graph_section(challenge_graph, 'Challenge–insight tree 总览', 'technical challenge → insight / technique → source papers') + filters() + challengebody)]
+             ('literature-tree.html', 'Literature tree', graph_section(literature_graph, 'Literature tree 总览', 'task → pipeline / representation → module / follow-up') + pending_notice + filters() + litbody),
+             ('challenge-insight-tree.html', 'Challenge–insight tree', graph_section(challenge_graph, 'Challenge–insight tree 总览', 'technical challenge → insight / technique → source papers') + pending_notice + filters() + challengebody)]
     for name,title,body in pages:
         head=f'<header class="page-head"><div class="eyebrow">RESEARCH MAP</div><h1>{e(title)}</h1><p><a href="research-map.html">地图入口</a> · <a href="literature-tree.html">任务与方法树</a> · <a href="challenge-insight-tree.html">技术挑战树</a></p></header>'
         page=shell(title,head+body,current='research-map')

@@ -10,6 +10,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
+import check_reading_publish as publication_quality
 import build_site as builder
 import export_site as exporter
 from check_site import check
@@ -21,7 +22,10 @@ class SiteTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
-        self.patches = [patch.object(builder, 'ROOT', self.root), patch.object(exporter, 'ROOT', self.root)]
+        self.patches = [patch.object(builder, 'ROOT', self.root), patch.object(exporter, 'ROOT', self.root),
+                        # Existing generic fixtures exercise rendering/export; dedicated
+                        # publication-gate tests exercise regulated new-paper behavior.
+                        patch.object(publication_quality, 'LEGACY_SLUGS', frozenset({'sample-2026'}))]
         for p in self.patches: p.start()
         self.paper = dict(slug='sample-2026', name='Sample', title='Sample paper', year=2026,
                           venue='Test', readDate='2026-09-17', tags=['LiDAR'], summary='A summary.',

@@ -1,5 +1,7 @@
 # 网站维护与发布
 
+> **2026-10-28 当前流程优先说明：** 本仓库实测由 `main` / 根目录的 GitHub Pages（动态 Jekyll）部署；提交后必须等待对应 commit 的 Pages 任务成功，再验证公网正文和图片。下文手动 `_site-public` 工作流是保留的可选/历史路径，不能据此声称当前公开仓库提交不会发布。本次不修改 Pages 设置或部署配置。新增初读必须先通过 [图文与分类发布门禁](reading-quality-gate.md)，不能仅以提交成功、图片标签数量或来源已核对标记作为完成标准。
+
 ## 文件放在哪里
 
 日常主要使用首页、`papers/` 和 `papers.json`，无需逐个打开工具目录。
@@ -68,7 +70,7 @@ python3 scripts/render_evidence.py <论文 slug> --stage first-pass --stage code
 
 每篇论文可在 `papers.json` 中设置 `category`：`in-field`（领域内）、`out-of-field`（领域外）、`uncategorized`（未分类，省略字段时默认）。例如 `"category": "out-of-field"`。分类表示与个人研究方向的关系，独立于雨、雪、深度学习等 `tags`，也独立于阅读进度；不会根据关键词自动改变分类。
 
-领域内以用户确认的“恶劣天气下的 3D 激光去噪”为边界，包含扬尘工况的 LIOR De-Dust 和矿区雾尘雪去噪的 SCFNR；DHE-Net、Electric Arc Noise、Density-Sensitive Transformer 和 SA-LPCC 属于领域外，不因同属点云处理就默认算作领域内。最新分类数量以首页和 `papers.json` 为准。
+领域内按用户于 2026-10-28 确认的研究相关性判断：以恶劣天气下的 LiDAR / 3D 感知抗扰为语境，重点包括去噪，也包括直接相关的真实天气数据、去噪效果评估、检测鲁棒性与评测混杂分析。不能仅因论文没有提出新去噪网络就判领域外，也不能仅因包含 LiDAR / 点云关键词就判领域内。每篇新初读须记录人工分类理由、原文定位和复核日期；程序只检查登记完整性与一致性，不替人判断科研相关性。本次仅把 Beyond the Snowflakes 更正为领域内（雪天 LiDAR / 评测分析），其余 39 篇分类保持不变；旧分类不作批量推断或自动重标。最新数量以首页和 `papers.json` 为准。
 
 期刊／会议筛选直接从 `venue` 字段自动生成，新增发表来源不需要改代码。同一期刊或会议应统一名称（例如始终使用 `IEEE RA-L`），不要混用缩写与全称；arXiv 作为预印本来源保留。该维度与 `category` 独立，同一期刊可同时有领域内和领域外论文，不需要重复登记论文。
 
@@ -80,6 +82,7 @@ python3 scripts/render_evidence.py <论文 slug> --stage first-pass --stage code
 
 ```bash
 python3 -m pip install -r requirements-site.txt
+python3 scripts/check_reading_publish.py
 python3 scripts/build_site.py
 python3 scripts/check_site.py
 python3 -m unittest discover -s tests -v

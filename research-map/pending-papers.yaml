@@ -1,0 +1,6 @@
+version: 1
+papers:
+  - paper: beyondsnowflakes-2026
+    status: pending
+    registered_at: '2026-10-28'
+    reason: 初读已整理；跨论文事实层及两棵树尚未整理，不能由领域分类或初读完成状态推定已纳入地图。

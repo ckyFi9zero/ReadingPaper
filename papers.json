@@ -38,39 +38,89 @@
   {"slug":"post-refining-lidar-registration","category":"out-of-field","name":"DCR","title":"Post-Refining LiDAR Point Cloud Registration via Diffusion-Based Correspondence Refinement","year":2026,"venue":"IEEE TASE","readDate":"2026-10-04","doi":"10.1109/TASE.2025.3641366","tags":["点云配准","扩散模型","对应关系","后优化"],"summary":"在粗配准之后对目标对应点 residual 做条件扩散去噪，再用 Kabsch 求精化变换，作为可组合的 LiDAR registration post-optimizer。","stages":{"first-pass":"first-pass.html"},"reviews":{"first-pass":{"status":"source-checked","noteStatus":"organized","checkedAt":"2026-10-04","evidence":["核对用户提供的 IEEE TASE 2026 正式版 PDF 12 页、Fig. 1–6、Tables I–XI、公式和完整实验设置。"]}}},
   {"slug":"metric-semantic-mapping-2025","category":"out-of-field","name":"Metric-Semantic Mapping","title":"Real-Time Metric-Semantic Mapping for Autonomous Navigation in Outdoor Environments","year":2025,"venue":"IEEE TASE","readDate":"2026-10-04","doi":"10.1109/TASE.2024.3429280","tags":["metric-semantic mapping","自主导航","户外环境","可通行性"],"summary":"以 LiDAR–Visual–IMU 状态估计、GPU TSDF/mesh 与语义融合构建大尺度户外 metric-semantic map，并接入可通行性分析和点到点导航。","stages":{"first-pass":"first-pass.html"},"reviews":{"first-pass":{"status":"source-checked","noteStatus":"organized","checkedAt":"2026-10-04","evidence":["已读取用户提供的 12 页 PDF 全文文本；视觉核对 PDF p.2 的 Fig. 1、p.9 的 Table III–IV 与 Fig. 8。"]}}},
   {"slug":"shape-enhanced-set-det-2026","category":"out-of-field","name":"SET-Det","title":"Shape Enhanced Network With Transformer-Based Completion for LiDAR-Based 3D Detection From Point Cloud","year":2026,"venue":"IEEE TASE","readDate":"2026-10-04","doi":"10.1109/TASE.2026.3652601","tags":["3D目标检测","LiDAR","形状补全","Transformer","遮挡场景"],"summary":"在 3D detection 的 RoI refinement 中用 Transformer-based shape completion 恢复遮挡目标形状，再以 Hybrid Attention Fusion 融合 shape 与 spatial features。","stages":{"first-pass":"first-pass.html"},"reviews":{"first-pass":{"status":"source-checked","noteStatus":"organized","checkedAt":"2026-10-04","evidence":["已读取用户提供的 15 页 PDF 全文文本；视觉核对 PDF p.3 的 Fig. 2、p.11 的 Table VII–X。"]}}},
-{
-  "slug": "beyondsnowflakes-2026",
-  "category": "out-of-field",
-  "name": "Beyond the Snowflakes",
-  "title": "Beyond the Snowflakes: Disentangling Weather Effects from Confounding Meta-Factors in LiDAR Object Detection",
-  "year": 2026,
-  "venue": "arXiv",
-  "readDate": "2026-10-28",
-  "url": "https://arxiv.org/abs/2610.13891v1",
-  "doi": "10.48550/arXiv.2610.13891",
-  "tags": [
-    "LiDAR",
-    "雪天目标检测",
-    "WADS-3D",
-    "CADC",
-    "混杂因素",
-    "元信息分析"
-  ],
-  "summary": "分析 WADS-3D 与 CADC 中雪强度与车辆检测 AP 的反直觉总体正相关，结合原始/滤波消融、错误分解和 Recall 元信息分析，区分空中落雪噪声与目标点数等混杂因素。",
-  "stages": {
-    "first-pass": "first-pass.html"
-  },
-  "reviews": {
-    "first-pass": {
-      "noteStatus": "organized",
-      "status": "source-checked",
-      "checkedAt": "2026-10-28",
-      "evidence": [
-        "已读取 arXiv:2610.13891v1 的 8 页全文及 References；逐图视觉核对 Figs. 1–8 与 Tables I–III。",
-        "关键来源：Sec. II-E (p. 2)；Sec. III (pp. 2–4)；Fig. 3 (p. 5)；Fig. 4 (p. 4)；Figs. 5–6 (p. 5)；Fig. 7 / Table III (p. 6)；Fig. 8 / Sec. V (p. 7)。",
-        "公开版不转载 PDF 或原图：含原创概括示意、数值事实转录与源图链接；未复现实验，保留作者物理假设与被引研究的来源边界。"
-      ]
+  {
+    "slug": "beyondsnowflakes-2026",
+    "category": "in-field",
+    "name": "Beyond the Snowflakes",
+    "title": "Beyond the Snowflakes: Disentangling Weather Effects from Confounding Meta-Factors in LiDAR Object Detection",
+    "year": 2026,
+    "venue": "arXiv",
+    "readDate": "2026-10-28",
+    "url": "https://arxiv.org/abs/2610.13891v1",
+    "doi": "10.48550/arXiv.2610.13891",
+    "tags": [
+      "雪天LiDAR",
+      "评测分析",
+      "LiDAR",
+      "雪天目标检测",
+      "WADS-3D",
+      "CADC",
+      "混杂因素",
+      "元信息分析"
+    ],
+    "summary": "分析 WADS-3D 与 CADC 中雪强度与车辆检测 AP 的反直觉总体正相关，结合原始/滤波消融、错误分解和 Recall 元信息分析，区分空中落雪噪声与目标点数等混杂因素。",
+    "stages": {
+      "first-pass": "first-pass.html"
+    },
+    "reviews": {
+      "first-pass": {
+        "noteStatus": "organized",
+        "status": "source-checked",
+        "checkedAt": "2026-10-28",
+        "evidence": [
+          "已读取 arXiv:2610.13891v1 的 8 页全文及 References；逐图视觉核对 Figs. 1–8 与 Tables I–III。",
+          "关键来源：Sec. II-E (p. 2)；Sec. III (pp. 2–4)；Fig. 3 (p. 5)；Fig. 4 (p. 4)；Figs. 5–6 (p. 5)；Fig. 7 / Table III (p. 6)；Fig. 8 / Sec. V (p. 7)。",
+          "公开版仅选取 Figure 4 (p. 4)、Figure 7 (p. 6)、Figure 8 (p. 7) 必要局部裁剪，逐图视觉核验并与近邻分析对应；保留作者物理假设与被引研究边界，未复现实验；不上传整篇 PDF 或整页。"
+        ]
+      }
+    },
+    "readingQuality": {
+      "version": 1,
+      "classification": {
+        "confirmedCategory": "in-field",
+        "rationale": "研究雪天 LiDAR 车辆检测、去雪消融及 WADS-3D/CADC 评测混杂；属于恶劣天气 LiDAR 感知抗扰的直接相关评测/数据研究，不能仅因未提出去噪网络而排除。",
+        "source": "2026-10-28 用户确认项目分类范围及本篇领域内归类；论文 Sec. II-E、III、IV-A–D，PDF pp. 2–7。",
+        "reviewedAt": "2026-10-28"
+      },
+      "graphics": {
+        "status": "included",
+        "items": [
+          {
+            "figureId": "fig-4",
+            "kind": "paper-crop",
+            "label": "Figure 4",
+            "pdfPage": 4,
+            "sourceUrl": "https://arxiv.org/html/2610.13891v1#S4.F4",
+            "analysisId": "analysis-fig-4"
+          },
+          {
+            "figureId": "fig-7",
+            "kind": "paper-crop",
+            "label": "Figure 7",
+            "pdfPage": 6,
+            "sourceUrl": "https://arxiv.org/html/2610.13891v1#S4.F7",
+            "analysisId": "analysis-fig-7"
+          },
+          {
+            "figureId": "fig-8",
+            "kind": "paper-crop",
+            "label": "Figure 8",
+            "pdfPage": 7,
+            "sourceUrl": "https://arxiv.org/html/2610.13891v1#S4.F8",
+            "analysisId": "analysis-fig-8"
+          }
+        ]
+      },
+      "rightsReview": {
+        "basis": "仅选取直接支撑本文逐图评论的三张必要局部图，保留作者、图号、页码、来源及相邻分析；未发现 CC 许可，不声称另行获得授权；不转载整篇 PDF、整页或完整图集。",
+        "reviewedAt": "2026-10-28"
+      },
+      "visualReview": {
+        "desktop": true,
+        "mobile": true,
+        "zoom": true,
+        "reviewedAt": "2026-10-28"
+      }
     }
   }
-}
 ]

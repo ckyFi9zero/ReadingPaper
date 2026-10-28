@@ -12,6 +12,7 @@ from urllib.parse import urlsplit, unquote, quote
 
 import markdown
 
+from check_reading_publish import check_reading_publish
 from evidence import EVIDENCE_STYLE, load_map, render_panel
 from linked_reader import available as linked_reader_available, render as render_linked_reader
 
@@ -260,6 +261,8 @@ def build(papers=None, *, write=True, overview=True, research_map=True):
     if MAP_ENABLED:
         from build_research_map import render
         OUTPUTS.update(render(ROOT, papers, shell, OUTPUTS))
+    # Must pass before any generated files are written or removed.
+    check_reading_publish(ROOT, papers, OUTPUTS)
     if write:
         for paper in papers:
             stale = local_path(f"papers/{paper['slug']}/linked-reader.html")
