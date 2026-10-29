@@ -143,3 +143,14 @@ browserTest('individual branches collapse and hash navigation reopens ancestors'
   await command('browsingContext.navigate', {context, url:pathToFileURL(path.resolve(__dirname, '..', 'literature-tree.html')).href+'#module-dror-2018', wait:'complete'});
   assert.notEqual(await evaluate(`document.querySelector('[data-node-id="module-dror-2018"]').getClientRects().length`), 0);
 });
+
+browserTest('weapon search finds the actual operation and opens complete evidence cards', async () => {
+  await open('challenge-insight-tree.html');
+  await evaluate(`(()=>{const q=document.getElementById('map-search');q.value='CRFOR ICM';q.dispatchEvent(new Event('input'));return true})()`);
+  assert.equal(await evaluate(`document.getElementById('map-results').textContent`), '1 张使用卡匹配');
+  assert.deepEqual(await evaluate(`[...document.querySelectorAll('.map-insight')].filter(n=>!n.hidden).map(n=>n.id)`), ['insight-confidence']);
+  await evaluate(`(()=>{document.querySelector('[data-node-id="insight-confidence"]').click();return true})()`);
+  assert.equal(await evaluate(`document.querySelectorAll('#map-inspector .weapon-playbook .analysis-claim').length`), 8);
+  assert.equal(await evaluate(`document.querySelector('#map-inspector .weapon-locations').textContent.includes('Table IV')`), true);
+  assert.equal(await evaluate(`document.querySelector('#map-inspector .weapon-playbook').textContent.includes('尚未核验')`), true);
+});

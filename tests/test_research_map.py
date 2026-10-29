@@ -203,6 +203,52 @@ class ResearchMapTests(unittest.TestCase):
                 self.assertEqual(insight['principle']['status'], 'inferred')
                 self.assertNotIn(insight['principle']['text'], insight['techniques'])
 
+    def test_weapon_cards_preserve_coverage_and_separate_claim_types(self):
+        sources = set()
+        for challenge in self.data['challenges']['challenges']:
+            self.assertEqual(challenge['why_hard']['basis'], 'analyst-inference')
+            for insight in challenge['insights']:
+                sources.update(insight['source_papers'])
+                self.assertEqual(set(insight['playbook']), set(research_map.PLAYBOOK_FIELDS))
+                self.assertEqual(insight['playbook']['mechanism']['basis'], 'note-summary')
+                self.assertEqual(insight['playbook']['reported_effect']['basis'], 'note-summary')
+                self.assertEqual(insight['playbook']['evidence_scope']['basis'], 'analyst-inference')
+                self.assertEqual(insight['open_questions']['evidence'], [])
+                self.assertEqual({loc['paper'] for loc in insight['source_locations']}, set(insight['source_papers']))
+        self.assertEqual(sources, set(self.data['facts']))
+
+    def test_weapon_claims_reject_missing_fields_unrelated_sources_and_false_verification(self):
+        for kind in ('missing', 'unrelated', 'fake-anchor', 'promoted', 'wrong-location'):
+            bad = copy.deepcopy(self.data)
+            insight = bad['challenges']['challenges'][0]['insights'][0]
+            if kind == 'missing':
+                del insight['playbook']['engineering_tricks']
+            elif kind == 'unrelated':
+                insight['playbook']['mechanism']['evidence'][0]['paper'] = 'pointnet-2017'
+            elif kind == 'fake-anchor':
+                insight['source_locations'][0]['evidence'][0]['anchor'] = 'invented-location'
+            elif kind == 'promoted':
+                insight['open_questions'].update(basis='note-summary', status='source-checked')
+            else:
+                insight['source_locations'][0]['evidence'][0]['paper'] = 'pointnet-2017'
+            with self.subTest(kind=kind), self.assertRaises(ValueError):
+                research_map.validate(bad, ROOT, self.papers)
+
+    def test_weapon_details_and_search_include_operational_content(self):
+        catalogue = {p['slug']: p for p in self.papers}
+        graph = research_map.build_challenge_graph(self.data, self.data['facts'], catalogue)
+        for ident, term in [('insight-adaptive', 'blending'), ('insight-confidence', 'icm'),
+                            ('insight-offline-labels', '教师'), ('insight-parallel', 'boundary band')]:
+            detail = graph['details'][ident]
+            self.assertIn(term, detail['filters']['search'])
+            self.assertEqual(len(detail['playbook']), len(research_map.PLAYBOOK_FIELDS))
+            self.assertTrue(detail['source_locations'])
+        from build_site import shell
+        output = research_map.render(ROOT, self.papers, shell)['challenge-insight-tree.html']
+        self.assertLess(output.index('id="map-search"'), output.index('id="map-graph"'))
+        self.assertIn('论文原文定位（沿用笔记登记）', output)
+        self.assertIn('何时谨慎使用', output)
+
     def test_svg_final_column_has_no_overlapping_modules(self):
         graph = research_map.build_literature_graph(self.data, self.data['facts'], {p['slug']: p for p in self.papers})
         columns = {}

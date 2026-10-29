@@ -27,3 +27,8 @@ ReadingPaper 以论文为单位保存阅读记录，将独立的 HTML 笔记组�
 阅读笔记以 HTML 为主，也支持 Markdown。所有论文统一存放在 `papers/` 下。新增内容时，将笔记放入 `papers/论文名-年份/`，在 `papers.json` 中登记论文信息和阅读阶段，再通过构建脚本更新首页与总览页面。
 
 目录管理、页面生成、检查与发布步骤见 [网站维护与发布](docs/site-workflow.md)。
+
+
+## 更新记录
+
+- **2026-10-29 · Challenge–Insight 武器库**：沿用已验收的左右脑图，将 7 类挑战下的 12 个 insight 整理为 20 张使用卡，保留 26 篇公开笔记来源。补充适用条件、可执行机制、工程补丁、成本、失败边界、原文定位，并区分已记录效果与阅读者归因。新增 CRFOR 置信传播、SDOR 边界/并行、离线伪标签等独立条目；事实不足与跨域迁移继续标待核验，两篇地图待整理状态不变。入口：[Challenge–Insight 武器库](https://ckyfi9zero.github.io/ReadingPaper/challenge-insight-tree.html)。

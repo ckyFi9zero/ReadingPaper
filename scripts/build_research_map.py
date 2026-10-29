@@ -24,6 +24,12 @@ LABELS = {'source-checked': '已核对现有笔记', 'inferred': '跨论文推�
           'provisional': '暂定', 'confirmed': '已确认', 'pending': '待检索'}
 BASES = {'note-summary': '笔记转述', 'analyst-inference': '阅读者归纳', 'not-assessed': '尚未核验'}
 EXPERIMENT_KINDS = {'comparison': '整体评估 / 方法对比', 'ablation': '模块对照', 'design-choice': '设计选择'}
+PLAYBOOK_FIELDS = {
+    'use_when': '何时考虑使用', 'mechanism': '机制：具体怎样做',
+    'engineering_tricks': '实现细节与补丁', 'assumptions_cost': '前提与成本',
+    'failure_boundary': '何时谨慎使用', 'reported_effect': '已记录的效果与评测条件',
+    'evidence_scope': '这些证据能支持到哪里',
+}
 # Papers already mapped before the 2026-10-28 classification repair. A pending
 # registration is not a mechanism to silently withdraw existing map coverage.
 BASELINE_MAPPED = frozenset({
@@ -283,6 +289,7 @@ def validate(data, root, papers, rendered=None):
         require(c.get('status') in STATUSES, f'Invalid challenge status: {c["id"]}')
         strings(c.get('observable_failures'), c['id'])
         evidence(c.get('evidence'), c['id'])
+        claim(c.get('why_hard'), f'{c["id"]}/why_hard')
         identifiers(c.get('insights'), c['id'], all_ids)
         require(c['insights'], f'Missing insights: {c["id"]}')
         for ins in c['insights']:
@@ -292,6 +299,24 @@ def validate(data, root, papers, rendered=None):
                 claim(ins['principle'], ins['id'])
                 require({ev['paper'] for ev in ins['principle']['evidence']} <= set(ins['source_papers']),
                         f'Principle evidence outside insight sources: {ins["id"]}')
+            book = ins.get('playbook')
+            require(isinstance(book, dict), f'Missing playbook: {ins["id"]}')
+            for key in PLAYBOOK_FIELDS:
+                claim(book.get(key), f'{ins["id"]}/{key}')
+                require({ev['paper'] for ev in book[key]['evidence']} <= set(ins['source_papers']),
+                        f'Playbook evidence outside insight sources: {ins["id"]}/{key}')
+            claim(ins.get('open_questions'), f'{ins["id"]}/open_questions')
+            require(ins['open_questions']['basis'] == 'not-assessed',
+                    f'Open questions must remain unverified: {ins["id"]}')
+            locations = ins.get('source_locations')
+            require(isinstance(locations, list) and locations, f'Missing source locations: {ins["id"]}')
+            require({loc.get('paper') for loc in locations} == set(ins['source_papers']),
+                    f'Source locations must cover insight sources: {ins["id"]}')
+            for loc in locations:
+                text(loc.get('location'), f'{ins["id"]}/source location')
+                evidence(loc.get('evidence'), f'{ins["id"]}/source location')
+                require(all(ev['paper'] == loc['paper'] for ev in loc['evidence']),
+                        f'Source location evidence must belong to paper: {ins["id"]}')
             insight_sources.update(ins['source_papers'])
     for slug,f in facts.items():
         strings(f.get('challenges'), slug)
@@ -387,11 +412,20 @@ def _node_detail(node, facts, catalogue, *, challenge=None, insight=None):
     }
     if challenge:
         detail.update({'description': challenge.get('description', ''),
+                       'why_hard': _claim_detail(challenge['why_hard'], catalogue),
                        'observable_failures': challenge.get('observable_failures', [])})
     if insight:
         detail.update({'description': insight.get('transfer_boundary', ''),
                        'techniques': insight.get('techniques', []),
-                       'principle': _claim_detail(insight['principle'], catalogue) if 'principle' in insight else None})
+                       'principle': _claim_detail(insight['principle'], catalogue) if 'principle' in insight else None,
+                       'playbook': [dict(_claim_detail(insight['playbook'][key], catalogue), label=label)
+                                    for key, label in PLAYBOOK_FIELDS.items()],
+                       'open_questions': _claim_detail(insight['open_questions'], catalogue),
+                       'source_locations': [{'name': catalogue[loc['paper']]['name'], 'location': loc['location'],
+                                             'original_href': ('https://doi.org/' + quote(catalogue[loc['paper']]['doi'], safe='/')
+                                                               if catalogue[loc['paper']].get('doi') else None),
+                                             'evidence': _evidence_detail(loc['evidence'], catalogue)}
+                                            for loc in insight['source_locations']]})
     return detail
 
 
@@ -462,6 +496,8 @@ def build_challenge_graph(data, facts, catalogue):
         positions[cid] = {'x': CHALLENGE_COLUMNS['challenge'], 'y': round(48 + index * max(92, min(126, 620 / max(1, challenge_count - 1))))}
         details[cid] = _node_detail(node, facts, catalogue, challenge=challenge)
         details[cid]['filters'] = _filter_fields(node['source_papers'], facts, catalogue, [cid])
+        details[cid]['filters']['search'] = (challenge['why_hard']['text'] + ' ' +
+                                            ' '.join(catalogue[s]['name'] for s in node['source_papers'])).lower()
         for insight in challenge['insights']:
             iid = insight['id']
             if iid not in positions:
@@ -472,6 +508,8 @@ def build_challenge_graph(data, facts, catalogue):
                 positions[iid] = {'x': CHALLENGE_COLUMNS['insight'], 'y': round(48 + insight_index * 86)}
                 details[iid] = _node_detail(inode, facts, catalogue, challenge=challenge, insight=insight)
                 details[iid]['filters'] = _filter_fields(inode['source_papers'], facts, catalogue, [cid])
+                details[iid]['filters']['search'] = (' '.join(catalogue[s]['name'] for s in insight['source_papers']) +
+                                                   ' ' + playbook_search(insight)).lower()
                 insight_index += 1
             edges.append({'from': cid, 'to': iid, 'color': GRAPH_COLORS[index % len(GRAPH_COLORS)]})
     height = max(430, max((pos['y'] for pos in positions.values()), default=48) + 92)
@@ -529,6 +567,24 @@ def analysis_search(fact):
             return [s for v in value for s in collect(v)]
         return []
     return ' '.join(collect(fact.get('analysis', {})))
+
+
+def playbook_search(insight):
+    return ' '.join([insight['principle']['text']] +
+                    [claim['text'] for claim in insight['playbook'].values()] +
+                    [loc['location'] for loc in insight['source_locations']]).lower()
+
+
+def render_playbook(insight, catalogue):
+    body = ''.join(render_claim(insight['playbook'][key], catalogue, label)
+                   for key, label in PLAYBOOK_FIELDS.items())
+    body += render_claim(insight['open_questions'], catalogue, '仍待核验')
+    body += '<h4>论文原文定位（沿用笔记登记）</h4><ul class="weapon-locations">'
+    for loc in insight['source_locations']:
+        paper = catalogue[loc['paper']]
+        original = f' · <a href="https://doi.org/{e(quote(paper["doi"], safe="/"))}">原论文入口</a>' if paper.get('doi') else ''
+        body += f'<li><strong>{e(paper["name"])}</strong>：{e(loc["location"])}{original}{evidence_links(loc["evidence"], catalogue)}</li>'
+    return body + '</ul>'
 
 
 def render_claim(item, catalogue, label=None):
@@ -609,11 +665,11 @@ def render(root, papers, shell, rendered=None):
     challengebody='<p class="notice">challenge 与 insight 是跨论文归纳。领域外技术提供参考，迁移到恶劣天气去噪的有效性尚未验证。</p>'
     for c in challenges:
         sources=list(dict.fromkeys(s for ins in c['insights'] for s in ins['source_papers']))
-        challengebody+=f'<section class="map-challenge" id="{c["id"]}" {attrs(sources,c["id"],c["name"])}><h2>{e(c["name"])}</h2><p>{e(c["description"])} · {LABELS[c["status"]]}</p><p>可能出现的现象：{e("；".join(c["observable_failures"]))}</p><details><summary>挑战的关联证据</summary>{evidence_links(c["evidence"],catalogue)}</details><div class="map-children">'
+        challengebody+=f'<section class="map-challenge" id="{c["id"]}" {attrs(sources,c["id"],c["name"])}><h2>{e(c["name"])}</h2><p>{e(c["description"])} · {LABELS[c["status"]]}</p>{render_claim(c["why_hard"], catalogue, "为什么难")}<p>可能出现的现象：{e("；".join(c["observable_failures"]))}</p><details><summary>挑战的关联证据</summary>{evidence_links(c["evidence"],catalogue)}</details><div class="map-children">'
         for ins in c['insights']:
             principle = render_claim(ins['principle'], catalogue, '可复用的技术认识') if 'principle' in ins else ''
             analyses = ' · '.join(f'<a href="research-map.html#paper-{s}">{e(catalogue[s]["name"])} 解析</a>' for s in ins['source_papers'])
-            challengebody+=f'<article class="map-insight" id="{ins["id"]}" {attrs(ins["source_papers"],c["id"],ins["name"]+" "+" ".join(ins["techniques"]))}><h3>{e(ins["name"])}</h3>{principle}<p>实现技术：{e(" · ".join(ins["techniques"]))}</p><p>{LABELS[ins["status"]]} · {e(ins["transfer_boundary"])}</p>{refs(ins)}<p>{analyses}</p></article>'
+            challengebody+=f'<article class="map-insight" id="{ins["id"]}" {attrs(ins["source_papers"],c["id"],ins["name"]+" "+" ".join(ins["techniques"])+" "+playbook_search(ins))}><h3>{e(ins["name"])}</h3>{principle}<p>检索词：{e(" · ".join(ins["techniques"]))}</p><details class="weapon-playbook"><summary>使用卡：机制、补丁、代价与证据</summary>{render_playbook(ins, catalogue)}</details>{refs(ins)}<p>{analyses}</p></article>'
         challengebody+='</div></section>'
     factbody='<h2 id="paper-facts">单篇论文解析树</h2><p>按模板分为 Abstract、Introduction、Method、Experiments、Limitation 五个分支。速览由现有笔记重组，不表示复原作者的摘要写法；本次核对对象是已有笔记。</p><p class="analysis-key"><span>笔记转述：已核对现有阅读页</span><span>阅读者归纳：解释与证据映射，未经独立验证</span><span>尚未核验：明确保留空缺</span></p>'
     for s,f in sorted(facts.items(), key=lambda pair: (pair[0] != 'dror-2018', pair[1]['scope'] != 'in-field', pair[0])):
@@ -656,7 +712,9 @@ def render(root, papers, shell, rendered=None):
     outputs={}
     pages = [('research-map.html', '研究地图', intro+filters()+factbody+gates),
              ('literature-tree.html', 'Literature tree', graph_section(literature_graph, 'Literature tree 总览', 'task → pipeline / representation → module / follow-up') + pending_notice + filters() + litbody),
-             ('challenge-insight-tree.html', 'Challenge–insight tree', graph_section(challenge_graph, 'Challenge–insight tree 总览', 'technical challenge → insight / technique → source papers') + pending_notice + filters() + challengebody)]
+             ('challenge-insight-tree.html', 'Challenge–Insight 武器库',
+              f'<p class="notice weapon-intro">{len(challenges)} 类挑战 · {sum(len(c["insights"]) for c in challenges)} 张使用卡 · {len(facts)} 篇既有来源。先按困难或条件检索，再点节点查看技术认识、机制、实现补丁、代价与证据。原文定位沿用公开笔记，本轮未重新审读全部 PDF；跨域迁移与独立因果结论不随整理升级。</p>' +
+              filters() + graph_section(challenge_graph, 'Challenge–Insight 武器库', 'challenge → 可复用认识 → 有条件的使用卡与论文证据') + pending_notice + challengebody)]
     for name,title,body in pages:
         head=f'<header class="page-head"><div class="eyebrow">RESEARCH MAP</div><h1>{e(title)}</h1><p><a href="research-map.html">地图入口</a> · <a href="literature-tree.html">任务与方法树</a> · <a href="challenge-insight-tree.html">技术挑战树</a></p></header>'
         page=shell(title,head+body,current='research-map')

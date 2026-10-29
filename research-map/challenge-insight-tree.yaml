@@ -9,56 +9,465 @@ challenges:
   - 局部稀疏结构可能误删
   - 固定邻域难适配局部密度
   evidence:
-  - &id016
+  - &id001
     paper: sdor-2026
     stage: first-pass
-    anchor: section-02
+    anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
-  - paper: pmdf-2026
+  - &id002
+    paper: pmdf-2026
     stage: first-pass
-    anchor: section-02
-    status: source-checked
-    basis: existing-note
-    original_pdf_review_status: source-checked
-  - &id008
-    paper: rpsnownet-2026
-    stage: first-pass
-    anchor: section-02
+    anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
   - &id003
-    paper: desnow-gnn-2026
+    paper: rpsnownet-2026
     stage: first-pass
-    anchor: section-02
+    anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
-  - paper: pointnet-plus-plus-2017
+  - &id004
+    paper: desnow-gnn-2026
     stage: first-pass
-    anchor: section-02
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id005
+    paper: pointnet-plus-plus-2017
+    stage: first-pass
+    anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
   insights:
   - id: insight-adaptive
-    name: 自适应邻域
+    name: 用当前区域密度校准邻域
     techniques:
     - 局部密度
-    - 空间分区
-    - 非线性半径
+    - 雪强
+    - blending
+    - boundary band
+    - cold start
     status: inferred
-    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    transfer_boundary: SDOR 扇区边界仍较差；PMDF 体素化可能损伤近处低密度结构且主表排除 cold start；RPS 的物理先验和 DeSnow 的图映射各有适用条件。
     source_papers:
     - sdor-2026
     - pmdf-2026
     - rpsnownet-2026
     - desnow-gnn-2026
     evidence:
-    - &id018
-      paper: sdor-2026
+    - *id001
+    - *id002
+    - *id003
+    - *id004
+    principle:
+      text: 相同距离并不意味着相同采样密度。判据应随当前区域或雪强调整，而不是把所有稀疏点都当噪声。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sdor-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: pmdf-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: rpsnownet-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: desnow-gnn-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 固定半径在部分区域误删、换区域又漏噪时，先检查局部密度和雪强是否改变了正常点间距。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: sdor-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: pmdf-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: desnow-gnn-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: SDOR 用扇区密度与距离共同调节半径；PMDF 从粗滤雪样本拟合距离/高度分布并更新参数；RPS 的 DMROR 用估计 noise ratio 调节非线性半径。DeSnow-GNN 的图表示提供局部上下文，不能据此说它实现了前三者的显式密度校准。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: sdor-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: pmdf-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: desnow-gnn-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: SDOR 的 blending 抑制纯局部密度导致的极端半径；boundary band 补偿扇区邻居截断。PMDF 在拟合前做 target recovery。它们是已记录的实现措施，各补丁的独立必要性不能由整体表格推出。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: sdor-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: pmdf-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: desnow-gnn-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 需要足够可靠的局部统计或初始雪样本；SDOR 分区/线程有管理开销，PMDF 有 cold start，图构造也有成本。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: sdor-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: pmdf-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: desnow-gnn-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: SDOR 扇区边界仍较差；PMDF 体素化可能损伤近处低密度结构且主表排除 cold start；RPS 的物理先验和 DeSnow 的图映射各有适用条件。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: sdor-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: pmdf-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: desnow-gnn-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: SDOR 有分区、线程和边界对照，但不是所有补丁的独立因果消融；PMDF 笔记未记录独立模块消融；RPS 的组件表是累计配置；DeSnow 有移除时空组件对照。四者不是同一种干预。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: sdor-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: pmdf-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: desnow-gnn-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: sdor-2026：WADS 上报告 F1 90.53%、runtime 0.662 s；Weather-KITTI Rain 的 F1 85.27%，与 DROR 85.30% 接近（Tables
+          7、9）。；pmdf-2026：CADC、BOREAS、WADS 的 F1 均超过 90%；下游检测分别报告正常天气训练与过滤数据训练的设置（Tables I–V）。；rpsnownet-2026：WADS
+          上 DMROR mIoU 88.06%、897 ms；RPSnowNet 88.92%、15 ms。CADC 逐点去雪为定性，检测另有 box 定量（Table III）。；desnow-gnn-2026：WADS
+          上报告 Precision 97.4%、F1 95.3%；雨雾适配在当前笔记中为定性可视化（Table 2；Fig. 7）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: sdor-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: pmdf-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: desnow-gnn-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: sdor-2026
+      location: Methods：Spatial division、Density adjustment factor with blending，Eqs. (8)–(15)，PDF pp. 2–5；边界分析
+        p. 17
+      evidence:
+      - paper: sdor-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    - paper: pmdf-2026
+      location: Sec. III-A–D，Fig. 2，Algorithm 1，PDF pp. 4–10
+      evidence:
+      - paper: pmdf-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    - paper: rpsnownet-2026
+      location: Sec. III-B，Algorithm 1，Eqs. (1)–(3)
+      evidence:
+      - paper: rpsnownet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    - paper: desnow-gnn-2026
+      location: Sec. 3.1–3.3，Fig. 3，PDF pp. 3–5
+      evidence:
+      - paper: desnow-gnn-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 分区密度、雪强半径和图上下文应在哪种输入条件下优先选用，尚无本库统一受控比较；SDOR 各补丁的独立必要性未逐项证实。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-hierarchy
+    name: 用多尺度局部上下文应对稀疏变化
+    techniques:
+    - MSG/MRG
+    - 多尺度
+    - FPS
+    - random input dropout
+    status: inferred
+    transfer_boundary: ScanNet 密度偏移下仍有下降；点集分类/分割中的稀疏鲁棒性不等于已经验证天气噪声过滤。
+    source_papers:
+    - pointnet-plus-plus-2017
+    evidence:
+    - *id005
+    principle:
+      text: 单个邻域尺度的证据会随采样密度变化而失稳；组合尺度和层次上下文，让特征不只依赖一个固定分辨率。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: pointnet-plus-plus-2017
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 需要学习局部形状、且输入点数或区域密度变化时，可把层次分组和多尺度表示作为候选。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: pointnet-plus-plus-2017
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: PointNet++ 递归执行 FPS、ball query 与局部 PointNet；MSG 在同一中心组合多个尺度，MRG 组合跨层与原始区域特征。MSG 与 MRG 是替代设计。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: pointnet-plus-plus-2017
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 邻域坐标改为相对中心坐标；random input dropout 在训练中覆盖不同稀疏度；分割通过插值与 skip links 回到原始点。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: pointnet-plus-plus-2017
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 需要合适的距离度量、采样和半径；MSG 重复计算较多，MRG 试图降低大邻域计算。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: pointnet-plus-plus-2017
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: ScanNet 密度偏移下仍有下降；点集分类/分割中的稀疏鲁棒性不等于已经验证天气噪声过滤。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: pointnet-plus-plus-2017
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: Figs. 4–5 比较 SSG、MSG、MRG 与 dropout；ModelNet40 的输入点数/法向量条件不同，不能把所有准确率差都归于结构。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: pointnet-plus-plus-2017
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: pointnet-plus-plus-2017：ModelNet40 同为 1024 点 XYZ 时，PointNet 89.2%、层次模型 90.7%；5000 点加法向量的 91.9% 不能全部归于结构（Table
+          2）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: pointnet-plus-plus-2017
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: pointnet-plus-plus-2017
+      location: Sec. 3.2–3.4，Figs. 2–3；密度对照 Figs. 4–5
+      evidence:
+      - paper: pointnet-plus-plus-2017
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: MSG/MRG 的密度适应能否区分天气离群与真实稀疏结构，当前来源未验证。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  why_hard:
+    text: 相近距离仍可能有不同局部密度；真实稀疏结构与离群点会共享“邻居少”的表象。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: sdor-2026
       stage: first-pass
       anchor: section-05
       status: source-checked
@@ -70,76 +479,24 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
-    - &id012
-      paper: rpsnownet-2026
+    - paper: rpsnownet-2026
       stage: first-pass
       anchor: section-05
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
-    - &id005
-      paper: desnow-gnn-2026
+    - paper: desnow-gnn-2026
       stage: first-pass
       anchor: section-05
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
-    principle:
-      text: 局部采样和天气强度改变统计基准时，应让邻域或判别参数随观测分布调整；各方法采用的局部估计与更新机制并不相同。
-      basis: analyst-inference
-      status: inferred
-      evidence:
-      - paper: sdor-2026
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
-      - paper: pmdf-2026
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
-      - paper: rpsnownet-2026
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
-      - paper: desnow-gnn-2026
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
-  - id: insight-hierarchy
-    name: 多尺度局部集合表示
-    techniques:
-    - MSG/MRG
-    - 层次局部特征
-    status: inferred
-    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
-    source_papers:
-    - pointnet-plus-plus-2017
-    evidence:
     - paper: pointnet-plus-plus-2017
       stage: first-pass
       anchor: section-05
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
-    principle:
-      text: 密集区域需要细节，稀疏区域需要更大上下文；提供多尺度局部表示可减少单一邻域对采样密度的依赖。
-      basis: analyst-inference
-      status: inferred
-      evidence:
-      - paper: pointnet-plus-plus-2017
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
 - id: challenge-range
   name: 远近距离采样不均
   description: 近密远疏会影响半径与强度判别
@@ -148,45 +505,337 @@ challenges:
   - 远处环境点被误删
   - 固定强度阈值不适配距离
   evidence:
-  - paper: dror-2018
+  - &id006
+    paper: dror-2018
     stage: first-pass
-    anchor: section-02
+    anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
-  - paper: dsor-2021
+  - &id007
+    paper: dsor-2021
     stage: first-pass
-    anchor: section-02
+    anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: unregistered
-  - &id001
+  - &id008
     paper: lior-snow-2020
     stage: first-pass
-    anchor: section-02
+    anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
-  - paper: dcor-2024
+  - &id009
+    paper: dcor-2024
     stage: first-pass
-    anchor: section-02
+    anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
   insights:
   - id: insight-distance
-    name: 距离相关阈值与半径
+    name: 先补偿采样间距，再判离群
     techniques:
-    - 距离缩放
-    - 通道内邻域
-    - 强度曲线
+    - 距离补偿
+    - 动态半径
+    - 动态阈值
+    - 通道
+    - DSOR 原文差异
     status: inferred
-    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    transfer_boundary: 距离补偿不自动解决局部密度、低反射物体或密集雪团；LIOR 的 10 FPS 依赖前方 ROI，DCOR 定量限单地点单传感器。
     source_papers:
     - dror-2018
     - dsor-2021
     - lior-snow-2020
     - dcor-2024
+    evidence:
+    - *id006
+    - *id007
+    - *id008
+    - *id009
+    principle:
+      text: 旋转 LiDAR 的采样间距随距离增大；把距离效应从离群判据中分开，能避免用近处的密度标准处罚远处结构。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dror-2018
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: dsor-2021
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+      - paper: lior-snow-2020
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: dcor-2024
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 误删随量程明显增加时，先区分距离导致的正常稀疏与真正离群。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: dror-2018
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dsor-2021
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+        - paper: lior-snow-2020
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dcor-2024
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: DROR 按 range×角分辨率调整搜索半径；DSOR 调整的是平均近邻距离的判别阈值；DCOR 将距离相关半径搜索限制在同一 laser channel；雪天 LIOR 调整强度阈值。四种调整对象不同。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: dror-2018
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dsor-2021
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+        - paper: lior-snow-2020
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dcor-2024
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: DROR 设最小半径保护近距；DCOR 必须保留通道组织。DSOR 正文与 Algorithm 1 的保留/删除方向相反，落地前需核对，不能由本树替作者修正。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: dror-2018
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dsor-2021
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+        - paper: lior-snow-2020
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dcor-2024
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 需要量程、角分辨率或通道信息及参数选择；近邻搜索仍有时间成本，强度阈值还受传感器影响。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: dror-2018
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dsor-2021
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+        - paper: lior-snow-2020
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dcor-2024
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 距离补偿不自动解决局部密度、低反射物体或密集雪团；LIOR 的 10 FPS 依赖前方 ROI，DCOR 定量限单地点单传感器。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: dror-2018
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dsor-2021
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+        - paper: lior-snow-2020
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dcor-2024
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: DROR/ROR 是设计比较，DSOR 未记录内部独立消融；DCOR 固定/动态半径对照支持对应配置差异；不能把不同论文硬件上的时间直接排名。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: dror-2018
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dsor-2021
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+        - paper: lior-snow-2020
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dcor-2024
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: dror-2018：98 帧按距离统计中，ROR 在约 18 m 的删点比例接近 100%；DROR 的远处删点比例峰值低于 40%（Fig. 8）。；dsor-2021：WADS 比较中 DSOR
+          Recall 为 95.6%、Precision 为 65.1%；DROR 分别为 91.9%、71.5%（Sec. V.C；Fig. 6）。；lior-snow-2020：10 帧人工标注对比中，DROR
+          平均删除 32097.7 点，LIOR 删除 1700.9 点；另报告 ROI 裁剪后的处理率（Table 4；Sec. V-D）。；dcor-2024：150 帧对比中 DCOR F1 98.3%、0.242
+          s/frame；DROR F1 96.4%、2.221 s/frame（Table I）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: dror-2018
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dsor-2021
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+        - paper: lior-snow-2020
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dcor-2024
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: dror-2018
+      location: Sec. IV-B，Algorithm 1，Fig. 5
+      evidence:
+      - paper: dror-2018
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    - paper: dsor-2021
+      location: Sec. IV.A，Eq. (2) 与 Algorithm 1 lines 11–12，PDF p. 4
+      evidence:
+      - paper: dsor-2021
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    - paper: lior-snow-2020
+      location: Sec. III-B、IV-B–C，Fig. 9
+      evidence:
+      - paper: lior-snow-2020
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    - paper: dcor-2024
+      location: Sec. III-C，Algorithm 1，Eqs. (6)–(7)
+      evidence:
+      - paper: dcor-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: DSOR 正文与算法判定方向冲突仍待原文/代码进一步核对；参数跨传感器可移植性不能由距离补偿公式保证。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  why_hard:
+    text: 距离引起的正常采样变稀与噪声离群混在同一个密度统计中，固定尺度容易系统性处罚远处点。
+    basis: analyst-inference
+    status: inferred
     evidence:
     - paper: dror-2018
       stage: first-pass
@@ -200,8 +849,7 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: unregistered
-    - &id002
-      paper: lior-snow-2020
+    - paper: lior-snow-2020
       stage: first-pass
       anchor: section-05
       status: source-checked
@@ -213,35 +861,6 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
-    principle:
-      text: 旋转扫描的点间距随距离增长，离群判据应考虑采样尺度；动态半径、统计阈值和强度曲线是不同实现。
-      basis: analyst-inference
-      status: inferred
-      evidence:
-      - paper: dror-2018
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
-      - paper: dsor-2021
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: unregistered
-      - paper: lior-snow-2020
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
-      - paper: dcor-2024
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
 - id: challenge-structure
   name: 噪声与真实结构混淆
   description: 低反射和稀疏真实结构与粒子噪声可能共享局部特征
@@ -250,96 +869,278 @@ challenges:
   - 低密度非雪点误删
   - 覆雪植被与噪声难区分
   evidence:
-  - *id001
-  - paper: lior-2021
-    stage: first-pass
-    anchor: section-02
-    status: source-checked
-    basis: existing-note
-    original_pdf_review_status: unregistered
-  - &id004
-    paper: crfor-2023
-    stage: first-pass
-    anchor: section-02
-    status: source-checked
-    basis: existing-note
-    original_pdf_review_status: source-checked
-  - paper: scfnr-2026
-    stage: first-pass
-    anchor: section-02
-    status: source-checked
-    basis: existing-note
-    original_pdf_review_status: unregistered
-  - paper: lisnownet-2022
-    stage: first-pass
-    anchor: section-02
-    status: source-checked
-    basis: existing-note
-    original_pdf_review_status: source-checked
-  - paper: pointnet-2017
-    stage: first-pass
-    anchor: section-02
-    status: source-checked
-    basis: existing-note
-    original_pdf_review_status: source-checked
-  - paper: implicit-point-to-voxel-lidar-imu-slam
-    stage: first-pass
-    anchor: section-02
-    status: source-checked
-    basis: existing-note
-    original_pdf_review_status: source-checked
-  - paper: post-refining-lidar-registration
-    stage: first-pass
-    anchor: section-02
-    status: source-checked
-    basis: existing-note
-    original_pdf_review_status: source-checked
   - &id010
+    paper: lior-snow-2020
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id011
+    paper: lior-2021
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  - &id012
+    paper: scfnr-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  - &id013
+    paper: lisnownet-2022
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id014
+    paper: pointnet-2017
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id015
     paper: shape-enhanced-set-det-2026
     stage: first-pass
-    anchor: section-02
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id016
+    paper: crfor-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id017
+    paper: implicit-point-to-voxel-lidar-imu-slam
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id018
+    paper: post-refining-lidar-registration
+    stage: first-pass
+    anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
   insights:
   - id: insight-physical
-    name: 强度与几何上下文
+    name: 先筛候选，再用独立线索复核
     techniques:
-    - 强度复核
-    - CRF
+    - 低强度复核
+    - RIS
     - 球形度
+    - ground context
+    - 排除第一圈
     status: inferred
-    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    transfer_boundary: 低密度暗物体仍可能失去救回证据；LIOR 参数依赖传感器，SCFNR 的支持范围以矿区数据和报告设置为准。去尘应用不等于证明跨天气泛化。
     source_papers:
     - lior-snow-2020
     - lior-2021
-    - crfor-2023
     - scfnr-2026
     evidence:
-    - *id002
-    - paper: lior-2021
-      stage: first-pass
-      anchor: section-05
-      status: source-checked
-      basis: existing-note
-      original_pdf_review_status: unregistered
-    - &id006
-      paper: crfor-2023
-      stage: first-pass
-      anchor: section-05
-      status: source-checked
-      basis: existing-note
-      original_pdf_review_status: source-checked
-    - paper: scfnr-2026
-      stage: first-pass
-      anchor: section-05
-      status: source-checked
-      basis: existing-note
-      original_pdf_review_status: unregistered
+    - *id010
+    - *id011
+    - *id012
     principle:
-      text: 单一物理属性存在真假结构重叠时，用几何或邻域上下文复核歧义点；强度先验和球形度先验适用的噪声分布并不相同。
+      text: 低强度或小尺度都可能同时出现在噪声和真实物体中。先筛可疑集合，再引入密度或周围地面上下文，比把单一线索当最终标签更有解释性。
       basis: analyst-inference
       status: inferred
+      evidence:
+      - paper: lior-snow-2020
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: lior-2021
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+      - paper: scfnr-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    playbook:
+      use_when:
+        text: 单阈值误删暗物体或小目标时，检查能否为可疑点提供与初筛不同的证据。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: lior-snow-2020
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: lior-2021
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+        - paper: scfnr-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+      mechanism:
+        text: 两篇 LIOR 都对低强度候选再做半径邻居复核；SCFNR 先分大小簇，大簇用协方差球形度，小簇查询地面来源的 BEV context table。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: lior-snow-2020
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: lior-2021
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+        - paper: scfnr-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+      engineering_tricks:
+        text: 雪天 LIOR 用 RIS 救回局部稠密的低强度点；SCFNR 查询时排除第一圈网格，作者理由是贴地噪声和 mixed voxel 污染。不能把排除第一圈概括为所有场景都必要。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: lior-snow-2020
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: lior-2021
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+        - paper: scfnr-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+      assumptions_cost:
+        text: 需要可用且可标定的 intensity，或可靠地面分割与体素上下文；额外复核消耗邻域/体素计算。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: lior-snow-2020
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: lior-2021
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+        - paper: scfnr-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+      failure_boundary:
+        text: 低密度暗物体仍可能失去救回证据；LIOR 参数依赖传感器，SCFNR 的支持范围以矿区数据和报告设置为准。去尘应用不等于证明跨天气泛化。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: lior-snow-2020
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: lior-2021
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+        - paper: scfnr-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+      evidence_scope:
+        text: 方法页支持这些复核步骤确实存在；整体去噪效果不能单独证明每条先验或每个阈值具有独立因果贡献。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: lior-snow-2020
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: lior-2021
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+        - paper: scfnr-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+      reported_effect:
+        text: lior-snow-2020：10 帧人工标注对比中，DROR 平均删除 32097.7 点，LIOR 删除 1700.9 点；另报告 ROI 裁剪后的处理率（Table 4；Sec. V-D）。；lior-2021：一个
+          19 帧数据包的平均 Accuracy 为 98.49%、Precision 为 75.44%、Recall 为 92.58%、F1 为 82.88%（Table 2）。没有同数据其他方法的定量基线。；scfnr-2026：矿区点级与簇级实验分开报告；KITTI
+          检测测试由矿区噪声注入生成，不能写成真实跨传感器天气基准。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: lior-snow-2020
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: lior-2021
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+        - paper: scfnr-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: unregistered
+    source_locations:
+    - paper: lior-snow-2020
+      location: Sec. IV-A，Algorithm 1 lines 11–15；Sec. V-B
       evidence:
       - paper: lior-snow-2020
         stage: first-pass
@@ -347,44 +1148,136 @@ challenges:
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    - paper: lior-2021
+      location: Sec. 2，Figs. 1–2；参数 Table 1
+      evidence:
       - paper: lior-2021
         stage: first-pass
         anchor: section-05
         status: source-checked
         basis: existing-note
         original_pdf_review_status: unregistered
-      - paper: crfor-2023
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
+    - paper: scfnr-2026
+      location: Sec. III-C–D，Algorithm 1，Figs. 4–5，PDF pp. 4–6
+      evidence:
       - paper: scfnr-2026
         stage: first-pass
         anchor: section-05
         status: source-checked
         basis: existing-note
         original_pdf_review_status: unregistered
+    open_questions:
+      text: 强度阈值、RIS 与地面上下文在新传感器和非矿区天气下是否可靠，尚未验证；不能把实现补丁当普遍必要条件。
+      basis: not-assessed
+      status: unverified
+      evidence: []
   - id: insight-frequency
-    name: 范围图频域先验
+    name: 把清洁信号先验变成无标签训练信号
     techniques:
-    - DWT/IDWT
-    - FFT 稀疏损失
+    - 无监督
+    - 稀疏先验
+    - 残差
+    - FFT/DWT
+    - void pixel
     status: inferred
-    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    transfer_boundary: 定量仅 WADS 子集；CADC 建图为定性，没有地图误差数值。L1 的 recall 低于 DSOR，较高 IoU 不等于所有雪点都被删除。
     source_papers:
     - lisnownet-2022
     evidence:
-    - paper: lisnownet-2022
-      stage: first-pass
-      anchor: section-05
-      status: source-checked
-      basis: existing-note
-      original_pdf_review_status: source-checked
+    - *id013
     principle:
-      text: 在清洁信号的变换域稀疏假设下，可以用结构与残差约束提供无标签训练信号；不能把所有高频都当成噪声。
+      text: 没有逐点标签时，若清洁信号在特定变换域更稀疏，可用该结构假设约束恢复结果；关键是监督信号来自哪里，而不只是加入 FFT 或 DWT。
       basis: analyst-inference
       status: inferred
+      evidence:
+      - paper: lisnownet-2022
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 有无标签雪天扫描、能接受变换域稀疏假设，并希望避免逐点 kNN 时，可检查残差学习路线。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: lisnownet-2022
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: LiSnowNet 预测 range/intensity 残差，共同最小化去噪图 FFT log-magnitude L1、DWT L1 和残差 L1，再以距离与强度残差联合判雪。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: lisnownet-2022
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 立方根缩放强调近处；void pixel 填充不改有效像素；DWT/IDWT、circular convolution 处理全景表示。实现存在不表示每项已有独立消融证明必要。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: lisnownet-2022
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 需要适配 beam/azimuth 的投影、有效像素处理和残差阈值；依赖信号/噪声稀疏先验及 GPU 执行条件。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: lisnownet-2022
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 定量仅 WADS 子集；CADC 建图为定性，没有地图误差数值。L1 的 recall 低于 DSOR，较高 IoU 不等于所有雪点都被删除。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: lisnownet-2022
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: Table I 比较 L1/L2；Table II 调 FFT/DWT 权重时还网格搜索 alpha，不能解释为固定其余条件的纯 beta 因果效应。空像素等细节未逐项独立验证。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: lisnownet-2022
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: lisnownet-2022：WADS 上 LiSnowNet-L1 的 IoU 为 0.8812、runtime 为 6.8 ms；对应 DROR 为 0.8163、1071.2 ms（Table
+          I）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: lisnownet-2022
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: lisnownet-2022
+      location: Sec. III-A–E，Eqs. (4)–(10)，Fig. 3；Tables I–II
       evidence:
       - paper: lisnownet-2022
         stage: first-pass
@@ -392,20 +1285,647 @@ challenges:
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    open_questions:
+      text: 空像素填充、环形卷积等各项细节的独立必要性，以及非雪天气和定量地图误差收益，当前证据不足。
+      basis: not-assessed
+      status: unverified
+      evidence: []
   - id: insight-geometry
-    name: 集合表示与隐式几何
+    name: 用对称聚合消除输入顺序影响
     techniques:
-    - 对称聚合
-    - 隐式体素
-    - 条件残差扩散
+    - 排列不变性
+    - 共享 MLP
+    - max pooling
+    - T-net
+    - 领域外
     status: inferred
-    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    transfer_boundary: 缺失、离群和高斯扰动继续增大时准确率下降；原论文的点集实验没有验证恶劣天气去噪迁移。
     source_papers:
     - pointnet-2017
-    - implicit-point-to-voxel-lidar-imu-slam
-    - post-refining-lidar-registration
     evidence:
+    - *id014
+    principle:
+      text: 点的排列不应改变集合语义。共享逐点映射加对称聚合可以满足这一结构要求，但不会自动获得局部几何或天气鲁棒性。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: pointnet-2017
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 输入是无序点集合，且希望直接进行集合分类或逐点预测时。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: pointnet-2017
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: PointNet 对每点使用共享 MLP，再按通道 max pooling；分割把全局特征拼回逐点特征。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: pointnet-2017
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: T-net 对齐输入/特征，高维特征变换加入正交正则以帮助优化；max pooling 与 average pooling 有比较，不能把所有辅件都视为同等必要。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: pointnet-2017
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 需要适当的点特征；全局聚合不显式建立局部邻域，特征变换增加优化负担。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: pointnet-2017
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 缺失、离群和高斯扰动继续增大时准确率下降；原论文的点集实验没有验证恶劣天气去噪迁移。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: pointnet-2017
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: Sec. 4.2 给出对称聚合结构，Fig. 5 / Table 5 比较聚合和变换；ModelNet40 与部件分割是原任务证据。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: pointnet-2017
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: pointnet-2017：ModelNet40 overall accuracy 89.2%，部件 mean IoU 83.7%；这些是点集识别实验，不是天气去噪验证（Tables 1–2）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: pointnet-2017
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
     - paper: pointnet-2017
+      location: Sec. 4.2，Fig. 2；Fig. 5，Table 5，Fig. 6
+      evidence:
+      - paper: pointnet-2017
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 点集排列不变性如何转化为天气去噪收益，原任务实验没有回答。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-completion
+    name: 在目标区域内补形状，再融合任务特征
+    techniques:
+    - RoI
+    - 形状补全
+    - HAF
+    - aware pooling
+    - 领域外
+    status: inferred
+    transfer_boundary: 远处稀疏仍影响检测；生成形状是任务内估计，没有证明天气遮挡后被补出的几何都是真实环境。
+    source_papers:
+    - shape-enhanced-set-det-2026
+    evidence:
+    - *id015
+    principle:
+      text: 若缺失形状影响目标识别，可把补全限制在高质量目标区域，并把形状特征与已有空间特征共同用于任务，而非把生成点都视为真实测量。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: shape-enhanced-set-det-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 已有较可靠 proposals、关注稀疏/遮挡目标的 3D 检测时；天气恢复迁移仍待核验。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: SET-Det 在 RoI 中提取 partial points，经 Transformer 补全，再用 PointNet++ 提取 shape feature，与 voxel spatial feature
+          经 HAF 融合做 box refinement。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: CR/NMS 与 aware pooling 改善候选及减少背景；分割辅助分支只在训练启用。补全的 coarse/dense 两级使用 Chamfer loss。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 依赖 proposal 质量、补全监督与生成计算；补全点数改变精度/效率，不能无限增加。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 远处稀疏仍影响检测；生成形状是任务内估计，没有证明天气遮挡后被补出的几何都是真实环境。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: Tables V、VIII–X 有补全、融合和点数对照，但需按各表输入配置解释；KITTI/Waymo 检测证据不等于天气去噪验证。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: shape-enhanced-set-det-2026：KITTI、Waymo 上分别报告检测指标与补全指标，另比较不同距离、遮挡与效率（Sec. IV）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: shape-enhanced-set-det-2026
+      location: Sec. III-A–D；Tables V、VIII–X，PDF pp. 10–11
+      evidence:
+      - paper: shape-enhanced-set-det-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 天气遮挡下 RoI 补全的真实性和错误 proposal 的影响，当前检测与补全结果不能穷尽。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-confidence
+    name: 让高置信邻点帮助不确定点
+    status: inferred
+    source_papers:
+    - crfor-2023
+    techniques:
+    - 不确定点
+    - 置信传播
+    - kNN-CRF
+    - ICM
+    - 局部一致性
+    principle:
+      text: 当单点证据含糊、邻域标签又具有局部一致性时，应保留“不确定”状态，用高置信邻点补证据，而不是立即二值硬删。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: crfor-2023
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    transfer_boundary: 仍会漏留稀疏雪点、误删低密度真实点；下游检测仅一个定性案例，不能把图传播改善自动外推成稳定检测收益。
+    evidence:
+    - *id016
+    playbook:
+      use_when:
+        text: 强度、密度、规则性各自都有反例，但局部标签关系仍可信时，可考虑图上的联合推断。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: crfor-2023
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: CRFOR 合成 intensity、mean distance、PCA minimum variance ratio 得到 joint feature；初始化 definite snow、definite
+          non-snow 与 uncertain，在 kNN-CRF 上用 ICM 更新 uncertain 点。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: crfor-2023
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 先固定明确的置信类别，再迭代更新不确定点；可选 CRFOR-t 把历史帧配准并入图。置信传播与时序扩展是不同干预。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: crfor-2023
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 依赖局部标签一致性与初始特征的可靠性；irregularity 计算约占运行时间三分之二，时序版另需配准。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: crfor-2023
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 仍会漏留稀疏雪点、误删低密度真实点；下游检测仅一个定性案例，不能把图传播改善自动外推成稳定检测收益。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: crfor-2023
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: Sec. IV-D / Table IV 移除 CRF 后下降，支持其在该 WADS 设置中的贡献；联合特征也有对照。Fig. 5 只支持示例级下游观察。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: crfor-2023
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: crfor-2023：WADS 比较中 CRFOR 的 F1 高于所比规则基线，CRFOR-t 进一步提高；下游 SECOND 仅展示定性案例（Tables II–III；Fig. 5）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: crfor-2023
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: crfor-2023
+      location: Sec. III-A–F，Fig. 2，Eq. (1)，Algorithm 1；Table IV，Fig. 5
+      evidence:
+      - paper: crfor-2023
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 跨数据/传感器时初始置信度与局部一致性是否保持，以及稳定下游检测收益，仍待核验。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-implicit
+    name: 学习几何观测，再交给状态估计
+    status: inferred
+    source_papers:
+    - implicit-point-to-voxel-lidar-imu-slam
+    techniques:
+    - 隐式几何
+    - 不确定性
+    - IESKF
+    - 异步更新
+    - 领域外
+    principle:
+      text: 显式几何基元难表达复杂局部形状时，可让网络预测局部残差与不确定性，保留经典估计器对状态的约束。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: implicit-point-to-voxel-lidar-imu-slam
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    transfer_boundary: 未见场景泛化仍是开放问题；这是 SLAM 的观测建模，不是已验证的天气噪声分类器。
+    evidence:
+    - *id017
+    playbook:
+      use_when:
+        text: 关注的是 LiDAR–IMU 配准观测建模，且有可维护的局部地图时；这是领域外借鉴条件。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: implicit-point-to-voxel-lidar-imu-slam
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: P2V-SLAM 的 iVoxMap 保存点缓冲与隐式特征；IR-Net 聚合查询体素和 26 邻居，输出 residual 与 uncertainty，作为 IESKF 的观测和协方差来源。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: implicit-point-to-voxel-lidar-imu-slam
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 先去畸变/下采样；相对位移与位置编码用于查询；异步、事件驱动更新 voxel feature，避免地图维护阻塞 tracking。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: implicit-point-to-voxel-lidar-imu-slam
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 需要 IMU、初始状态和局部地图；隐式特征维护、训练及不确定性使用均有成本和适用范围。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: implicit-point-to-voxel-lidar-imu-slam
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 未见场景泛化仍是开放问题；这是 SLAM 的观测建模，不是已验证的天气噪声分类器。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: implicit-point-to-voxel-lidar-imu-slam
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: 原任务实验与模块对照支持所报告 SLAM 配置；不确定性输出的存在不能自动证明在新传感器/天气上已校准。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: implicit-point-to-voxel-lidar-imu-slam
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: implicit-point-to-voxel-lidar-imu-slam：公开及自采序列分别报告 APE、地图熵和 valid residual；自采六段 valid residual 约为
+          VoxelMap 的 2–3 倍（Tables II–III）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: implicit-point-to-voxel-lidar-imu-slam
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: implicit-point-to-voxel-lidar-imu-slam
+      location: Sec. III–V，Fig. 2，Eqs. (5)–(9)，Algorithm 1
+      evidence:
+      - paper: implicit-point-to-voxel-lidar-imu-slam
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 预测 uncertainty 在未见场景/天气上是否校准、隐式残差是否适于天气噪声处理，当前来源没有验证。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-residual-refine
+    name: 在紧凑误差空间修正对应关系
+    status: inferred
+    source_papers:
+    - post-refining-lidar-registration
+    techniques:
+    - 残差空间
+    - 条件扩散
+    - correspondence
+    - Kabsch
+    - 领域外
+    principle:
+      text: 已有粗解时，建模残差比重新生成绝对坐标更聚焦；输出还应通过几何求解连接到最终位姿目标。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: post-refining-lidar-registration
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    transfer_boundary: 面向已有粗配准；强扰动削弱恢复能力。未证明能恢复天气遮挡后的真实结构，也未验证去噪迁移。
+    evidence:
+    - *id018
+    playbook:
+      use_when:
+        text: 已有 coarse transform、目标是精化点云配准，而不是直接对原始天气点做分类时。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: post-refining-lidar-registration
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: DCR 固定源点，对目标对应点 residual 做条件扩散；以几何/特征差及邻域为条件，生成 refined correspondences，再用 Kabsch 求刚体变换。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: post-refining-lidar-registration
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 残差归一化、直接预测 clean z0；训练结合 diffusion loss 与 transformation loss。它们服务于对应关系精化，不等同于生成清洁环境点云。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: post-refining-lidar-registration
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 依赖粗变换与可用对应；扩散推理和邻域聚合增加成本，强扰动可能超出可恢复范围。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: post-refining-lidar-registration
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 面向已有粗配准；强扰动削弱恢复能力。未证明能恢复天气遮挡后的真实结构，也未验证去噪迁移。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: post-refining-lidar-registration
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: 仅沿用笔记中配准任务的比较和设计证据；不能把 refinement 指标当逐点天气标签或 clean geometry 的验证。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: post-refining-lidar-registration
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: post-refining-lidar-registration：KITTI 中 SDMNet RTE 0.043 m，加入 DCR 后 0.024 m；时间从 108.6 增至 152.5 ms（Table
+          II）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: post-refining-lidar-registration
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: post-refining-lidar-registration
+      location: Sec. III-A–D，Fig. 1，Eqs. (1)–(9)
+      evidence:
+      - paper: post-refining-lidar-registration
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 对应关系残差精化能否迁移到天气污染点云，以及粗解误差的可恢复范围，不能由配准主表直接推出。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  why_hard:
+    text: 强度、稀疏度和形状都不是噪声专属属性；单线索硬判断会同时产生漏噪与误删。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: lior-snow-2020
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: lior-2021
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+    - paper: scfnr-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+    - paper: lisnownet-2022
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: pointnet-2017
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: shape-enhanced-set-det-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: crfor-2023
       stage: first-pass
       anchor: section-05
       status: source-checked
@@ -423,57 +1943,6 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
-    principle:
-      text: 表示与观测模型应匹配数据结构：集合聚合处理排列，隐式局部几何处理非平面，残差空间处理对应误差。这些是相关工具，不是已证等价的统一解法。
-      basis: analyst-inference
-      status: inferred
-      evidence:
-      - paper: pointnet-2017
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
-      - paper: implicit-point-to-voxel-lidar-imu-slam
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
-      - paper: post-refining-lidar-registration
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
-  - id: insight-completion
-    name: 任务内形状补全
-    techniques:
-    - RoI 补全
-    - 形状特征融合
-    status: inferred
-    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
-    source_papers:
-    - shape-enhanced-set-det-2026
-    evidence:
-    - &id014
-      paper: shape-enhanced-set-det-2026
-      stage: first-pass
-      anchor: section-05
-      status: source-checked
-      basis: existing-note
-      original_pdf_review_status: source-checked
-    principle:
-      text: 恢复的几何应进入目标任务的特征和决策流程，补全质量与下游收益需要分别验证。
-      basis: analyst-inference
-      status: inferred
-      evidence:
-      - paper: shape-enhanced-set-det-2026
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
 - id: challenge-temporal
   name: 单帧信息不足
   description: 当前局部观测难区分短暂粒子与稳定场景
@@ -482,53 +1951,295 @@ challenges:
   - 上下文不充分
   - 运动与瞬时噪声混淆
   evidence:
-  - paper: 4denoisenet-2023
+  - &id019
+    paper: 4denoisenet-2023
     stage: first-pass
-    anchor: section-02
+    anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
-  - *id003
-  - *id004
-  - paper: removert-2020
+  - &id020
+    paper: desnow-gnn-2026
     stage: first-pass
-    anchor: section-02
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id021
+    paper: crfor-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id022
+    paper: removert-2020
+    stage: first-pass
+    anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
   insights:
   - id: insight-temporal
-    name: 跨帧联合证据
+    name: 用跨帧一致性补足单帧证据
     techniques:
-    - 时空 kNN
-    - 配准差分
-    - 多分辨率删除后恢复
+    - 时序
+    - 配准
+    - MGA
+    - visibility
+    - remove/revert
     status: inferred
-    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    transfer_boundary: 4DenoiseNet 跨传感器 intensity 有偏置，CADC 无逐点 GT；DeSnow 雨雾主要定性；CRFOR 仍误删稀疏真实点；Removert 天气迁移未验证。
     source_papers:
     - 4denoisenet-2023
     - desnow-gnn-2026
     - crfor-2023
     - removert-2020
     evidence:
-    - paper: 4denoisenet-2023
-      stage: first-pass
-      anchor: section-05
-      status: source-checked
-      basis: existing-note
-      original_pdf_review_status: source-checked
-    - *id005
-    - *id006
-    - paper: removert-2020
-      stage: first-pass
-      anchor: section-05
-      status: source-checked
-      basis: existing-note
-      original_pdf_review_status: source-checked
+    - *id019
+    - *id020
+    - *id021
+    - *id022
     principle:
-      text: 同一点在单帧中难以判别时，可利用跨帧运动或可见性证据；配准误差和动态物体会限制这类证据的可靠性。
+      text: 单帧中难区分的点，可能在运动、配准后邻域或多视角可见性中呈现不同规律；先明确跨帧关系，再聚合证据。
       basis: analyst-inference
       status: inferred
+      evidence:
+      - paper: 4denoisenet-2023
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: desnow-gnn-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: crfor-2023
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: removert-2020
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 连续帧可用，且时序关系能被可靠建模时；不是简单把更多帧堆在一起。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: 4denoisenet-2023
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: desnow-gnn-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: crfor-2023
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: removert-2020
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: 4DenoiseNet 用当前点到前帧近邻差向量编码运动并以 MGA 融合；DeSnow-GNN 用注册后的时序差分；CRFOR-t 并入配准历史点；Removert 用 scan-to-map
+          visibility remove/revert 静态地图。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: 4denoisenet-2023
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: desnow-gnn-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: crfor-2023
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: removert-2020
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: DeSnow 保存顶点供下一帧；Removert 逐轮降低 range-image 分辨率扩大关联窗口以容忍位姿误差。Removert 的动态物体处理与天气点不是同一标签定义。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: 4denoisenet-2023
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: desnow-gnn-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: crfor-2023
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: removert-2020
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 需要连续数据、时间同步和适用的运动/配准假设；图构造、历史存储与配准增加成本。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: 4denoisenet-2023
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: desnow-gnn-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: crfor-2023
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: removert-2020
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 4DenoiseNet 跨传感器 intensity 有偏置，CADC 无逐点 GT；DeSnow 雨雾主要定性；CRFOR 仍误删稀疏真实点；Removert 天气迁移未验证。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: 4denoisenet-2023
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: desnow-gnn-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: crfor-2023
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: removert-2020
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: 4DenoiseNet 和 DeSnow 有去掉时序分支对照；CRFOR 有单帧/时序结果。Removert remove/revert 迭代变化不等于独立控制所有组件的消融。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: 4denoisenet-2023
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: desnow-gnn-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: crfor-2023
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: removert-2020
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: 4denoisenet-2023：SnowyKITTI 上报告不同雪强的 IoU、runtime 与参数量；真实 CADC 的证据为定性去噪展示（Table II；Figs. 4–5）。；desnow-gnn-2026：WADS
+          上报告 Precision 97.4%、F1 95.3%；雨雾适配在当前笔记中为定性可视化（Table 2；Fig. 7）。；crfor-2023：WADS 比较中 CRFOR 的 F1 高于所比规则基线，CRFOR-t
+          进一步提高；下游 SECOND 仅展示定性案例（Tables II–III；Fig. 5）。；removert-2020：KITTI、MulRan 提供地图可视化，另报告 remove/revert 迭代的
+          TP、FP、FN 变化（Figs. 6–9）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: 4denoisenet-2023
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: desnow-gnn-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: crfor-2023
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: removert-2020
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: 4denoisenet-2023
+      location: Sec. III-B–D，Figs. 1–3；Table III
       evidence:
       - paper: 4denoisenet-2023
         stage: first-pass
@@ -536,24 +2247,67 @@ challenges:
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    - paper: desnow-gnn-2026
+      location: Sec. 3.1–3.3，Fig. 3；Table 3
+      evidence:
       - paper: desnow-gnn-2026
         stage: first-pass
         anchor: section-05
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    - paper: crfor-2023
+      location: Sec. III-F，Fig. 2；Table II
+      evidence:
       - paper: crfor-2023
         stage: first-pass
         anchor: section-05
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    - paper: removert-2020
+      location: Sec. III-B–D，Algorithm 1，Figs. 3–4
+      evidence:
       - paper: removert-2020
         stage: first-pass
         anchor: section-05
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    open_questions:
+      text: 不同运动/配准误差下跨帧证据何时转为污染，以及 Removert 到天气点的迁移，仍待核验。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  why_hard:
+    text: 单帧没有持续性/可见性证据；加入历史又带来运动、位姿、同步和关联误差。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: 4denoisenet-2023
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: desnow-gnn-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: crfor-2023
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: removert-2020
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
 - id: challenge-weather
   name: 多天气与跨域差异
   description: 不同天气和传感器的退化分布不同
@@ -562,53 +2316,637 @@ challenges:
   - 共享参数不能覆盖天气差异
   - 跨传感器强度偏置
   evidence:
-  - paper: adversenet-2025
+  - &id023
+    paper: adversenet-2025
     stage: first-pass
-    anchor: section-02
+    anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
-  - &id009
+  - &id024
+    paper: bev-devils-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id025
     paper: triplemixer-2025
     stage: first-pass
-    anchor: section-02
+    anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
-  - &id007
+  - &id026
     paper: ltdnet-2026
     stage: first-pass
-    anchor: section-02
+    anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
-  - paper: weathernet-2020
+  - &id027
+    paper: weathernet-2020
     stage: first-pass
-    anchor: section-02
-    status: source-checked
-    basis: existing-note
-    original_pdf_review_status: source-checked
-  - paper: bev-devils-2024
-    stage: first-pass
-    anchor: section-02
+    anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
   insights:
   - id: insight-weather
-    name: 共享与天气条件表示
+    name: 共享主干，再受控补入天气差异
     techniques:
-    - CTPV
+    - 共享参数
     - 天气特定参数
-    - 三域混合
-    - 天气 embedding
+    - Lasso
+    - 两阶段
+    - 路由未说明
     status: inferred
-    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    transfer_boundary: Rain55 阶段 2 可能低于阶段 1；更多参数不保证更好。主要为 DENSE 气候舱雨雾与 SnowyKITTI 仿真雪，未报告统一真实道路下游验证。
     source_papers:
     - adversenet-2025
+    evidence:
+    - *id023
+    principle:
+      text: 不同天气既有可共享结构，也有分布差异；先学共性，再限制特定参数扩展，能把“共享多少”变成可检查的设计。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: adversenet-2025
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 有多种天气训练数据，希望在统一模型中控制共享与专门化的范围时。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: adversenet-2025
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: AdverseNet 先联合更新共享 CTPV 2D 编解码器，再固定共享参数，按逐层可学习分数选择性加入天气特定参数，并用 Lasso 控制扩展。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: adversenet-2025
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 三平面插值到查询点后相加；测试跳过 NULL 参数位置。笔记明确未交代自动选择天气特定参数的部署路由，不补造自动识别机制。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: adversenet-2025
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 需要雨雪雾数据及两阶段训练；特定参数扩展增加参数量，分割头仍有密集三维计算成本。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: adversenet-2025
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: Rain55 阶段 2 可能低于阶段 1；更多参数不保证更好。主要为 DENSE 气候舱雨雾与 SnowyKITTI 仿真雪，未报告统一真实道路下游验证。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: adversenet-2025
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: Tables II–V 比较阶段、平面与正则；两阶段平均指标改善不等于每种天气均改善，也不证明未报告的混合天气路由。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: adversenet-2025
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: adversenet-2025：DENSE 上 AdverseNet-2 MIoU 94.67%、平均时间 123.65 ms；SnowyKITTI 的雪结果来自仿真（Tables II–III）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: adversenet-2025
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: adversenet-2025
+      location: Sec. II-A–C，Fig. 2；Sec. III-D，Tables II–V
+      evidence:
+      - paper: adversenet-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 部署时如何自动选择天气特定参数、混合天气如何路由，现有笔记明确未获论文说明。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-bev
+    name: 先选对齐空间，再安排跨模态融合
+    techniques:
+    - BEV
+    - 几何对齐
+    - 融合位置
+    - 训练配方
+    - 领域外
+    status: inferred
+    transfer_boundary: 综述和配方实验没有证明恶劣天气去噪迁移；不同 mini/full 配置不能直接作为某个融合模块的单因果证据。
+    source_papers:
+    - bev-devils-2024
+    evidence:
+    - *id024
+    principle:
+      text: 融合首先要回答不同传感器的信息在哪里对齐、何时压缩几何；统一 BEV 便于交互，但不能省略几何对齐和信息损失的检查。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: bev-devils-2024
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 需要比较 camera/LiDAR 表征、融合位置和训练配方时；本来源是领域外综述与配方研究。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: bev-devils-2024
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: Camera 视角变换有 lifting、3D 查询等替代路线；LiDAR 可先提 3D 特征再压缩或先 BEV 再提特征；fusion 在统一 BEV 内做特征与时空融合。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: bev-devils-2024
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: BEVFormer++、Voxel-SPVCNN 是文中配方实例，不能把综述各路线串成一个新网络；比较时保留 head/backbone、输入扫描和训练轮数。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: bev-devils-2024
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 需要标定/几何对齐、适当的高度压缩与计算预算；时空融合还依赖历史信息质量。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: bev-devils-2024
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 综述和配方实验没有证明恶劣天气去噪迁移；不同 mini/full 配置不能直接作为某个融合模块的单因果证据。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: bev-devils-2024
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: Tables IV–V 支持具体配方对照；已有方法汇总表与受控消融性质不同，不能混用。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: bev-devils-2024
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: bev-devils-2024：Table IV 的配方对照与已有方法汇总性质不同；mini/full、head、backbone、训练轮数必须分别读取。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: bev-devils-2024
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: bev-devils-2024
+      location: Sec. III-A–D，Figs. 2–5；Sec. IV，Tables IV–V
+      evidence:
+      - paper: bev-devils-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: BEV 融合配方在天气去噪中的有效性与最适融合位置，领域外综述不构成验证。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-multidomain
+    name: 让互补表征保留不同结构证据
+    status: inferred
+    source_papers:
     - triplemixer-2025
+    techniques:
+    - 互补表征
+    - GMX/FMX/CMX
+    - lifting wavelet
+    - 三平面
+    - 监督
+    principle:
+      text: 单一投影或局部邻域会丢掉不同的信息；在局部三维几何、多方向频率与通道上下文间交换证据，是表征互补，不等同于显式天气条件化。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: triplemixer-2025
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    transfer_boundary: 合成天气不能完全覆盖真实复杂性；SemanticSTF 稀有类别 IoU 可接近零，平均下游增益不能掩盖类别失败。
+    evidence:
+    - *id025
+    playbook:
+      use_when:
+        text: 需要同时利用细粒度 3D 邻域与更大范围多尺度信息，并有逐点天气监督时。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: triplemixer-2025
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: TripleMixer 串联 GMX 几何邻域、三平面 lifting wavelet 的 FMX，以及回投 3D 后的 CMX 通道混合；联合 CE、Lovász 与 wavelet regularization。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: triplemixer-2025
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 体素均值下采样减规模，邻点差向量/attention/residual 保留局部关系；三方向投影减少单 BEV 的高度信息损失。它们不是三个天气专家。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: triplemixer-2025
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 依赖逐点标签、投影分辨率和小波层数；参数量较高，资源受限部署需权衡。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: triplemixer-2025
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 合成天气不能完全覆盖真实复杂性；SemanticSTF 稀有类别 IoU 可接近零，平均下游增益不能掩盖类别失败。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: triplemixer-2025
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: Table XIII 等有 GMX/FMX/CMX 移除及分辨率、层数、损失对照；原任务范围内支持组件贡献，不证明跨域偏差已被消除。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: triplemixer-2025
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: triplemixer-2025：在去噪、语义分割、地点识别与检测上分别评估；真实 SemanticSTF 的下游模型不重训，三模型平均 mIoU 提高 2.38 点（Tables VIII–X）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: triplemixer-2025
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: triplemixer-2025
+      location: Sec. IV-B–F，Figs. 5–7，Eqs. (2)–(14)；Table XIII
+      evidence:
+      - paper: triplemixer-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 互补表征能否消除真实域偏差、极稀有类别失败及资源受限部署困难，现有整体结果不构成保证。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-conditioning
+    name: 把退化状态作为恢复条件
+    status: inferred
+    source_papers:
     - ltdnet-2026
+    techniques:
+    - weather embedding
+    - 条件化
+    - 几何恢复
+    - PPB
+    - 累计配置
+    principle:
+      text: 相同空间结构在不同退化下需要不同处理；用估计的天气状态调制特征，可以把恢复映射与退化条件关联起来。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: ltdnet-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    transfer_boundary: 真实天气主要以 detection AP 评估，缺少配对 clean 几何；NR-F1 不是所有天气组合都最佳，不能把恢复输出当真实几何保证。
+    evidence:
+    - *id026
+    playbook:
+      use_when:
+        text: 目标包括恢复缺失几何，并有 clean/degraded 配对训练条件时；先核查配对数据与真实部署差异。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: ltdnet-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: LTDNet 在 range image 上并行建模空间/频率，Weather-Aware Block 估计 weather embedding 调制中间特征，decoder 重建，Probabilistic
+          Pruning Block 去伪影。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: ltdnet-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: global/local positional encoding 补偿柱面投影位置歧义；skip connections 保留多尺度信息；输出端剪枝处理生成伪影。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: ltdnet-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 需要合成配对 clean/degraded 数据及重建计算；天气 embedding 的作用与空频块、剪枝一起处在具体累计配置中。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: ltdnet-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 真实天气主要以 detection AP 评估，缺少配对 clean 几何；NR-F1 不是所有天气组合都最佳，不能把恢复输出当真实几何保证。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: ltdnet-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: Table 3 为 PE→SFB→PPB→WAB 的累计增益；只说明这些配置差异，不能宣称 WAB 在任意后端都有同样独立增益。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: ltdnet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: ltdnet-2026：IQA3D 使用合成配对测质量、真实序列测检测；LTDNet 的 NR-F1 并非所有天气组合最高（Tables 1–2）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: ltdnet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: ltdnet-2026
+      location: Method，Fig. 1，PDF pp. 2–4；IQA3D、Tables 1–3
+      evidence:
+      - paper: ltdnet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 真实天气重建几何是否对应真实缺失结构，以及 WAB 独立于累计配置的贡献，证据尚不足。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-weather-labels
+    name: 用可重复参考建立天气标签
+    status: inferred
+    source_papers:
     - weathernet-2020
+    techniques:
+    - 清洁参考
+    - 自动标注
+    - 天气增强
+    - 静态场景
+    - clear/rain/fog
+    principle:
+      text: 当粒子难以人工标注而静态场景可重复采集时，可把同光束的清洁参考转成标签来源；标签生成条件与网络结构应分开看。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: weathernet-2020
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    transfer_boundary: 动态自然雨雾只能定性评估；参考标注的可靠性不能未经核查迁移到运动场景。
+    evidence:
+    - *id027
+    playbook:
+      use_when:
+        text: 能在静态、受控天气场景中取得对齐清洁参考时；不能直接假定动态道路也满足此条件。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: weathernet-2020
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: WeatherNet 堆叠无天气参考帧，与雨雾帧同光束距离比较生成 clutter 标签；以 distance/intensity 图监督 clear/rain/fog 分割，再移除天气类。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: weathernet-2020
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 使用参考差距 ±35 cm 规则；道路天气增强缓解气候舱场景过拟合；LiLaBlock 加 dilated convolution 与 dropout 并减深度。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: weathernet-2020
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 自动标签依赖静态可重复采集；仿真增强需天气模型，投影和强度输入有传感器条件。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: weathernet-2020
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 动态自然雨雾只能定性评估；参考标注的可靠性不能未经核查迁移到运动场景。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: weathernet-2020
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: Table I 的三种训练数据组合支持数据/增强设置的比较，并未逐项消融网络模块；Figs. 7–8 为动态场景定性。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: weathernet-2020
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: weathernet-2020：气候舱报告逐类 IoU、运行时与参数量；动态自然小雨和浓雾场景使用定性示例（Table I；Figs. 7–8）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: weathernet-2020
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: weathernet-2020
+      location: Sec. III-B–D，Eqs. (1)–(3)，Algorithm 1，Figs. 2–3；Table I
+      evidence:
+      - paper: weathernet-2020
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 动态道路无法获得静态同光束参考时的标签可靠性，以及各网络辅件独立必要性，现有对照未回答。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  why_hard:
+    text: 天气、传感器和数据采集域共同改变观测；统一训练、条件化与跨域泛化不是同一个命题。
+    basis: analyst-inference
+    status: inferred
     evidence:
     - paper: adversenet-2025
       stage: first-pass
@@ -616,15 +2954,19 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
-    - &id013
-      paper: triplemixer-2025
+    - paper: bev-devils-2024
       stage: first-pass
       anchor: section-05
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
-    - &id011
-      paper: ltdnet-2026
+    - paper: triplemixer-2025
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: ltdnet-2026
       stage: first-pass
       anchor: section-05
       status: source-checked
@@ -636,62 +2978,6 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
-    principle:
-      text: 跨天气建模需处理共性与差异。共享参数、天气条件和互补表征是不同设计选择，现有分组不能证明任一机制在所有天气都有效。
-      basis: analyst-inference
-      status: inferred
-      evidence:
-      - paper: adversenet-2025
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
-      - paper: triplemixer-2025
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
-      - paper: ltdnet-2026
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
-      - paper: weathernet-2020
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
-  - id: insight-bev
-    name: 跨模态空间表征思路
-    techniques:
-    - BEV 表征比较
-    - Camera/LiDAR/Fusion
-    status: inferred
-    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
-    source_papers:
-    - bev-devils-2024
-    evidence:
-    - paper: bev-devils-2024
-      stage: first-pass
-      anchor: section-05
-      status: source-checked
-      basis: existing-note
-      original_pdf_review_status: source-checked
-    principle:
-      text: 统一空间坐标可作为跨模态与跨时间的信息接口，但运动对齐与表示分辨率仍需单独设计和评测。
-      basis: analyst-inference
-      status: inferred
-      evidence:
-      - paper: bev-devils-2024
-        stage: first-pass
-        anchor: section-05
-        status: source-checked
-        basis: existing-note
-        original_pdf_review_status: source-checked
 - id: challenge-downstream
   name: 去噪与下游收益不一致
   description: 逐点或重建指标不保证所有下游类别改善
@@ -700,26 +2986,52 @@ challenges:
   - 总体收益不代表每类改善
   - 缺失结构不能靠删点恢复
   evidence:
-  - *id007
-  - &id015
-    paper: 3d-unoutdet-2025
+  - &id028
+    paper: ltdnet-2026
     stage: first-pass
-    anchor: section-02
+    anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
-  - *id008
-  - *id009
-  - *id010
+  - &id029
+    paper: 3d-unoutdet-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id030
+    paper: rpsnownet-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id031
+    paper: triplemixer-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id032
+    paper: shape-enhanced-set-det-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
   insights:
   - id: insight-task
-    name: 结构恢复与下游评估
+    name: 把恢复结果接到任务中检验
     techniques:
-    - 恢复缺失几何
-    - 检测和分割评估
-    - RoI 形状特征
+    - 下游闭环
+    - 误删代价
+    - 是否重训
+    - 类别指标
+    - 几何真实性
     status: inferred
-    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    transfer_boundary: 3D-UnOutDet 平均 mIoU 提升时 road/fence 仍可能下降；LTDNet 真实几何无配对验证；SET-Det 的天气迁移未证实。
     source_papers:
     - ltdnet-2026
     - 3d-unoutdet-2025
@@ -727,21 +3039,299 @@ challenges:
     - triplemixer-2025
     - shape-enhanced-set-det-2026
     evidence:
-    - *id011
-    - &id017
-      paper: 3d-unoutdet-2025
-      stage: first-pass
-      anchor: section-05
-      status: source-checked
-      basis: existing-note
-      original_pdf_review_status: source-checked
-    - *id012
-    - *id013
-    - *id014
+    - *id028
+    - *id029
+    - *id030
+    - *id031
+    - *id032
     principle:
-      text: 点云质量改善与下游任务收益不是同一个指标，应将恢复或过滤接入目标任务并分别检查两类证据。
+      text: 逐点去噪指标与任务需要的信息不同。只有把保留/恢复的结构交给具体任务，并检查类别代价，才能判断它是否有用。
       basis: analyst-inference
       status: inferred
+      evidence:
+      - paper: ltdnet-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: 3d-unoutdet-2025
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: rpsnownet-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: triplemixer-2025
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: shape-enhanced-set-det-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 去噪指标变好但检测/分割收益不明，或生成结构是否可靠尚不清楚时。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: ltdnet-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: 3d-unoutdet-2025
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: triplemixer-2025
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: LTDNet 走 degraded-to-clean 恢复，SET-Det 走 RoI 补全加特征融合；3D-UnOutDet、RPSnowNet、TripleMixer 则主要过滤后输入下游模型。技术动作不同，下游评估是共同验证环节。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: ltdnet-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: 3d-unoutdet-2025
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: triplemixer-2025
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 明确下游是否重训、输入是否更换、阈值是否固定，并单列保留真实结构的代价；这些是阅读者整理的评测使用方式，不是新增网络模块。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: ltdnet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: 3d-unoutdet-2025
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: triplemixer-2025
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 需要对应任务标签和一致的评测设置；重训模型、预处理和生成分支各有额外成本。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: ltdnet-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: 3d-unoutdet-2025
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: triplemixer-2025
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 3D-UnOutDet 平均 mIoU 提升时 road/fence 仍可能下降；LTDNet 真实几何无配对验证；SET-Det 的天气迁移未证实。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: ltdnet-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: 3d-unoutdet-2025
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: triplemixer-2025
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: 原论文报告检测、分割或补全的对应结果；不能从整体收益推出“去噪越多越好”，也不能从单个定性例宣称稳定下游增益。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: ltdnet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: 3d-unoutdet-2025
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: triplemixer-2025
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: ltdnet-2026：IQA3D 使用合成配对测质量、真实序列测检测；LTDNet 的 NR-F1 并非所有天气组合最高（Tables 1–2）。；3d-unoutdet-2025：WADS 上
+          3D-UnOutDet mIoU 89.04%，SSR 81.76%，监督 3D-OutDet 90.00%；总耗时 82 ms（Table I）。；rpsnownet-2026：WADS 上 DMROR
+          mIoU 88.06%、897 ms；RPSnowNet 88.92%、15 ms。CADC 逐点去雪为定性，检测另有 box 定量（Table III）。；triplemixer-2025：在去噪、语义分割、地点识别与检测上分别评估；真实
+          SemanticSTF 的下游模型不重训，三模型平均 mIoU 提高 2.38 点（Tables VIII–X）。；shape-enhanced-set-det-2026：KITTI、Waymo 上分别报告检测指标与补全指标，另比较不同距离、遮挡与效率（Sec.
+          IV）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: ltdnet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: 3d-unoutdet-2025
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: triplemixer-2025
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: ltdnet-2026
+      location: IQA3D，Tables 1–3
       evidence:
       - paper: ltdnet-2026
         stage: first-pass
@@ -749,30 +3339,82 @@ challenges:
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    - paper: 3d-unoutdet-2025
+      location: Sec. V，Table II；Sec. VII
+      evidence:
       - paper: 3d-unoutdet-2025
         stage: first-pass
         anchor: section-05
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    - paper: rpsnownet-2026
+      location: Sec. IV-D，Tables V–VI
+      evidence:
       - paper: rpsnownet-2026
         stage: first-pass
         anchor: section-05
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    - paper: triplemixer-2025
+      location: Sec. V-B，Tables VIII–X
+      evidence:
       - paper: triplemixer-2025
         stage: first-pass
         anchor: section-05
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    - paper: shape-enhanced-set-det-2026
+      location: Sec. III–IV，Tables V、VIII–X
+      evidence:
       - paper: shape-enhanced-set-det-2026
         stage: first-pass
         anchor: section-05
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    open_questions:
+      text: 统一控制下游训练/阈值后，哪些被删或被补结构导致具体类别收益/损害，不能由平均指标作因果归因。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  why_hard:
+    text: 逐点指标不刻画所有任务关键结构；误删、生成伪影和下游训练配置都可能改变任务收益。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: ltdnet-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: 3d-unoutdet-2025
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: rpsnownet-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: triplemixer-2025
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: shape-enhanced-set-det-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
 - id: challenge-efficiency
   name: 精度与计算成本冲突
   description: 近邻查询、图构造和密集特征消耗资源
@@ -781,43 +3423,141 @@ challenges:
   - 滤波达不到传感器频率
   - 特征与线程管理存在开销
   evidence:
-  - paper: 3d-outdet-2024
+  - &id033
+    paper: 3d-outdet-2024
     stage: first-pass
-    anchor: section-02
+    anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
-  - *id015
-  - *id008
-  - *id016
+  - &id034
+    paper: 3d-unoutdet-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id035
+    paper: rpsnownet-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - &id036
+    paper: sdor-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
   insights:
   - id: insight-fast
-    name: 分离训练成本与在线推理
+    name: 减少在线算子和模型深度
     techniques:
-    - 离线伪标签
-    - 轻量邻域算子
-    - 并行分区
+    - 轻量算子
+    - NH Convolution
+    - kNN
+    - 浅网络
+    - 总耗时
     status: inferred
-    transfer_boundary: 跨论文归纳；领域外技术未验证恶劣天气去噪迁移
+    transfer_boundary: 准确率并非所有数据集最佳；WADS mIoU 略低于 PolarNet，少参数不是无损速度优势。
     source_papers:
     - 3d-outdet-2024
-    - 3d-unoutdet-2025
-    - rpsnownet-2026
-    - sdor-2026
     evidence:
-    - paper: 3d-outdet-2024
-      stage: first-pass
-      anchor: section-05
-      status: source-checked
-      basis: existing-note
-      original_pdf_review_status: source-checked
-    - *id017
-    - *id012
-    - *id018
+    - *id033
     principle:
-      text: 区分训练前的监督构造、在线模型推理和预后处理成本，再安排算法资源；不能只用网络前向时间声称整个流程实时。
+      text: 实时性可以从在线计算路径本身入手：保留任务所需邻域操作，用浅模型完成预测；参数少并不意味着邻域构造免费。
       basis: analyst-inference
       status: inferred
+      evidence:
+      - paper: 3d-outdet-2024
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 有逐点监督、需要直接处理 3D 邻域且关心模型规模时。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: 3d-outdet-2024
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: 3D-OutDet 先构造按距离排序的 kNN neighbor map，再用两层 NH Convolution 和一个残差块做逐点二分类；einsum 并行卷积。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: 3d-outdet-2024
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 第一层可附加邻点距离并学习其权重；单残差块控制层数。kNN 构建要计入总耗时，不能只报告卷积部分。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: 3d-outdet-2024
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 依赖标签、k 值和近邻搜索；在线邻域构造仍有内存/时间开销。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: 3d-outdet-2024
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 准确率并非所有数据集最佳；WADS mIoU 略低于 PolarNet，少参数不是无损速度优势。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: 3d-outdet-2024
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: Table I 报告 WADS 90.00 mIoU、82 ms 总时间、11.02K 参数；笔记未记录独立模块消融，不能单归因于 NH Convolution。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: 3d-outdet-2024
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: 3d-outdet-2024：WADS 上报告 mIoU 90.00、总时间 82 ms、参数 11.02K；PolarNet mIoU 为 90.16（Table I）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: 3d-outdet-2024
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: 3d-outdet-2024
+      location: Sec. III-A–B，Eqs. (2)，Figs. 2–3；Table I；Sec. VII
       evidence:
       - paper: 3d-outdet-2024
         stage: first-pass
@@ -825,21 +3565,336 @@ challenges:
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    open_questions:
+      text: NH Convolution 相对其他邻域算子的独立增益，以及新设备上的全流程延时，现有整体比较没有充分隔离。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-offline-labels
+    name: 把昂贵规则摊销到离线监督
+    status: inferred
+    source_papers:
+    - 3d-unoutdet-2025
+    - rpsnownet-2026
+    techniques:
+    - 伪标签
+    - SSR
+    - DMROR
+    - 离线摊销
+    - 教师偏差
+    - 累计消融
+    principle:
+      text: 规则可提供训练信号而不必留在在线路径；学习器承担部署预测，将标签构建成本与实时执行分开，但不会自动消除教师错误。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: 3d-unoutdet-2025
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: rpsnownet-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    transfer_boundary: SSR 对 fog/dirt 不保证同等效力，WADS→CADC 需调 k；RPS 也依赖低强度/近距/低高度先验。无人工标签不等于无偏监督。
+    evidence:
+    - *id034
+    - *id035
+    playbook:
+      use_when:
+        text: 缺少人工逐点标签、已有适用的物理/几何规则，并愿意支付离线标签与训练成本时。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: 3d-unoutdet-2025
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: 3D-UnOutDet 用 SSR 邻域强度 FFT 范数给伪标签，训练原 3D-OutDet 后端；RPS 的 DMROR 离线生成伪标签，在线只运行 point/range 网络及其后处理。FFT
+          在 SSR 标签路径，不是插入后端的 DWT 模块。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: 3d-unoutdet-2025
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: SSR 与后端共享 kNN 索引/距离，强度可做距离平方校正；DMROR 组合两次判定，RPS 后处理把预测先验参数与初始先验加权融合。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: 3d-unoutdet-2025
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 教师先验、阈值和传感器配置必须适用；还需离线搜索/训练。SSR 最近邻仍是瓶颈，DMROR 的慢速计算被移到训练前。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: 3d-unoutdet-2025
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: SSR 对 fog/dirt 不保证同等效力，WADS→CADC 需调 k；RPS 也依赖低强度/近距/低高度先验。无人工标签不等于无偏监督。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: 3d-unoutdet-2025
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: SSR 与学习器主表可比较，3D-UnOutDet Table V 有标签/后端设计对照；RPS Table VIII 比较标签源，Table VII 是累计组件配置，不能把相邻差当任意组合独立贡献。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: 3d-unoutdet-2025
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: 3d-unoutdet-2025：WADS 上 3D-UnOutDet mIoU 89.04%，SSR 81.76%，监督 3D-OutDet 90.00%；总耗时 82 ms（Table I）。；rpsnownet-2026：WADS
+          上 DMROR mIoU 88.06%、897 ms；RPSnowNet 88.92%、15 ms。CADC 逐点去雪为定性，检测另有 box 定量（Table III）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: 3d-unoutdet-2025
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: 3d-unoutdet-2025
+      location: Sec. III-A–B，Algorithm 1，Fig. 2；Tables I、V；Sec. VII
+      evidence:
       - paper: 3d-unoutdet-2025
         stage: first-pass
         anchor: section-05
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    - paper: rpsnownet-2026
+      location: Sec. III-A–C，Fig. 2，Algorithm 1；Tables VII–VIII
+      evidence:
       - paper: rpsnownet-2026
         stage: first-pass
         anchor: section-05
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    open_questions:
+      text: 学习器何时修正或复制教师错误、哪些伪标签点决定下游收益，以及跨传感器配置迁移，仍需独立证据。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-parallel
+    name: 把空间局部分解变成并行任务
+    status: inferred
+    source_papers:
+    - sdor-2026
+    techniques:
+    - CPU 并行
+    - 扇区
+    - boundary band
+    - 线程开销
+    - blending
+    principle:
+      text: 若过滤能局部执行，空间分区既给局部统计尺度，也给独立并行单元；边界关联和调度成本决定这种分解是否划算。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sdor-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    transfer_boundary: 边界带 F1 仍低于 interior；绝对耗时随数据集变化。分区并行不是免训练标签路线，也不保证任意核数线性加速。
+    evidence:
+    - *id036
+    playbook:
+      use_when:
+        text: CPU 多核可用、局部邻域过滤可分区执行，并能显式处理跨分区邻居时。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: sdor-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: SDOR 按方位角和高度划扇区，扇区内以密度/距离自适应半径计数，多个 CPU 线程独立过滤后合并 inlier。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: sdor-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: boundary band 补偿跨扇区邻点；blending 限制极端局部半径。边界补偿处理空间截断，线程数处理执行调度，两者不能混为一个增益。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: sdor-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 依赖分区粒度、数据密度和硬件线程；过细扇区稀疏且索引/管理开销增加，高线程有 parallelization overhead。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: sdor-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 边界带 F1 仍低于 interior；绝对耗时随数据集变化。分区并行不是免训练标签路线，也不保证任意核数线性加速。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: sdor-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: 笔记记录多线程相对单线程约减少 64% 时间，以及分区/线程/边界对照；只支持报告硬件和配置，不证明每个补丁独立必要。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: sdor-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: sdor-2026：WADS 上报告 F1 90.53%、runtime 0.662 s；Weather-KITTI Rain 的 F1 85.27%，与 DROR 85.30% 接近（Tables
+          7、9）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: sdor-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: sdor-2026
+      location: Methods：Parallel processing，PDF pp. 5、11；Results/Discussion pp. 11、15–17
+      evidence:
       - paper: sdor-2026
         stage: first-pass
         anchor: section-05
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    open_questions:
+      text: 各硬件/分区粒度上的最佳线程与边界带设置，以及 blending 和 boundary band 的独立必要性，不由总体加速结果保证。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  why_hard:
+    text: 邻域构造、推理、标签构建和训练属于不同成本项；只缩模型或只报某段时间会掩盖真实瓶颈。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: 3d-outdet-2024
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: 3d-unoutdet-2025
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: rpsnownet-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: sdor-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

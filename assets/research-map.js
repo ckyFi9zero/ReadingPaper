@@ -82,8 +82,9 @@
     }
     syncFiltersToGraph();
     if (inspector?.closest(".map-tree-item[hidden]")) closeInspector();
-    const visible = items.filter(item => !item.hasAttribute("hidden")).length;
-    if (status) status.textContent = `${visible} 个节点或论文记录匹配`;
+    const weaponLibrary = payload.type === "challenge";
+    const visible = items.filter(item => !item.hasAttribute("hidden") && (!weaponLibrary || item.classList.contains("map-insight"))).length;
+    if (status) status.textContent = weaponLibrary ? `${visible} 张使用卡匹配` : `${visible} 个节点或论文记录匹配`;
     if (empty) empty.hidden = visible !== 0;
   }
 
@@ -101,6 +102,12 @@
     return `<li class="inspector-source"><details ${index === 0 ? "open" : ""}><summary>${esc(source.name)} (${esc(source.year)})</summary><p class="analysis-caption">${esc(source.scope)}</p><p><a href="${esc(source.href)}">打开论文</a> · <a href="${esc(source.analysis_href)}">完整五分支解析树 →</a></p>${chain}${evidenceMarkup(source.evidence)}</details></li>`;
   }
 
+  function playbookMarkup(detail) {
+    if (!detail.playbook?.length) return "";
+    const locations = (detail.source_locations || []).map(item => `<li><strong>${esc(item.name)}</strong>：${esc(item.location)}${item.original_href ? ` · <a href="${esc(item.original_href)}">原论文入口</a>` : ""}${evidenceMarkup(item.evidence)}</li>`).join("");
+    return `<section class="weapon-playbook">${detail.playbook.map(item => claimMarkup(item, item.label)).join("")}${claimMarkup(detail.open_questions, "仍待核验")}<h4>论文原文定位（沿用笔记登记）</h4><ul class="weapon-locations">${locations}</ul></section>`;
+  }
+
   function updateInspector(nodeId) {
     if (!inspector) return;
     const detail = payload.details?.[nodeId];
@@ -116,7 +123,7 @@
       if (edge.dataset.edgeTo === nodeId) related.add(edge.dataset.edgeFrom);
     }
     const relatedMarkup = related.size ? `<h4>关联节点</h4><div class="map-related">${[...related].filter(id => payload.details[id]).map(id => `<button type="button" data-select-node="${esc(id)}">${esc(payload.details[id].name)}</button>`).join("")}</div>` : "";
-    inspector.innerHTML = `<button type="button" class="map-inspector-close" data-close-inspector>收起证据</button><div class="map-inspector-content"><p class="map-inspector-type">${esc(typeLine)}</p><h3>${esc(detail.name)}</h3><p>${esc(detail.description || "")}</p>${claimMarkup(detail.principle, "可复用的技术认识")}${techniques}${failures}${detail.motivation ? `<p><strong>动机：</strong>${esc(detail.motivation)}</p>` : ""}${detail.transfer_boundary ? `<p class="map-transfer"><strong>迁移边界：</strong>${esc(detail.transfer_boundary)}</p>` : ""}${relatedMarkup}${evidenceMarkup(detail.evidence)}${sources}</div>`;
+    inspector.innerHTML = `<button type="button" class="map-inspector-close" data-close-inspector>收起证据</button><div class="map-inspector-content"><p class="map-inspector-type">${esc(typeLine)}</p><h3>${esc(detail.name)}</h3>${detail.playbook ? "" : `<p>${esc(detail.description || "")}</p>`}${claimMarkup(detail.kind === "challenge" ? detail.why_hard : null, "为什么难")}${claimMarkup(detail.principle, "可复用的技术认识")}${techniques}${failures}${playbookMarkup(detail)}${detail.motivation ? `<p><strong>动机：</strong>${esc(detail.motivation)}</p>` : ""}${detail.transfer_boundary ? `<p class="map-transfer"><strong>迁移边界：</strong>${esc(detail.transfer_boundary)}</p>` : ""}${relatedMarkup}${evidenceMarkup(detail.evidence)}${sources}</div>`;
   }
 
   function highlightNeighbors(nodeId) {
