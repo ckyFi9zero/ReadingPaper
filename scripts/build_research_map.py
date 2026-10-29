@@ -6,6 +6,7 @@ all-destinations preflight before saving, preserving authored reading pages.
 """
 import argparse
 import html
+import hashlib
 import json
 import re
 from datetime import date
@@ -718,7 +719,12 @@ def render(root, papers, shell, rendered=None):
     for name,title,body in pages:
         head=f'<header class="page-head"><div class="eyebrow">RESEARCH MAP</div><h1>{e(title)}</h1><p><a href="research-map.html">地图入口</a> · <a href="literature-tree.html">任务与方法树</a> · <a href="challenge-insight-tree.html">技术挑战树</a></p></header>'
         page=shell(title,head+body,current='research-map')
-        outputs[name]=page.replace('</head>','<link rel="stylesheet" href="assets/research-map.css"><script src="assets/map-layout.js" defer></script><script src="assets/map-canvas.js" defer></script><script src="assets/research-map.js" defer></script></head>')
+        def asset_url(asset):
+            if name != 'challenge-insight-tree.html' or asset not in ('research-map.css', 'research-map.js'):
+                return f'assets/{asset}'
+            digest = hashlib.sha256((Path(root) / 'assets' / asset).read_bytes()).hexdigest()[:12]
+            return f'assets/{asset}?v={digest}'
+        outputs[name]=page.replace('</head>', f'<link rel="stylesheet" href="{asset_url("research-map.css")}"><script src="assets/map-layout.js" defer></script><script src="assets/map-canvas.js" defer></script><script src="{asset_url("research-map.js")}" defer></script></head>')
     return outputs
 
 

@@ -248,6 +248,9 @@ class ResearchMapTests(unittest.TestCase):
         self.assertLess(output.index('id="map-search"'), output.index('id="map-graph"'))
         self.assertIn('论文原文定位（沿用笔记登记）', output)
         self.assertIn('何时谨慎使用', output)
+        for asset in ('research-map.css', 'research-map.js'):
+            digest = hashlib.sha256((ROOT / 'assets' / asset).read_bytes()).hexdigest()[:12]
+            self.assertIn(f'assets/{asset}?v={digest}', output)
 
     def test_svg_final_column_has_no_overlapping_modules(self):
         graph = research_map.build_literature_graph(self.data, self.data['facts'], {p['slug']: p for p in self.papers})

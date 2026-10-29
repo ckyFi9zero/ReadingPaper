@@ -104,3 +104,5 @@ FIREFOX_BIDI_URL=ws://127.0.0.1:9333/session node --test tests/test_research_map
 这些字段沿用上面的 claim 结构与状态规则，证据必须属于该 insight 的来源并指向真实阶段/锚点。`source_locations` 为每篇来源登记原文节/图表/算法/页码及对应阅读锚点；页面附已有 DOI 入口。定位从现有公开笔记核对，本轮不是对 26 篇 PDF 的重新审读。`open_questions` 必须为 `not-assessed / unverified` 且无伪装的已核验证据。
 
 搜索覆盖使用条件、机制、补丁、边界和原文定位，允许空格组合关键词，例如 `SDOR boundary band`、`SSR 教师`、`CRFOR ICM`。筛选位于脑图上方；节点保持短标题，完整内容在详情和下方可展开使用卡中阅读。生成器验证卡片完备性、来源归属、锚点和状态；不能代替学术判断。无新增原文审查记录，也不修改阅读页图文门禁、方法树事实和 novelty gate。
+
+武器库页面的共享 JS/CSS 引用附内容哈希版本，避免 Pages 浏览器缓存将新字段配上旧详情渲染；哈希由源资产生成，仍可离线阅读。
