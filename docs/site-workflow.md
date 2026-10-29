@@ -153,8 +153,12 @@ python3 scripts/check_site.py --root _site-public
 
 ## 研究树布局回归
 
-研究地图入口的单篇五分支树，以及任务与方法树、技术挑战树，均使用页面自然高度。两棵总览树由 `scripts/build_research_map.py` 生成 HTML 层级列表，完整节点名称换行显示；分支连线通过 CSS 随内容伸展，证据在所选节点下方展开。修改时不要恢复固定画布最小宽度、图容器高度上限或证据框内部滚动，也不要用裁剪／隐藏滚动条掩盖溢出。
+任务与方法树、技术挑战树采用左→右脑图。`scripts/build_research_map.py` 输出完整 HTML 层级列表；`assets/map-layout.js` 按子树占用高度计算各列坐标，`assets/map-canvas.js` 添加画布平移、缩放和 SVG 连线。脑图只显示短标题，完整标题保留在可访问名称、列表及点选证据抽屉中。初始收起超过五个子节点的大分支，全部展开、只看主干和单独折叠会重新布局，不能删除节点或证据。不得添加默认占据右侧的空详情框。
 
-仅修改地图时运行 `python3 scripts/build_research_map.py`，随后执行 `python3 scripts/build_research_map.py --check`、完整 Python 测试和 JavaScript 语法检查。`tests/test_research_map_browser.cjs` 保留可选 Firefox BiDi 回归入口；无浏览器连接时不视为已完成浏览器验收。发布前后都须在 1440px 桌面与 390px 手机视口实际检查：全部展开后 27 个任务树节点、19 个挑战树节点均可访问，页面无横向溢出，图与证据框无内部滚动，标题完整；同时检查单独分支、只看主干、筛选、重置、键盘选择、关联节点／哈希导航和单篇五分支展开。节点数量随源数据变化时，以生成的完整节点集为准。
+桌面默认脑图，手机默认完整列表，可随时切换。画布通过拖动、方向键和节点聚焦访问边界之外的节点；Ctrl / ⌘ + 滚轮或按钮缩放，Home / 适应窗口重新定位，100% 恢复原字号。最低缩放 85%，大树不以缩小文字强塞进一屏；可平移查看其余分支或切换列表。画布不使用原生双向滚动条，证据抽屉只在选中时打开，可用关闭按钮或 Escape 退出。没有 JavaScript 时仍能阅读生成的列表及下方证据卡。
 
-2026-10-28 布局修复验证：65 项 Python 回归通过，图文与分类发布门禁通过；桌面和手机浏览器实测上述完整节点与布局。完整站点检查另有两条已有的 `papers/3d-unoutdet-2025/linked-reader.html` 对私有 `source.pdf` 的缺失引用，与修复前 main 一致，未改动该阅读内容。GitHub Pages 公网验收仍须在对应提交部署成功后进行。
+仅修改地图时运行 `python3 scripts/build_research_map.py`，随后执行 `python3 scripts/build_research_map.py --check`、完整 Python 测试、`node tests/test_map_layout.cjs`、`node --test tests/test_app.cjs` 和新增脚本语法检查。布局测试覆盖空树、多个根、不同节点高度、深层 follow-up、宽分支的确定性与无重叠。`tests/test_research_map_browser.cjs` 保留可选 Firefox BiDi 回归入口；未连接浏览器不能据其空跑声称浏览器通过。
+
+发布前后均须在 1440px 桌面与 390px 手机实际验证：全部展开保留完整节点和边，当前为 27 个任务树节点／25 条边、19 个挑战树节点／12 条边；层级向右延伸、同列无重叠、节点短标题可读、正文无横向溢出。需实测拖动后的画布位移、缩放、100%、适应窗口、键盘平移及焦点自动定位、列表切换、证据全文与 Escape、筛选／空结果／重置、单篇五分支和哈希导航。节点数量变化时以源数据完整集合为准。
+
+2026-10-28 检查基线：完整站点检查有两条已有的 `papers/3d-unoutdet-2025/linked-reader.html` 对私有 `source.pdf` 的缺失引用，与 main 一致；本次不改动该阅读内容。图文与分类发布门禁必须继续通过。GitHub Pages 公网验收须在对应提交部署成功后进行，不能以提交或本地截图代替。

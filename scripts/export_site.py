@@ -112,7 +112,7 @@ def export(profile='local'):
             target.write_text(text, encoding='utf-8')
         allowed = set(ASSETS)
         if not public and 'research-map.html' in outputs:
-            allowed.update(['assets/research-map.css', 'assets/research-map.js'])
+            allowed.update(['assets/research-map.css', 'assets/map-layout.js', 'assets/map-canvas.js', 'assets/research-map.js'])
         if public:
             for relative in config.get('assets', []):
                 if Path(relative).parts[0] in PROTECTED or Path(relative).suffix.lower() not in ('.png', '.jpg', '.jpeg', '.svg', '.webp', '.gif', '.woff', '.woff2'):

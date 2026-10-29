@@ -123,7 +123,8 @@ class ResearchMapTests(unittest.TestCase):
             self.assertEqual(markup.count('data-node-id='), len(graph['nodes']))
             self.assertEqual(markup.count('data-edge-from='), len(graph['edges']))
             self.assertNotIn('node-confirmed', markup)
-            self.assertNotIn('<svg', markup)
+            self.assertIn('class="map-stage"', markup)
+            self.assertIn('class="map-connectors" aria-hidden="true"', markup)
             for node in graph['nodes']:
                 self.assertIn(research_map.e(graph['details'][node['id']]['name']), markup)
             for edge in graph['edges']:

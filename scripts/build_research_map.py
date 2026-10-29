@@ -480,7 +480,7 @@ def build_challenge_graph(data, facts, catalogue):
 
 
 def render_tree_graph(graph, graph_type):
-    """Render complete labels in document flow; shared insights keep every edge."""
+    """Render accessible nodes; JavaScript enhances the list into a mind map."""
     by_id = {node['id']: node for node in graph['nodes']}
     children = {ident: [] for ident in by_id}
     targets = set()
@@ -496,6 +496,7 @@ def render_tree_graph(graph, graph_type):
         meta = (f'{node.get("novelty_class", "")} 类层级 · {LABELS.get(confidence, confidence)}'
                 if graph_type == 'literature' else
                 ('技术挑战' if kind == 'challenge' else f'insight · {detail["source_count"]} 个来源'))
+        short_label = detail["name"].split(" · ", 1)[0]
         filters = detail.get('filters', {})
         search = ' '.join([detail['name'], detail.get('description', ''),
                            ' '.join(detail.get('techniques', [])), filters.get('search', '')]).lower()
@@ -509,9 +510,9 @@ def render_tree_graph(graph, graph_type):
                   ''.join(branch(item['to'], item, f'{path}{ident}-') for item in children[ident]) + '</ul>'
                   if children[ident] else '')
         return f'''<li class="map-tree-item{' map-edge' if edge else ''}"{edge_attrs}>
-<div class="map-node-row"><button type="button" class="map-tree-node node-{e(kind)} {'node-confirmed' if confidence == 'confirmed' else 'node-provisional'}" data-map-item data-node-id="{e(ident)}" data-node-kind="{e(kind)}" data-source-count="{detail['source_count']}" data-search="{e(search, quote=True)}" data-weather="{e('|'.join(filters.get('weather', [])))}" data-route="{e('|'.join(filters.get('route', [])))}" data-challenge="{e('|'.join(filters.get('challenge', [])))}" aria-expanded="false" aria-controls="map-inspector"><span class="map-node-name">{e(detail['name'])}</span><span class="map-node-meta">{e(meta)}</span></button>{toggle}</div>{nested}</li>'''
+<div class="map-node-row"><button type="button" class="map-tree-node node-{e(kind)} {'node-confirmed' if confidence == 'confirmed' else 'node-provisional'}" data-map-item data-node-id="{e(ident)}" data-node-kind="{e(kind)}" data-source-count="{detail['source_count']}" data-search="{e(search, quote=True)}" data-weather="{e('|'.join(filters.get('weather', [])))}" data-route="{e('|'.join(filters.get('route', [])))}" data-challenge="{e('|'.join(filters.get('challenge', [])))}" aria-expanded="false" aria-controls="map-inspector" aria-label="{e(detail['name'])}" title="{e(detail['name'])}"><span class="map-node-name">{e(short_label)}</span><span class="map-node-full">{e(detail['name'])}</span><span class="map-node-meta">{e(meta)}</span></button>{toggle}</div>{nested}</li>'''
 
-    return '<ul class="map-flow-tree">' + ''.join(branch(ident) for ident in by_id if ident not in targets) + '</ul>'
+    return '<div class="map-stage"><svg class="map-connectors" aria-hidden="true"></svg><ul class="map-flow-tree">' + ''.join(branch(ident) for ident in by_id if ident not in targets) + '</ul></div>'
 
 
 def render_node_detail(node, graph, catalogue):
@@ -646,9 +647,10 @@ def render(root, papers, shell, rendered=None):
         legend = ('<span class="map-legend-item legend-novelty-1">1 类 task</span><span class="map-legend-item legend-novelty-2">2 类 pipeline</span><span class="map-legend-item legend-novelty-3">3 类 module</span><span class="map-legend-item legend-novelty-4">4 类 follow-up</span>' if graph['type'] == 'literature' else '<span class="map-legend-item legend-challenge">challenge</span><span class="map-legend-item legend-insight">insight</span><span class="map-legend-item legend-external">领域外技术来源</span>')
         return f'''<section class="map-overview" data-graph-type="{graph['type']}">
   <div class="map-overview-head"><div><h2>{e(title)}</h2><p>{e(subtitle)}</p></div><div class="map-overview-toolbar"><button type="button" data-map-action="reset">重置视图</button><button type="button" data-map-action="expand">全部展开</button><button type="button" data-map-action="trunk">只看主干</button></div></div>
-  <p class="map-layout-hint">树随页面展开，完整标题自动换行。点击节点，证据会显示在该节点下方。</p>
+  <div class="map-canvas-toolbar" aria-label="脑图视图控制"><button type="button" data-canvas-action="out" aria-label="缩小脑图">−</button><output id="map-zoom" aria-live="polite">100%</output><button type="button" data-canvas-action="in" aria-label="放大脑图">＋</button><button type="button" data-canvas-action="fit">适应窗口</button><button type="button" data-canvas-action="actual">100%</button><button type="button" data-canvas-action="view" aria-pressed="false">列表阅读</button></div>
+  <p class="map-layout-hint" id="map-canvas-help">拖动画布平移 · Ctrl / ⌘ + 滚轮缩放 · 方向键平移，Home 适应窗口。点节点看完整说明，点 ＋/− 展开分支。最低 85% 保持可读，大树也可切换列表完整阅读。</p>
   <div class="map-legend">{legend}<span class="map-legend-item legend-provisional">虚线 = 暂定</span></div>
-  <div class="map-graph-layout"><div class="map-graph" id="map-graph" aria-label="{e(title)}总览图">{render_tree_graph(graph, graph['type'])}</div><aside class="map-inspector" id="map-inspector" aria-live="polite"><p class="map-inspector-empty">点击节点查看定义、关联论文和证据；用 − / + 收起或展开分支。</p></aside></div>
+  <div class="map-graph-layout"><div class="map-graph" id="map-graph" tabindex="0" aria-label="{e(title)}脑图画布" aria-describedby="map-canvas-help">{render_tree_graph(graph, graph['type'])}</div><dialog class="map-inspector" id="map-inspector" aria-label="节点完整说明与证据"></dialog></div>
   <script id="map-details" type="application/json">{details}</script>
 </section>'''
     outputs={}
@@ -658,7 +660,7 @@ def render(root, papers, shell, rendered=None):
     for name,title,body in pages:
         head=f'<header class="page-head"><div class="eyebrow">RESEARCH MAP</div><h1>{e(title)}</h1><p><a href="research-map.html">地图入口</a> · <a href="literature-tree.html">任务与方法树</a> · <a href="challenge-insight-tree.html">技术挑战树</a></p></header>'
         page=shell(title,head+body,current='research-map')
-        outputs[name]=page.replace('</head>','<link rel="stylesheet" href="assets/research-map.css"><script src="assets/research-map.js" defer></script></head>')
+        outputs[name]=page.replace('</head>','<link rel="stylesheet" href="assets/research-map.css"><script src="assets/map-layout.js" defer></script><script src="assets/map-canvas.js" defer></script><script src="assets/research-map.js" defer></script></head>')
     return outputs
 
 

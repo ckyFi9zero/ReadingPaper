@@ -107,18 +107,25 @@ browserTest('challenge inspector separates principle, technique and transfer bou
   await screenshot('challenge-inspector-desktop');
 });
 
-browserTest('expanded trees and inline evidence fit desktop and mobile without nested scrolling', async () => {
+browserTest('mind maps retain all nodes, pan without scrollbars and offer a mobile list', async () => {
   for (const width of [1440, 390]) {
     await command('browsingContext.setViewport', {context, viewport:{width,height:844}, devicePixelRatio:1});
     for (const name of ['literature-tree.html', 'challenge-insight-tree.html']) {
       await open(name);
       await evaluate(`(()=>{document.querySelector('[data-map-action="expand"]').click();return true})()`);
       assert.equal(await evaluate(`document.documentElement.scrollWidth<=innerWidth`), true);
-      assert.equal(await evaluate(`(()=>{const g=document.getElementById('map-graph');return g.scrollWidth<=g.clientWidth && g.scrollHeight<=g.clientHeight})()`), true);
+      if (width === 390) {
+        assert.equal(await evaluate(`document.getElementById('map-graph').classList.contains('is-mindmap')`), false);
+        await evaluate(`(()=>{document.querySelector('[data-canvas-action="view"]').click();return true})()`);
+      }
+      assert.equal(await evaluate(`(()=>{const g=document.getElementById('map-graph');return getComputedStyle(g).overflowX==='clip' && Number(g.dataset.zoom)>=.85})()`), true);
+      assert.equal(await evaluate(`(()=>{const rows=[...document.querySelectorAll('.map-node-row')].filter(e=>!e.closest('[hidden]'));return rows.every((a,i)=>rows.slice(i+1).every(b=>a.offsetLeft+a.offsetWidth<=b.offsetLeft||b.offsetLeft+b.offsetWidth<=a.offsetLeft||a.offsetTop+a.offsetHeight<=b.offsetTop||b.offsetTop+b.offsetHeight<=a.offsetTop))})()`), true);
       assert.equal(await evaluate(`(()=>{const expected=Object.keys(JSON.parse(document.getElementById('map-details').textContent).details); const visible=[...document.querySelectorAll('[data-node-id]')].filter(n=>n.getClientRects().length).map(n=>n.dataset.nodeId);return expected.every(id=>visible.includes(id))})()`), true);
       await evaluate(`(()=>{document.querySelector('[data-node-id]').click();return true})()`);
-      assert.equal(await evaluate(`(()=>{const e=document.getElementById('map-inspector');return Boolean(e.closest('.map-tree-item')) && e.scrollWidth<=e.clientWidth && e.scrollHeight<=e.clientHeight})()`), true);
+      assert.equal(await evaluate(`(()=>{const e=document.getElementById('map-inspector');return e.open && e.scrollWidth<=e.clientWidth})()`), true);
       await screenshot(`${name}-${width}`);
+      await evaluate(`(()=>{document.querySelector('[data-close-inspector]').click();document.querySelector('[data-canvas-action="actual"]').click();return true})()`);
+      assert.equal(await evaluate(`document.getElementById('map-zoom').textContent`), '100%');
     }
     await open('research-map.html', '#paper-dror-2018');
     await evaluate(`(()=>{document.querySelector('#paper-dror-2018 [data-analysis-action="expand"]').click();return true})()`);
@@ -130,6 +137,7 @@ browserTest('expanded trees and inline evidence fit desktop and mobile without n
 
 browserTest('individual branches collapse and hash navigation reopens ancestors', async () => {
   await open('literature-tree.html');
+  await evaluate(`(()=>{document.querySelector('[data-map-action="expand"]').click();return true})()`);
   await evaluate(`(()=>{document.querySelector('[data-node-id="pipeline-statistical"]').parentElement.querySelector('[data-toggle-branch]').click();return true})()`);
   assert.equal(await evaluate(`document.querySelector('[data-node-id="module-dror-2018"]').getClientRects().length`), 0);
   await command('browsingContext.navigate', {context, url:pathToFileURL(path.resolve(__dirname, '..', 'literature-tree.html')).href+'#module-dror-2018', wait:'complete'});

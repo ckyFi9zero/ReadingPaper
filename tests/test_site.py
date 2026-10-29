@@ -211,6 +211,27 @@ class SiteTests(unittest.TestCase):
         self.assertEqual((self.root/'papers/sample-2026/first-pass.html').read_text(), html)
         self.assertEqual(report['extractedImageFiles'], 1)
 
+    def test_local_map_export_includes_canvas_dependencies_without_public_exposure(self):
+        map_assets = ['assets/research-map.css', 'assets/map-layout.js', 'assets/map-canvas.js', 'assets/research-map.js']
+        for relative in map_assets:
+            self.put(relative, '/* map fixture */')
+        original_build = builder.build
+        def with_map(*args, **kwargs):
+            outputs, metadata = original_build(*args, **kwargs)
+            if kwargs.get('research_map', True):
+                outputs['research-map.html'] = '<html><head>' + ''.join(
+                    f'<script src="{asset}"></script>' for asset in map_assets if asset.endswith('.js')) + '</head><body>Map</body></html>'
+            return outputs, metadata
+        with patch.object(builder, 'build', side_effect=with_map):
+            exporter.export('local')
+            for asset in map_assets:
+                self.assertEqual((self.root/'_site'/asset).read_text(), '/* map fixture */')
+            self.publish()
+            exporter.export('public')
+            self.assertFalse((self.root/'_site-public/research-map.html').exists())
+            for asset in map_assets:
+                self.assertFalse((self.root/'_site-public'/asset).exists())
+
     def test_local_export_closes_resource_links(self):
         exporter.export('local')
         out = self.root/'_site'
