@@ -122,5 +122,172 @@
         "reviewedAt": "2026-10-28"
       }
     }
+  },
+  {
+    "slug": "snowremovalnet-2026",
+    "category": "in-field",
+    "name": "SnowRemovalNet",
+    "title": "SnowRemovalNet: BEV-Guided 3D Point Feature Learning for LiDAR De-Snowing in Autonomous Driving",
+    "year": 2026,
+    "venue": "Sensors",
+    "readDate": "2026-10-29",
+    "doi": "10.3390/s26206604",
+    "url": "https://www.mdpi.com/1424-8220/26/20/6604",
+    "tags": [
+      "雪天LiDAR",
+      "概率标签",
+      "BEV指导",
+      "3D点特征",
+      "课程学习",
+      "跨传感器",
+      "下游评测"
+    ],
+    "summary": "以BEV强度/密度上下文指导3D Edge Conv，沿用ASDR+C-GLP概率标签组织课程与加权损失；在CADC/WADS及Boreas下游任务评估去雪、结构误删与跨传感器表现。",
+    "stages": {
+      "first-pass": "first-pass.html"
+    },
+    "reviews": {
+      "first-pass": {
+        "status": "source-checked",
+        "noteStatus": "organized",
+        "checkedAt": "2026-10-29",
+        "evidence": [
+          "读取出版社当前20页PDF全文（Secs.1–6、References[1]–[30]）与HTML；逐图视觉核对Figs.1–9、Tables1–7及Algorithm1；当前材料无独立附录。",
+          "关键来源：Secs.4.1–4.2、Fig.3 pp.4–5；Tables2–3 pp.11–12；Sec.5.2.2 p.13；Table4 p.15；Tables5–6 p.16；Fig.9/Table7 pp.17–18。",
+          "保留30帧为21训练/9验证、离线标签器来自既有工作、主对比测试帧与五种子均值、雪强3代表帧及真实结构误删边界；未运行代码/训练/复现实验。"
+        ]
+      }
+    },
+    "readingQuality": {
+      "version": 1,
+      "classification": {
+        "confirmedCategory": "in-field",
+        "rationale": "直接研究雪天LiDAR单帧去噪，包含概率伪标签、BEV与3D融合、跨传感器及语义/里程计下游评估，属于恶劣天气LiDAR感知抗扰。",
+        "source": "恶劣天气LiDAR感知抗扰研究范围；本文Secs.1、4.2、5.3–5.6，PDF pp.1–5、14–18。",
+        "reviewedAt": "2026-10-29"
+      },
+      "graphics": {
+        "status": "included",
+        "items": [
+          {
+            "figureId": "fig-3",
+            "kind": "paper-crop",
+            "label": "Figure 3",
+            "pdfPage": 4,
+            "sourceUrl": "https://www.mdpi.com/1424-8220/26/20/6604#sensors-26-06604-f003",
+            "analysisId": "analysis-fig-3"
+          },
+          {
+            "figureId": "table-4",
+            "kind": "paper-crop",
+            "label": "Table 4",
+            "pdfPage": 15,
+            "sourceUrl": "https://www.mdpi.com/1424-8220/26/20/6604#sensors-26-06604-t004",
+            "analysisId": "analysis-table-4"
+          },
+          {
+            "figureId": "fig-9",
+            "kind": "paper-crop",
+            "label": "Figure 9",
+            "pdfPage": 17,
+            "sourceUrl": "https://www.mdpi.com/1424-8220/26/20/6604#sensors-26-06604-f009",
+            "analysisId": "analysis-fig-9"
+          }
+        ]
+      },
+      "rightsReview": {
+        "basis": "PDF p.1明示作者版权与CC BY许可，出版社链接CC BY 4.0；仅选Fig.3（p.4）、Table4（p.15）、Fig.9（p.17）支持具体邻近分析的独立局部裁剪，保留作者/图号/页码/来源/原图注；不上传PDF、整页或完整图集。",
+        "reviewedAt": "2026-10-29"
+      },
+      "visualReview": {
+        "desktop": true,
+        "mobile": true,
+        "zoom": true,
+        "reviewedAt": "2026-10-29"
+      }
+    }
+  },
+  {
+    "slug": "vesta-2026",
+    "category": "out-of-field",
+    "name": "VeSTA",
+    "title": "Revealing and Bridging the Physical Executability Gap in Vision-Language Navigation",
+    "year": 2026,
+    "venue": "arXiv",
+    "readDate": "2026-10-29",
+    "url": "https://arxiv.org/abs/2610.25687v1",
+    "doi": "10.48550/arXiv.2610.25687",
+    "tags": [
+      "拓展阅读",
+      "VLN",
+      "具身导航",
+      "物理可执行性",
+      "接触语义",
+      "轨迹选择"
+    ],
+    "summary": "以严格/宽松接触干预诊断连续VLN的物理可执行落差，固定高层规划，通过TR-GRPO与TRiC调整局部轨迹生成和选择；主要减轻严重持续碰撞，不代表所有episode均更安全。",
+    "stages": {
+      "first-pass": "first-pass.html"
+    },
+    "reviews": {
+      "first-pass": {
+        "status": "source-checked",
+        "noteStatus": "organized",
+        "checkedAt": "2026-10-29",
+        "evidence": [
+          "阅读arXiv:2610.25687v1完整17页正文、参考文献与A1–A17；逐图实际核对Figures 1–6、Tables 1–4和A1–A11。",
+          "关键主张核对Sec. 3、Tables 1–4及附录A3–A17；区分episode bootstrap与重复训练种子、碰撞尾部改善与无碰撞比例下降、方向性真机证据与显著效应。",
+          "只摘录Figure 2 (p.2)、Table 3 (p.6)、Table A9 (p.16)必要局部并附近邻分析；未运行代码、训练或复现实验。"
+        ]
+      }
+    },
+    "readingQuality": {
+      "version": 1,
+      "classification": {
+        "confirmedCategory": "out-of-field",
+        "rationale": "研究RGB-only指令导航的严格接触执行及局部轨迹生成/选择；未直接研究恶劣天气LiDAR感知抗扰。按本次允许的VLN拓展阅读范围收录。",
+        "source": "领域外拓展主题（VLN/VLA/具身/融合）；论文Secs. 1、3–4及A2.1，PDF pp.1–7、11。",
+        "reviewedAt": "2026-10-29"
+      },
+      "graphics": {
+        "status": "included",
+        "items": [
+          {
+            "figureId": "fig-2",
+            "kind": "paper-crop",
+            "label": "Figure 2",
+            "pdfPage": 2,
+            "sourceUrl": "https://arxiv.org/pdf/2610.25687v1#page=2",
+            "analysisId": "analysis-fig-2"
+          },
+          {
+            "figureId": "table-3",
+            "kind": "paper-crop",
+            "label": "Table 3",
+            "pdfPage": 6,
+            "sourceUrl": "https://arxiv.org/pdf/2610.25687v1#page=6",
+            "analysisId": "analysis-table-3"
+          },
+          {
+            "figureId": "table-a9",
+            "kind": "paper-crop",
+            "label": "Table A9",
+            "pdfPage": 16,
+            "sourceUrl": "https://arxiv.org/pdf/2610.25687v1#page=16",
+            "analysisId": "analysis-table-a9"
+          }
+        ]
+      },
+      "rightsReview": {
+        "basis": "逐图审查：Figure 2用于说明生成/选择的宏观分工，Table 3用于接触干预数值分析，Table A9用于界定碰撞收益范围；均为必要局部裁剪，保留作者、原图注、图号、PDF页序、同版本来源与邻近评论。arXiv non-exclusive distribution不是公众CC授权；不声称另获许可，不上传整篇PDF、整页或完整图集，不把教育目的等同自动授权。",
+        "reviewedAt": "2026-10-29"
+      },
+      "visualReview": {
+        "desktop": true,
+        "mobile": true,
+        "zoom": true,
+        "reviewedAt": "2026-10-29"
+      }
+    }
   }
 ]
