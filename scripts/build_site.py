@@ -43,6 +43,10 @@ def save(path, content):
 
 
 def write_pages(outputs):
+    # Retired interface: remove only our generated output, never authored notes.
+    retired = local_path('overview.html')
+    if retired.exists() and (not retired.is_file() or not retired.read_text().startswith('<!doctype html>\n' + MARKER)):
+        raise ValueError('Refusing to overwrite/remove authored HTML: overview.html')
     # Check ALL destinations before any write (including late-page conflicts).
     for name in outputs:
         path = local_path(name)
@@ -52,6 +56,8 @@ def write_pages(outputs):
         path = local_path(name)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
+    if retired.exists():
+        retired.unlink()
 
 
 def review_label(paper, stage):
@@ -69,7 +75,7 @@ def shell(title, body, prefix="", current="library"):
     def nav(href, text, key):
         active = ' aria-current="page"' if current == key else ""
         return f'<a href="{prefix}{href}"{active}>{text}</a>'
-    map_nav = nav('research-map.html', '研究地图', 'research-map') if current == 'research-map' or (MAP_ENABLED and current in {'library', 'overview'}) else ''
+    map_nav = nav('research-map.html', '研究地图', 'research-map') if current == 'research-map' or (MAP_ENABLED and current == 'library') else ''
     return f'''<!doctype html>
 {MARKER}
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -79,7 +85,7 @@ def shell(title, body, prefix="", current="library"):
 <body><a class="skip" href="#main">跳到正文</a><div class="layout"><aside class="sidebar">
 <a class="brand" href="{prefix}index.html"><span class="brand-mark" aria-hidden="true">R</span>ReadingPaper</a>
 <p class="side-caption">个人论文阅读库</p><nav aria-label="主导航">
-{nav('index.html', '全部论文', 'library')}{nav('overview.html', '跨论文综述', 'overview')}{map_nav}
+{nav('index.html', '全部论文', 'library')}{map_nav}
 </nav><div class="side-note">研究方向<br>机器人感知<br>恶劣天气点云去噪</div></aside>
 <main id="main">{body}<footer class="footer">ReadingPaper · 阅读、理解与连接<br>阅读阶段依据已保存的笔记；未整理的阶段不计入完成数量。</footer></main></div></body></html>'''
 
@@ -117,7 +123,7 @@ def evidence_panel(paper, current_stage=None):
     return (EVIDENCE_STYLE + render_panel(data, paper["slug"], current_stage=current_stage)) if data else ""
 
 
-def render_markdown(path, output="overview.html"):
+def render_markdown(path, output):
     md = markdown.Markdown(extensions=["tables", "fenced_code", "toc", "sane_lists"], extension_configs={"toc": {"toc_depth": "2-3"}})
     text = path.read_text(encoding="utf-8")
     content = md.convert(text)
@@ -173,6 +179,7 @@ def paper_pages(paper):
 
 
 def build(papers=None, *, write=True, overview=True, research_map=True):
+    # overview is retained as an ignored compatibility argument; this UI is retired.
     global MAP_ENABLED
     MAP_ENABLED = research_map and (ROOT / 'research-map').is_dir()
     OUTPUTS.clear()
@@ -256,8 +263,6 @@ def build(papers=None, *, write=True, overview=True, research_map=True):
     for paper in papers:
         paper_pages(paper)
     save("index.html", shell("我的论文库", home))
-    overview_body = render_markdown(ROOT / 'paper-cards/cross-paper-overview.md') if overview else '<p class="notice">跨论文综述尚未列入公开范围。</p>'
-    save("overview.html", shell("跨论文综述", '<header class="page-head"><div class="eyebrow">RESEARCH CONNECTIONS</div><h1>跨论文综述</h1></header>' + overview_body, current="overview"))
     if MAP_ENABLED:
         from build_research_map import render
         OUTPUTS.update(render(ROOT, papers, shell, OUTPUTS))
@@ -269,7 +274,7 @@ def build(papers=None, *, write=True, overview=True, research_map=True):
             if f"papers/{paper['slug']}/linked-reader.html" not in OUTPUTS and stale.is_file() and stale.read_text(encoding="utf-8").startswith(f'<!doctype html>\n{MARKER}'):
                 stale.unlink()
         write_pages(OUTPUTS)
-    print(f"Built library: {len(papers)} papers, {counts}, 2 library pages and {len(papers)*4} paper pages.")
+    print(f"Built library: {len(papers)} papers, {counts}, 1 library page and {len(papers)*4} paper pages.")
     return dict(OUTPUTS), papers
 
 

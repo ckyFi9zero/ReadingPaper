@@ -68,7 +68,7 @@ def export(profile='local'):
     public = profile == 'public'
     chosen = selected_papers(papers, config) if public else papers
     # Render from source; never copy stale generated pages from the working tree.
-    outputs, normalized = build_site.build(chosen, write=False, overview=config['overview'] is True if public else True, research_map=not public)
+    outputs, normalized = build_site.build(chosen, write=False, research_map=not public)
     for paper in normalized:
         for stage, source in paper['_sources'].items():
             if source.suffix == '.html':

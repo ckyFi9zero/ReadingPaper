@@ -164,6 +164,33 @@ class SiteTests(unittest.TestCase):
         self.assertEqual((self.root/'index.html').read_bytes(), original)
         self.assertIn('AUTHORED CONTENT', (self.root/'overview.html').read_text())
 
+    def test_retired_overview_is_removed_without_removing_notes(self):
+        original = (self.root/'paper-cards/cross-paper-overview.md').read_bytes()
+        self.put('overview.html', '<!doctype html>\n' + builder.MARKER + '\n<p>Retired</p>')
+        pages, _ = builder.build(overview=True)
+        self.assertNotIn('overview.html', pages)
+        self.assertFalse((self.root/'overview.html').exists())
+        self.assertEqual((self.root/'paper-cards/cross-paper-overview.md').read_bytes(), original)
+        self.assertTrue(all('href="overview.html"' not in page and 'href="../../overview.html"' not in page for page in pages.values()))
+        builder.build()
+        self.assertFalse((self.root/'overview.html').exists())
+
+    def test_retired_overview_is_not_exported_even_with_legacy_opt_in(self):
+        self.publish()
+        policy = json.loads((self.root/'publish.json').read_text())
+        policy['overview'] = True
+        self.put('publish.json', json.dumps(policy))
+        for profile, folder in [('local', '_site'), ('public', '_site-public')]:
+            exporter.export(profile)
+            self.assertFalse((self.root/folder/'overview.html').exists())
+            self.assertNotIn('overview.html', (self.root/folder/'index.html').read_text())
+
+    def test_checker_rejects_retired_overview(self):
+        builder.build()
+        self.put('overview.html', '<html>stale interface</html>')
+        with self.assertRaisesRegex(ValueError, 'Retired interface'):
+            check(self.root)
+
     def test_review_cannot_be_claimed_without_evidence(self):
         p = copy.deepcopy(self.paper)
         p['reviews'] = {'code': {'status':'source-checked','checkedAt':'2026-09-17'}}
@@ -179,7 +206,7 @@ class SiteTests(unittest.TestCase):
         self.publish()
         report = exporter.export('public')
         out = self.root/'_site-public'
-        self.assertNotIn('PRIVATE_RESEARCH_MARKER', (out/'overview.html').read_text())
+        self.assertFalse((out/'overview.html').exists())
         self.assertIn('未公开', (out/'papers/sample-2026/code.html').read_text())
         self.assertFalse((out/'paper-cards').exists())
         self.assertFalse((out/'papers.json').exists())
