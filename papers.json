@@ -289,5 +289,80 @@
         "reviewedAt": "2026-10-29"
       }
     }
+  },
+{
+  "slug": "awcr-2026",
+  "category": "in-field",
+  "name": "AWCR",
+  "title": "Understanding and Repairing Cooperative Perception under Adverse Weather",
+  "year": 2026,
+  "venue": "arXiv",
+  "readDate": "2026-10-30",
+  "url": "https://arxiv.org/abs/2610.35110v1",
+  "doi": "10.48550/arXiv.2610.35110",
+  "tags": [
+    "恶劣天气",
+    "LiDAR",
+    "协同感知",
+    "退化分析",
+    "候选修复",
+    "检测鲁棒性"
+  ],
+  "summary": "以保留物体点的外部变化干预诊断协作帮助丢失；AWCR分别过滤模拟天气点、修正并选择真实候选。区分诊断特征恢复30/31与实际修复11/31及新增6损失，主要检测结果为development数据。",
+  "stages": {
+    "first-pass": "first-pass.html"
+  },
+  "reviews": {
+    "first-pass": {
+      "status": "source-checked",
+      "noteStatus": "organized",
+      "checkedAt": "2026-10-30",
+      "evidence": [
+        "阅读全文10页及Figures 1–4、Tables 1–3；当前v1无独立附录。",
+        "Secs. 3.2–3.5 / Table 1区分受控干预、诊断性恢复与实际修复；Secs. 5.1–5.4 / Tables 2–3核对development、候选预算和恢复/保留口径。",
+        "实际查看PDF全部图表；引用Figure 2 (p.4)、Table 3 (p.7)两项完整图表的页面局部裁剪。云端浏览器实查1440px/390px响应式视口、两图加载与原尺寸放大。"
+      ]
+    }
+  },
+  "readingQuality": {
+    "version": 1,
+    "classification": {
+      "confirmedCategory": "in-field",
+      "rationale": "直接研究恶劣天气下LiDAR协同检测的退化来源、输入点过滤、候选修复与正确结果保留，符合恶劣天气LiDAR/3D感知抗扰及评测分析范围。",
+      "source": "用户2026-10-28确认的扩展领域范围；论文Secs.1、3–5，PDF pp.1–8。",
+      "reviewedAt": "2026-10-30"
+    },
+    "graphics": {
+      "status": "included",
+      "items": [
+        {
+          "figureId": "fig-2",
+          "kind": "paper-crop",
+          "label": "Figure 2",
+          "pdfPage": 4,
+          "sourceUrl": "https://arxiv.org/pdf/2610.35110v1#page=4",
+          "analysisId": "analysis-fig-2"
+        },
+        {
+          "figureId": "table-3",
+          "kind": "paper-crop",
+          "label": "Table 3",
+          "pdfPage": 7,
+          "sourceUrl": "https://arxiv.org/pdf/2610.35110v1#page=7",
+          "analysisId": "analysis-table-3"
+        }
+      ]
+    },
+    "rightsReview": {
+      "basis": "逐图审查：Figure 2支持两条实现及训练/推理边界的评论，Table 3支持恢复和保留trade-off及计数口径分析。选取Figure 2与Table 3两项完整图表的页面局部裁剪，保留作者和原图注/来源，不上传PDF、整页或全图集。官方许可为arXiv non-exclusive distribution，不是公众CC授权；不声称获得另行转载许可，不把教育目的等同自动授权，不作法律保证。",
+      "reviewedAt": "2026-10-30"
+    },
+    "visualReview": {
+      "desktop": true,
+      "mobile": true,
+      "zoom": true,
+      "reviewedAt": "2026-10-30"
+    }
   }
+}
 ]

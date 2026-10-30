@@ -473,3 +473,36 @@ nodes:
   evidence:
   - *id019
   parent: pipeline-restoration
+- id: task-cooperative-detection
+  kind: task
+  name: 恶劣天气协同检测
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 仅为 AWCR 增量登记任务输入输出；不表示其首创协同检测，不重分类旧去噪/恢复路线。
+  source_papers:
+  - awcr-2026
+  evidence:
+  - paper: awcr-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-cooperative-repair
+  kind: pipeline
+  name: 固定检测器的输入过滤或候选修复
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: AWCR 分别实现模拟 peer 天气点过滤与真实有界候选修复/量测质量选择；不是统一去噪网络。此为路线覆盖关联，非 pipeline 首创判断。
+  source_papers:
+  - awcr-2026
+  evidence:
+  - paper: awcr-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-cooperative-detection

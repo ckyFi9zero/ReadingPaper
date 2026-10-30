@@ -1,0 +1,260 @@
+{
+  "version": 1,
+  "paper": "awcr-2026",
+  "nodes": [
+    {
+      "id": "note:section-02",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-02",
+      "label": "任务与协作帮助"
+    },
+    {
+      "id": "pdf:section-02",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2610.35110v1#page=2",
+      "page": 2,
+      "label": "任务与协作帮助"
+    },
+    {
+      "id": "note:section-03",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-03",
+      "label": "作者界定的gap"
+    },
+    {
+      "id": "pdf:section-03",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2610.35110v1#page=2",
+      "page": 2,
+      "label": "作者界定的gap"
+    },
+    {
+      "id": "note:section-04",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-04",
+      "label": "受控观察与候选可用性"
+    },
+    {
+      "id": "pdf:section-04",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2610.35110v1#page=3",
+      "page": 3,
+      "label": "受控观察与候选可用性"
+    },
+    {
+      "id": "note:section-05",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-05",
+      "label": "两条修复实现"
+    },
+    {
+      "id": "pdf:section-05",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2610.35110v1#page=4",
+      "page": 4,
+      "label": "两条修复实现"
+    },
+    {
+      "id": "note:section-06",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-06",
+      "label": "贡献"
+    },
+    {
+      "id": "pdf:section-06",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2610.35110v1#page=2",
+      "page": 2,
+      "label": "贡献"
+    },
+    {
+      "id": "note:section-07",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-07",
+      "label": "实验与恢复保留"
+    },
+    {
+      "id": "pdf:section-07",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2610.35110v1#page=7",
+      "page": 7,
+      "label": "实验与恢复保留"
+    },
+    {
+      "id": "note:section-08",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-08",
+      "label": "实现范围与损失"
+    },
+    {
+      "id": "pdf:section-08",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2610.35110v1#page=6",
+      "page": 6,
+      "label": "实现范围与损失"
+    },
+    {
+      "id": "note:section-09",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-09",
+      "label": "结论"
+    },
+    {
+      "id": "pdf:section-09",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2610.35110v1#page=8",
+      "page": 8,
+      "label": "结论"
+    },
+    {
+      "id": "note:section-01",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-01",
+      "label": "一句话概括"
+    },
+    {
+      "id": "pdf:section-01",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2610.35110v1#page=1",
+      "page": 1,
+      "label": "一句话概括"
+    },
+    {
+      "id": "note:section-10",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-10",
+      "label": "论证链"
+    },
+    {
+      "id": "pdf:section-10",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2610.35110v1#page=7",
+      "page": 7,
+      "label": "论证链"
+    },
+    {
+      "id": "note:section-11",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-11",
+      "label": "记住的结果"
+    },
+    {
+      "id": "pdf:section-11",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2610.35110v1#page=7",
+      "page": 7,
+      "label": "记住的结果"
+    },
+    {
+      "id": "note:section-12",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-12",
+      "label": "暂不展开的公式"
+    },
+    {
+      "id": "pdf:section-12",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2610.35110v1#page=5",
+      "page": 5,
+      "label": "暂不展开的公式"
+    }
+  ],
+  "edges": [
+    {
+      "from": "note:section-02",
+      "to": "pdf:section-02",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "awcr-evidence-01"
+    },
+    {
+      "from": "note:section-03",
+      "to": "pdf:section-03",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "awcr-evidence-02"
+    },
+    {
+      "from": "note:section-04",
+      "to": "pdf:section-04",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "awcr-evidence-03"
+    },
+    {
+      "from": "note:section-05",
+      "to": "pdf:section-05",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "awcr-evidence-04"
+    },
+    {
+      "from": "note:section-06",
+      "to": "pdf:section-06",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "awcr-evidence-05"
+    },
+    {
+      "from": "note:section-07",
+      "to": "pdf:section-07",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "awcr-evidence-06"
+    },
+    {
+      "from": "note:section-08",
+      "to": "pdf:section-08",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "awcr-evidence-07"
+    },
+    {
+      "from": "note:section-09",
+      "to": "pdf:section-09",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "awcr-evidence-08"
+    },
+    {
+      "from": "note:section-01",
+      "to": "pdf:section-01",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "awcr-evidence-09"
+    },
+    {
+      "from": "note:section-10",
+      "to": "pdf:section-10",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "awcr-evidence-10"
+    },
+    {
+      "from": "note:section-11",
+      "to": "pdf:section-11",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "awcr-evidence-11"
+    },
+    {
+      "from": "note:section-12",
+      "to": "pdf:section-12",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "awcr-evidence-12"
+    }
+  ]
+}

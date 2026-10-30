@@ -2985,39 +2985,41 @@ challenges:
   observable_failures:
   - 总体收益不代表每类改善
   - 缺失结构不能靠删点恢复
+  - AWCR 控制输入中：保留标注物体内部点仍可能丢失协同检测；修复增加 AP 也可能损失既有正确目标。
   evidence:
-  - &id028
-    paper: ltdnet-2026
+  - paper: ltdnet-2026
     stage: first-pass
     anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
-  - &id029
-    paper: 3d-unoutdet-2025
+  - paper: 3d-unoutdet-2025
     stage: first-pass
     anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
-  - &id030
-    paper: rpsnownet-2026
+  - paper: rpsnownet-2026
     stage: first-pass
     anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
-  - &id031
-    paper: triplemixer-2025
+  - paper: triplemixer-2025
     stage: first-pass
     anchor: section-05
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
-  - &id032
-    paper: shape-enhanced-set-det-2026
+  - paper: shape-enhanced-set-det-2026
     stage: first-pass
     anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: awcr-2026
+    stage: first-pass
+    anchor: section-07
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
@@ -3030,22 +3032,58 @@ challenges:
     - 是否重训
     - 类别指标
     - 几何真实性
+    - 目标级恢复与保留
+    - context intervention
+    - candidate tracing
     status: inferred
-    transfer_boundary: 3D-UnOutDet 平均 mIoU 提升时 road/fence 仍可能下降；LTDNet 真实几何无配对验证；SET-Det 的天气迁移未证实。
+    transfer_boundary: 3D-UnOutDet 平均 mIoU 提升时 road/fence 仍可能下降；LTDNet 真实几何无配对验证；SET-Det 的天气迁移未证实。 AWCR
+      的晴天构造外部损失诊断与自然 adverse development 检测须分开；不推广为全部真实雪/传感器的机制。
     source_papers:
     - ltdnet-2026
     - 3d-unoutdet-2025
     - rpsnownet-2026
     - triplemixer-2025
     - shape-enhanced-set-det-2026
+    - awcr-2026
     evidence:
-    - *id028
-    - *id029
-    - *id030
-    - *id031
-    - *id032
+    - paper: ltdnet-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: 3d-unoutdet-2025
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: rpsnownet-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: triplemixer-2025
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: shape-enhanced-set-det-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: awcr-2026
+      stage: first-pass
+      anchor: section-07
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
     principle:
-      text: 逐点去噪指标与任务需要的信息不同。只有把保留/恢复的结构交给具体任务，并检查类别代价，才能判断它是否有用。
+      text: 逐点去噪指标与任务需要的信息不同。只有把保留/恢复的结构交给具体任务，并检查类别代价，才能判断它是否有用。 对协同检测还需追踪同一目标的恢复与保留：目标点数不变、总 AP 上升分别不等于表示不变、既有帮助无损。
       basis: analyst-inference
       status: inferred
       evidence:
@@ -3079,9 +3117,15 @@ challenges:
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+      - paper: awcr-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
     playbook:
       use_when:
-        text: 去噪指标变好但检测/分割收益不明，或生成结构是否可靠尚不清楚时。
+        text: 去噪指标变好但检测/分割收益不明，或生成结构是否可靠尚不清楚时。 AWCR 补充适用情形：协同总体分数掩盖先前正确目标丢失，需区分接收端本可识别却受协同损害，与接收端一直未识别而丢失协同帮助。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3110,6 +3154,12 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
         - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: awcr-2026
           stage: first-pass
           anchor: section-04
           status: source-checked
@@ -3117,6 +3167,7 @@ challenges:
           original_pdf_review_status: source-checked
       mechanism:
         text: LTDNet 走 degraded-to-clean 恢复，SET-Det 走 RoI 补全加特征融合；3D-UnOutDet、RPSnowNet、TripleMixer 则主要过滤后输入下游模型。技术动作不同，下游评估是共同验证环节。
+          AWCR 的模拟分支先过滤新增天气点；真实分支保持检测器固定，构造有界修正候选并以双源当前量测重评分。其控制诊断保留标注物体内部点、只改外部，再用原输入前融合特征做区域替换；诊断替换并非在线模块。
         basis: note-summary
         status: source-checked
         evidence:
@@ -3145,13 +3196,20 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
         - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: awcr-2026
           stage: first-pass
           anchor: section-05
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
       engineering_tricks:
-        text: 明确下游是否重训、输入是否更换、阈值是否固定，并单列保留真实结构的代价；这些是阅读者整理的评测使用方式，不是新增网络模块。
+        text: 明确下游是否重训、输入是否更换、阈值是否固定，并单列保留真实结构的代价；这些是阅读者整理的评测使用方式，不是新增网络模块。 AWCR 将原/修正候选并池后以输入置信度截为 4096；Ordinary
+          Quality 使用相同候选/质量目标/回归器但将 60 项点统计置零，Selection Only 只对原候选重评分。训练 correction 最后层零初始化、残差有界并使用保留损失（Secs.4.3–5.1）。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3182,11 +3240,18 @@ challenges:
         - paper: shape-enhanced-set-det-2026
           stage: first-pass
           anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: awcr-2026
+          stage: first-pass
+          anchor: section-05
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
       assumptions_cost:
-        text: 需要对应任务标签和一致的评测设置；重训模型、预处理和生成分支各有额外成本。
+        text: 需要对应任务标签和一致的评测设置；重训模型、预处理和生成分支各有额外成本。 AWCR 真实实现需要标注训练观察、已有晴天及构造损失变体、双源当前点的集中统计；自然行还共享固定背景图
+          support filter。无自然配对记录不等于无监督；不据此声称满足通信或延时预算。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3220,8 +3285,16 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: awcr-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       failure_boundary:
-        text: 3D-UnOutDet 平均 mIoU 提升时 road/fence 仍可能下降；LTDNet 真实几何无配对验证；SET-Det 的天气迁移未证实。
+        text: 3D-UnOutDet 平均 mIoU 提升时 road/fence 仍可能下降；LTDNet 真实几何无配对验证；SET-Det 的天气迁移未证实。 原文 Sec. 5.1–5.4（PDF
+          pp. 6–7）：真实输入来自 CoInfra 两个固定路侧节点对，结果是 development 数据；自然天气行共用双源点与固定背景图 support filter，控制行不使用该过滤。控制干预是晴天真实输入上的构造
+          exterior loss，不是自然配对雪天观测；特征恢复需原输入特征，属于诊断而非部署模块。真实修复只改变 Car 输出且集中计算双源点统计；未验证跨传感器泛化或所有真实天气因果机制。
         basis: note-summary
         status: source-checked
         evidence:
@@ -3250,13 +3323,20 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
         - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: awcr-2026
           stage: first-pass
           anchor: section-08
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
       evidence_scope:
-        text: 原论文报告检测、分割或补全的对应结果；不能从整体收益推出“去噪越多越好”，也不能从单个定性例宣称稳定下游增益。
+        text: 原论文报告检测、分割或补全的对应结果；不能从整体收益推出“去噪越多越好”，也不能从单个定性例宣称稳定下游增益。 AWCR Table 1 的 30/31 是真实晴天构造损失下的诊断特征恢复，不是自然雪检测或部署恢复率；Table
+          3 的 AWCR 控制恢复为 11/31 且新增 6 个损失。自然天气候选追踪另显示 9 个 gained 目标由不足阈值的原几何经修正获得准确框；不能混同两种恢复机制。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3290,12 +3370,20 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: awcr-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       reported_effect:
-        text: ltdnet-2026：IQA3D 使用合成配对测质量、真实序列测检测；LTDNet 的 NR-F1 并非所有天气组合最高（Tables 1–2）。；3d-unoutdet-2025：WADS 上
-          3D-UnOutDet mIoU 89.04%，SSR 81.76%，监督 3D-OutDet 90.00%；总耗时 82 ms（Table I）。；rpsnownet-2026：WADS 上 DMROR
-          mIoU 88.06%、897 ms；RPSnowNet 88.92%、15 ms。CADC 逐点去雪为定性，检测另有 box 定量（Table III）。；triplemixer-2025：在去噪、语义分割、地点识别与检测上分别评估；真实
-          SemanticSTF 的下游模型不重训，三模型平均 mIoU 提高 2.38 点（Tables VIII–X）。；shape-enhanced-set-det-2026：KITTI、Waymo 上分别报告检测指标与补全指标，另比较不同距离、遮挡与效率（Sec.
-          IV）。
+        text: ltdnet-2026：IQA3D 使用合成配对测质量、真实序列测检测；LTDNet 的 NR-F1 并非所有天气组合最高（Tables 1–2）。；3d-unoutdet-2025：WADS
+          上 3D-UnOutDet mIoU 89.04%，SSR 81.76%，监督 3D-OutDet 90.00%；总耗时 82 ms（Table I）。；rpsnownet-2026：WADS
+          上 DMROR mIoU 88.06%、897 ms；RPSnowNet 88.92%、15 ms。CADC 逐点去雪为定性，检测另有 box 定量（Table III）。；triplemixer-2025：在去噪、语义分割、地点识别与检测上分别评估；真实
+          SemanticSTF 的下游模型不重训，三模型平均 mIoU 提高 2.38 点（Tables VIII–X）。；shape-enhanced-set-det-2026：KITTI、Waymo
+          上分别报告检测指标与补全指标，另比较不同距离、遮挡与效率（Sec. IV）。 AWCR（Tables 2–3，pp.7）：CoInfra natural adverse development
+          的 V2X-ViT Car BEV AP@0.7 25.70→30.37，作者报 +4.66（表值相减为 4.67；原文未提供未舍入值）；AttFuse +5.56；模拟 fog 固定 4096 候选 vehicle
+          AP@0.7 +4.47。自然天气保留原正确 220/230、协同帮助 131/140；这些是原文报告，非复现。
         basis: note-summary
         status: source-checked
         evidence:
@@ -3324,6 +3412,12 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
         - paper: shape-enhanced-set-det-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: awcr-2026
           stage: first-pass
           anchor: section-07
           status: source-checked
@@ -3375,13 +3469,42 @@ challenges:
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    - paper: awcr-2026
+      location: arXiv:2610.35110v1；Secs. 3.1–3.5，PDF pp. 3–4（控制诊断正文）；Fig. 1 在 p. 1，Fig. 2 / Table 1 在 p. 4，Fig. 3 在 p. 5；Secs. 4.1–4.4，pp.
+        4–6 / Fig. 2（两种修复）；Secs. 5.1–5.4，pp. 6–7，Tables 2–3（development 条件、候选追踪与 retention）。
+      evidence:
+      - paper: awcr-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: awcr-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: awcr-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: awcr-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
     open_questions:
-      text: 统一控制下游训练/阈值后，哪些被删或被补结构导致具体类别收益/损害，不能由平均指标作因果归因。
+      text: 统一控制下游训练/阈值后，哪些被删或被补结构导致具体类别收益/损害，不能由平均指标作因果归因。 AWCR 在未报告传感器/场景下的泛化、自然天气中 context pathway
+        的独立因果占比及通信/时延代价，仍未核验。
       basis: not-assessed
       status: unverified
       evidence: []
   why_hard:
-    text: 逐点指标不刻画所有任务关键结构；误删、生成伪影和下游训练配置都可能改变任务收益。
+    text: 逐点指标不刻画所有任务关键结构；误删、生成伪影和下游训练配置都可能改变任务收益。 AWCR 补证：物体点未变不保证前融合表示不变，修复收益须与原有正确检测的保留同时核对；这是特定控制设置下的补充，不与其他论文的误删机制混同。
     basis: analyst-inference
     status: inferred
     evidence:
@@ -3412,6 +3535,12 @@ challenges:
     - paper: shape-enhanced-set-det-2026
       stage: first-pass
       anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: awcr-2026
+      stage: first-pass
+      anchor: section-04
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked

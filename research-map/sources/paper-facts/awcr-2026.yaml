@@ -1,0 +1,306 @@
+version: 1
+paper: awcr-2026
+scope: in-field
+source_basis: original-pdf-and-reading-note
+source_sha256: 897dc54810b46d52054b489d0d80a01ff6158d2bd9241c1e471653275c079023
+checked_at: '2026-10-30'
+source_version: arXiv:2610.35110v1
+source_url: https://arxiv.org/abs/2610.35110v1
+read_scope: PDF pp. 1–10（全文、Figures 1–4、Tables 1–3）；本轮直接核对原文，阅读页作为可点击定位。
+tags:
+- 协同检测
+- 恶劣天气
+- context interference
+- 候选修复
+- 恢复与保留
+task:
+  name: 恶劣天气 LiDAR 协同 3D 检测修复
+  input: receiver / peer 当前 LiDAR 点、固定检测器特征与候选；训练另用标注或生成天气点身份
+  output: 修复后的 3D 检测框与置信度；以 BEV AP 及目标级恢复/保留衡量
+  evidence:
+  - paper: awcr-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: awcr-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 作者在固定检测器上保留所有标注物体内部 detector-retained points，仅移除外部点，仍观察到先前正确的协同目标漏检；目标点保留不保证其编码和协同帮助不变（Sec.
+    3.2–3.4，pp. 3–4）。
+  evidence:
+  - paper: awcr-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: awcr-2026
+    stage: first-pass
+    anchor: section-04
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-cooperative-repair
+  name: 固定检测器的输入过滤或候选修复
+  description: 两种分别训练的实现：模拟数据 Point Classifier 过滤 peer 新增天气点后送固定检测器；真实数据 Local Correction 产生有界候选，Quality
+    Selection 用双源当前量测支持选择。诊断特征替换不属于推理流水线（Sec. 4，pp. 4–6）。
+  evidence:
+  - paper: awcr-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-awcr-point-classifier
+  name: Point Classifier
+  role: input-filter
+  motivation: 利用模拟生成的天气点身份监督，在编码前过滤新增回波；不是恢复外部缺失点。
+  evidence:
+  - paper: awcr-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-awcr-local-correction
+  name: Local Correction
+  role: candidate-refinement
+  motivation: 在保留原候选的同时，为定位不足的候选提供有界几何与分数调整。
+  evidence:
+  - paper: awcr-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-awcr-quality-selection
+  name: Quality Selection
+  role: candidate-selection
+  motivation: 用当前双源点统计判断候选定位质量，而不只依赖原生置信度。
+  evidence:
+  - paper: awcr-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-downstream
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 仅按固定检测器上的输入过滤/候选修复作增量方法登记；作者 controlled-study 首次性主张未独立检索，不判定 seminal work 或领域空白。
+limitations:
+- text: 原文 Sec. 5.1–5.4（PDF pp. 6–7）：真实输入来自 CoInfra 两个固定路侧节点对，结果是 development 数据；自然天气行共用双源点与固定背景图 support
+    filter，控制行不使用该过滤。控制干预是晴天真实输入上的构造 exterior loss，不是自然配对雪天观测；特征恢复需原输入特征，属于诊断而非部署模块。真实修复只改变 Car 输出且集中计算双源点统计；未验证跨传感器泛化或所有真实天气因果机制。
+  evidence:
+  - paper: awcr-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: awcr-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+analysis:
+  updated_at: '2026-10-30'
+  previous_methods:
+    text: 作者区分天气鲁棒融合/去噪与本篇目标级诊断：aggregate scores 未单独说明哪些既有协同帮助消失及原因；这不是断言前人未研究上下文（Secs. 1–2，pp. 1–3）。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: awcr-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 整理者归纳：目标点保持不变不足以保证编码稳定，因为周围观测参与了特征形成。依据是作者报告的受控外部移除、前融合特征变化及区域特征替换结果；作者据此支持 object-region representation pathway，但该综合解释不证明自然天气下全部失败均由此引起（Secs. 3.2–3.4，PDF pp. 3–4）。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: awcr-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 把“点是否保留”与“任务如何解释这些点”分开，并联合检查修复收益及原有正确检测/协同帮助的保留。此处是整理者归纳，不是跨天气因果定律。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: awcr-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-repair
+    name: 按监督条件分别进行输入过滤或候选修复
+    module_ids:
+    - module-awcr-point-classifier
+    - module-awcr-local-correction
+    - module-awcr-quality-selection
+    motivation:
+      text: 作者由天气点过滤实验和候选可用性分析选取修复位置，目标同时包含 recovery 与 retention（Secs. 3.5–4.1，pp. 3–4）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: awcr-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 两种分别训练的实现：模拟数据 Point Classifier 过滤 peer 新增天气点后送固定检测器；真实数据 Local Correction 产生有界候选，Quality
+        Selection 用双源当前量测支持选择。诊断特征替换不属于推理流水线（Sec. 4，pp. 4–6）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: awcr-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 模拟分支以生成身份训练分类器，推理仅据当前 peer 点特征识别天气点；真实分支将有界候选改动与当前量测质量评估分开。两分支的训练信号和作用对象不同，不能当作单一去雪网络。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: awcr-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 真实分支不要求自然配对 clear/adverse recordings，但仍需已有标注、晴天输入和人工 loss variants；不能解释为无监督或无清洁数据。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: awcr-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-intervention
+    name: 控制外部移除及特征恢复
+    kind: design-choice
+    assessment: reported
+    contribution_ids: []
+    result:
+      text: Table 1（p.4）：V2X-ViT 模拟 216 个原正确观察中方向移除损失 8 个，三随机种子等数量对照损失 2–4；真实晴天构造输入 150 个中损失 31 个，随机对照
+        5–10。物体邻域前融合原特征恢复 7/8 与 30/31；真实三种等面积外部掩码各 0/31，原稳定观察均无新增损失。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: awcr-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 该诊断替换依赖原始输入特征，不能等同 AWCR 在线可恢复 30/31；控制移除不是自然雪过程的完整模型，三外部对照只对应真实实验设置。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: awcr-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-detection
+    name: 固定候选预算下的检测表现
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-repair
+    result:
+      text: Table 2（p.7）及 Sec.5.2（p.6）：CoInfra natural adverse development 上 V2X-ViT Car BEV AP@0.7 从
+        25.70 到 30.37（作者报 +4.66，表值相减为 4.67；原文未提供未舍入值）；AttFuse 10.55 到 16.11（+5.56）。模拟 fog vehicle AP@0.7 从 22.94
+        到 27.41（+4.47），预算 4096。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: awcr-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 报告值不是复现；真实 car 与模拟 vehicle 属不同数据/设定，不形成跨论文排行榜。真实自然行使用共享 support filter；AWCR 只修改 Car。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: awcr-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-retention
+    name: 候选追踪、修复及原有收益保留
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-repair
+    result:
+      text: Table 3 与 Secs.5.3–5.4（pp.6–7）：计数采用 score > 0.27、BEV IoU ≥ 0.7；controlled rescue 要求原始与改变后两个输入均正确，new losses 指原稳定的 119 个观察中任一输入失败。真实自然天气正确/错误检测 230/447→251/335，保留原正确 220/230、原协同帮助 131/140。控制输入
+        AWCR 恢复 11/31，另增 6 个损失，总错误 31→26；这些 11 次恢复原预算候选池已有准确几何。自然天气相对 Selection Only 净增 13 个正确目标；27 个
+        gain 中 9 个在预算截断前原有效 Car 候选也达不到 IoU 0.7，14 个 loss 均涉及高分修正框压制准确框。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: awcr-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 区分候选重新选择与几何定位改善；不能以总 AP 或控制恢复数证明每个修正都产生新准确几何，且修复存在 retention 代价。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: awcr-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 原文 Sec. 5.1–5.4（PDF pp. 6–7）：真实输入来自 CoInfra 两个固定路侧节点对，结果是 development 数据；自然天气行共用双源点与固定背景图 support
+      filter，控制行不使用该过滤。控制干预是晴天真实输入上的构造 exterior loss，不是自然配对雪天观测；特征恢复需原输入特征，属于诊断而非部署模块。真实修复只改变 Car 输出且集中计算双源点统计；未验证跨传感器泛化或所有真实天气因果机制。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: awcr-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

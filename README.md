@@ -31,4 +31,6 @@ ReadingPaper 以论文为单位保存阅读记录，将独立的 HTML 笔记组�
 
 ## 更新记录
 
+- **2026-10-30 · AWCR 初读与武器库增量**：新增 2026-10-26 arXiv v1 预印本《Understanding and Repairing Cooperative Perception under Adverse Weather》的十二项中文初读，按恶劣天气 LiDAR 协同检测与退化评测归为领域内。区分原始特征诊断恢复与实际 AWCR 修复、development 与独立测试，以及自然/模拟两种训练实现；嵌入必要局部证据图表。同步补充既有“任务级评估”使用卡与该篇事实层，保留控制干预、候选追踪、恢复与保留的证据边界；仅增加覆盖新任务所需的关联，不重分类历史论文。无新增拓展线论文或私人实验内容。
+
 - **2026-10-29 · Challenge–Insight 武器库**：沿用已验收的左右脑图，将 7 类挑战下的 12 个 insight 整理为 20 张使用卡，保留 26 篇公开笔记来源。补充适用条件、可执行机制、工程补丁、成本、失败边界、原文定位，并区分已记录效果与阅读者归因。新增 CRFOR 置信传播、SDOR 边界/并行、离线伪标签等独立条目；事实不足与跨域迁移继续标待核验，两篇地图待整理状态不变。公网实测发现旧缓存复用后，为武器库的脚本/样式加入内容版本标识，保证新内容配套新交互。入口：[Challenge–Insight 武器库](https://ckyfi9zero.github.io/ReadingPaper/challenge-insight-tree.html)。
