@@ -1,0 +1,428 @@
+version: 1
+paper: snowremovalnet-2026
+scope: in-field
+source_basis: original-pdf-and-reading-note
+source_sha256: cfedf355c0ede0f14bb261d17d55956bc1c03b5d94dc59cbaace2d5be00f8f45
+checked_at: '2026-10-30'
+source_version: Sensors 2026, 26(20), 6604；正式发表 2026-10-18
+source_url: https://doi.org/10.3390/s26206604
+read_scope: 全文 PDF pp.1–20；核对方法公式、算法、Tables1–7及图表；阅读页用于可点击定位。
+tags:
+- 雪
+- BEV与点特征互补
+- 概率伪标签
+- 课程学习
+- 跨传感器
+- 语义分割
+- 里程计
+task:
+  name: 单帧 LiDAR 概率监督去雪
+  input: 单帧 XYZ 与反射强度、从同一扫描生成的 BEV 强度/密度图、点投影坐标；训练另用离线规则概率标签
+  output: 逐点雪概率；概率≥0.5的点被过滤
+  evidence:
+  - paper: snowremovalnet-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: snowremovalnet-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 雪点与真实结构点在空间中交错；单一投影会丢失三维细节，硬标签不能表达混杂边界不确定性。这是作者的问题陈述；稀疏叶片/建筑误删是其模型仍存在的实际反例（Secs.1,3,5.6；Fig.9）。
+  evidence:
+  - paper: snowremovalnet-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: snowremovalnet-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-point
+  name: 点集与点/投影联合学习
+  description: 离线沿用 ASDR+C-GLP 生成概率标签；在线以 BEV 上下文门控并调制 DGCNN 局部点特征，输出逐点雪概率。单帧、不要求跨帧配准（Secs.2,4，pp.3–9）。
+  evidence:
+  - paper: snowremovalnet-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-snowremovalnet-2026
+  name: BEV 引导点图与概率课程监督
+  role: core-module
+  motivation: 在保留局部三维几何的同时引入雪分布上下文，并按标签置信度组织训练。ASDR+C-GLP 标签器属于作者先前工作，不列为本篇新模块。
+  evidence:
+  - paper: snowremovalnet-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: snowremovalnet-2026
+    stage: first-pass
+    anchor: section-06
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-weather
+- challenge-structure
+- challenge-efficiency
+- challenge-downstream
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 按已有 DGCNN、BEV、FiLM 与先前 ASDR+C-GLP 的组合及训练方案登记为增量方法；未独立核查领域首创，不能把本文贡献声明当作 seminal 证据。
+limitations:
+- text: Sec.5.1（pp.9–10）CADC 测试点独立人工标注，WADS 点级去雪测试按同一准则重新标注，不等同原生 WADS benchmark；Tables2–3 主表也不是整个测试集的五种子均值。Sec.5.6
+    / Fig.9 / Table7（pp.17–18）只对从170帧中分组挑出的三张中位帧计算雪强结果；稀疏树叶和建筑仍会误删，轻雪帧 precision 68.79%。Boreas 无点级雪标签，点级结论为定性，量化证据来自特定
+    VGICP 设置。 Tables 2–3 的点级主表不是全数据集汇总：CADC 人工标注测试点为 47,132 个（其中雪点 7,378 个）；Sec.5.6 明称 Table 3 使用一个 WADS 测试帧。
+  evidence:
+  - paper: snowremovalnet-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: snowremovalnet-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+analysis:
+  updated_at: '2026-10-30'
+  previous_methods:
+    text: 作者将前人局限概括为投影损失三维细节、硬标签忽略边界不确定性；ASDR+C-GLP 已在其先前研究[11]提出，本篇承接其离线标签而非新发明标签器（Secs.1–2,4.2；pp.1–5）。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: snowremovalnet-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 整理者归纳：局部几何与大范围噪声分布提供互补线索，而教师输出接近0.5的点与高置信点不宜被视为同等可靠。但“软标签置信度等于真实正确率”未获校准证明，不能由网络总分倒推教师可靠。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: snowremovalnet-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 保持点空间中的判别，把投影特征作为上下文调制；同时将离线标签的连续置信度用于样本纳入时机和损失权重。这是整理者对两项设计的归纳，不是独立因果定律。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: snowremovalnet-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-bev-guidance
+    name: BEV 上下文引导局部点消息
+    module_ids:
+    - module-snowremovalnet-2026
+    motivation:
+      text: 以 BEV 表达强度/密度分布，同时在三维点分支保留局部几何，处理混杂的雪与非雪点（Sec.3；pp.3–4）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: ±30m、0.1m网格的双通道 BEV 经 DSConv 得到75×75×16特征，nearest grid_sample 到点；两层图分别按 XYZ k=16 与64维特征固定随机16维投影
+        k=12选邻居。边特征含邻点差、中心特征和相对XYZ；BEV与几何产生 sigmoid 门控，max聚合后以 FiLM 缩放/平移调制（Secs.4.3–4.6；Figs.3–4；pp.6–9）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 在点消息层与聚合后特征层两处输入上下文，而非直接在二维图上决定点标签；这是对运算的归纳。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 保留点分支的相对三维位置可提供 BEV 高度混叠时缺失的线索；原文只称高度通道实验与此解释一致，不能写成已证明完全消除混叠。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: contribution-probabilistic-training
+    name: 概率标签、课程掩码与可靠性加权
+    module_ids:
+    - module-snowremovalnet-2026
+    motivation:
+      text: 作者用连续概率保留边界含糊程度，先纳入高置信点再学习含糊点（Sec.4.2，p.5）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 沿用 ASDR+C-GLP 离线软标签 y。100epochs依次使用y≤.1或≥.9（1–34）、y≤.3或≥.7（35–67）、全部点（68–100）；损失按max(.5,2|y−.5|)加权BCE并除以掩码权重和。验证不加课程mask，仅在第三阶段选最低验证损失模型（Eqs.1–4、Algorithm1；pp.5–6）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 将教师输出作为连续目标、课程选择与损失权重三种信号；权重下限0.5意味着最终阶段不会因不确定性把点完全忽略。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 只在离线运行规则与图传播，部署仅运行网络，从而分离标签生成成本和在线过滤成本；不代表学生修正了教师错误。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-pointwise
+    name: 点级比较与离线成本
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-bev-guidance
+    - contribution-probabilistic-training
+    result:
+      text: Tables2–3（pp.11–12）：CADC/WADS F1分别98.10/97.23%，在线17/59ms；ASDR+C-GLP为98.61/98.01%、217/927ms。网络35,925参数；30帧实际21训练+9验证（Table1，p.10）。
+        Tables 2–3 的点级主表不是全数据集汇总：CADC 人工标注测试点为 47,132 个（其中雪点 7,378 个）；Sec.5.6 明称 Table 3 使用一个 WADS 测试帧。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 原文 Ryzen9 9950X3D / RTX5080 环境；报告值非复现。学生低于标签器的点级分数，支持成本摊销，不支持“超越教师”。测试重标注口径不能与原生 WADS 总分直接排行。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-joint-ablation
+    name: 成组移除与高度通道对照
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-bev-guidance
+    - contribution-probabilistic-training
+    result:
+      text: Sec.5.2.2（p.13）：去概率标签时同时移除课程和不确定加权，CADC/WADS F1为94.33/94.44%；去BEV时同时移除门控及FiLM，为92.58/92.60%。加最高/最低高度两个通道的五次运行均值97.52/96.22%，原双通道97.35/95.29%，Welch
+        p=.77/.35。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 只能支持两个组件组在该设定下的效果，不能分别归因给软标签、课程、加权、门控或FiLM。非显著不等于等效或高度永不重要。75×75特征单元约0.8m；同格不同类别且高度差≥.5m的点占BEV内点37.1%/30.3%。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-downstream
+    name: 分割与跨域里程计
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-bev-guidance
+    - contribution-probabilistic-training
+    result:
+      text: Sec.5.4 / Tables4–5（pp.15–16）：WADS八类mIoU44.90→48.40，building77.82→74.21，accumulated snow57.08→51.59；Boreas单序列13,624帧/7.9km，WADS训练模型无重训，VGICP平移RPE
+        .645→.614%，旋转.151→.150°/100m，94个重叠子段平均ATE3.70→3.60m，保留77.4%点。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 分割网络在移除falling snow的训练扫描上训练、不识别该类；去雪误删点仍计入原标注类错误。平均任务收益与部分语义损害并存；94子段非94独立路线，不推广为所有里程计。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-crosssensor
+    name: WADS向CADC/Boreas迁移
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-bev-guidance
+    - contribution-probabilistic-training
+    result:
+      text: Sec.5.3（p.14）：64线WADS训练模型无重训用于32线CADC，precision94.82/recall97.93/F1 96.35%；128线Boreas有可视化及上述里程计。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 证明所报告数据和传感器组合中的转移表现，不是任意跨传感器泛化；Boreas还观察到部分树点被删。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-snow-intensity
+    name: 雪比例分组与失败样例
+    kind: design-choice
+    assessment: reported
+    contribution_ids: []
+    result:
+      text: Sec.5.6 / Fig.9 / Table7（pp.17–18）：从170帧按雪点比例分三组各选中位帧；light/moderate/heavy precision68.79/74.98/84.34%，recall99.90/99.74/99.94%，F1
+        81.47/85.61/91.48%。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 只比较三张不同场景，不是170帧平均或受控雪强因果实验。误删树叶/建筑且类别基率变化，不能将precision差全部归因雪强。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-data-efficiency
+    name: 五种子训练规模
+    kind: design-choice
+    assessment: reported
+    contribution_ids: []
+    result:
+      text: Table6（p.16）：30帧CADC/WADS五次F1均值97.35±1.00/95.29±1.73%；WADS100帧97.90±.96，300帧96.77±2.00。30/100/300总帧均按70/30拆分训练验证。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 摘要98.10/97.23不等于五种子均值；不同规模训练更新次数也变化，不能称纯数据量因果或普遍30帧足够。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: Sec.5.1（pp.9–10）CADC 测试点独立人工标注，WADS 点级去雪测试按同一准则重新标注，不等同原生 WADS benchmark；Tables2–3 主表也不是整个测试集的五种子均值。Sec.5.6
+      / Fig.9 / Table7（pp.17–18）只对从170帧中分组挑出的三张中位帧计算雪强结果；稀疏树叶和建筑仍会误删，轻雪帧 precision 68.79%。Boreas 无点级雪标签，点级结论为定性，量化证据来自特定
+      VGICP 设置。 Tables 2–3 的点级主表不是全数据集汇总：CADC 人工标注测试点为 47,132 个（其中雪点 7,378 个）；Sec.5.6 明称 Table 3 使用一个 WADS
+      测试帧。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: snowremovalnet-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

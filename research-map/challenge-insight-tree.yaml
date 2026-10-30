@@ -2593,12 +2593,18 @@ challenges:
     status: inferred
     source_papers:
     - triplemixer-2025
+    - snowremovalnet-2026
     techniques:
     - 互补表征
     - GMX/FMX/CMX
     - lifting wavelet
     - 三平面
     - 监督
+    - BEV引导3D点特征
+    - FiLM
+    - 有界缩放
+    - 高度混叠
+    - nearest grid_sample
     principle:
       text: 单一投影或局部邻域会丢掉不同的信息；在局部三维几何、多方向频率与通道上下文间交换证据，是表征互补，不等同于显式天气条件化。
       basis: analyst-inference
@@ -2612,10 +2618,21 @@ challenges:
         original_pdf_review_status: source-checked
     transfer_boundary: 合成天气不能完全覆盖真实复杂性；SemanticSTF 稀有类别 IoU 可接近零，平均下游增益不能掩盖类别失败。
     evidence:
-    - *id025
+    - paper: triplemixer-2025
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: snowremovalnet-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
     playbook:
       use_when:
-        text: 需要同时利用细粒度 3D 邻域与更大范围多尺度信息，并有逐点天气监督时。
+        text: 需要同时利用细粒度 3D 邻域与更大范围多尺度信息，并有逐点天气监督时。 SnowRemovalNet 提供单帧去雪实例：局部几何与大范围强度/密度分布互补，且二维投影的垂直混叠不能靠投影本身消除。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -2625,19 +2642,33 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       mechanism:
         text: TripleMixer 串联 GMX 几何邻域、三平面 lifting wavelet 的 FMX，以及回投 3D 后的 CMX 通道混合；联合 CE、Lovász 与 wavelet regularization。
+          SnowRemovalNet 的双通道 BEV 经 DSConv 编码并采样到点；BEV_i/BEV_j与相对XYZ共同产生消息门控，max聚合后再用BEV预测FiLM缩放/偏移。点分支而非BEV网格直接输出逐点类别（Secs.4.3–4.6，pp.6–9）。
         basis: note-summary
         status: source-checked
         evidence:
         - paper: triplemixer-2025
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
           stage: first-pass
           anchor: section-05
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
       engineering_tricks:
-        text: 体素均值下采样减规模，邻点差向量/attention/residual 保留局部关系；三方向投影减少单 BEV 的高度信息损失。它们不是三个天气专家。
+        text: 体素均值下采样减规模，邻点差向量/attention/residual 保留局部关系；三方向投影减少单 BEV 的高度信息损失。它们不是三个天气专家。 SnowRemovalNet：先在XYZ用k=16建图，下一层对64维特征的固定随机16维投影用k=12；FiLM缩放1+0.5*tanh(γ)限制在[0.5,1.5]以稳定训练；nearest
+          grid_sample 从75×75网格取点特征。原文未分别消融这些补丁（Secs.4.4–4.5；Table1）。
         basis: note-summary
         status: source-checked
         evidence:
@@ -2647,8 +2678,14 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       assumptions_cost:
-        text: 依赖逐点标签、投影分辨率和小波层数；参数量较高，资源受限部署需权衡。
+        text: 依赖逐点标签、投影分辨率和小波层数；参数量较高，资源受限部署需权衡。 SnowRemovalNet 需要同扫描XYZ/强度和±30m BEV，输入0.1m网格经编码后约0.8m一格；另需离线概率监督，不能把其35,925参数/RTX5080的17–59ms泛化为任何设备预算。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -2658,8 +2695,15 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       failure_boundary:
-        text: 合成天气不能完全覆盖真实复杂性；SemanticSTF 稀有类别 IoU 可接近零，平均下游增益不能掩盖类别失败。
+        text: 合成天气不能完全覆盖真实复杂性；SemanticSTF 稀有类别 IoU 可接近零，平均下游增益不能掩盖类别失败。 SnowRemovalNet 同一BEV特征格内的点获得相同上下文；测试帧中
+          BEV 范围内点的 37.1%（CADC）/30.3%（WADS）存在异类且高度差≥.5m的同格邻点。稀疏树叶、建筑仍可能被删（Sec.5.2.2 p.13；Fig.9 pp.17–18）。
         basis: note-summary
         status: source-checked
         evidence:
@@ -2669,8 +2713,15 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       evidence_scope:
-        text: Table XIII 等有 GMX/FMX/CMX 移除及分辨率、层数、损失对照；原任务范围内支持组件贡献，不证明跨域偏差已被消除。
+        text: Table XIII 等有 GMX/FMX/CMX 移除及分辨率、层数、损失对照；原任务范围内支持组件贡献，不证明跨域偏差已被消除。 SnowRemovalNet 证据支持BEV引导这一组件组，不区分门控与FiLM各自贡献；高度通道不显著不证明等效，更不说明高度信息无用。此处与TripleMixer同属整理者的互补表征分类，不表示直接继承或同一传感器融合方案。
+          SnowRemovalNet 点级主表仅对应指定测试样本：CADC 47,132 个标注点，WADS Table 3 为一个测试帧；不是全数据集均值（Secs.5.1、5.6）。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -2680,12 +2731,26 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       reported_effect:
         text: triplemixer-2025：在去噪、语义分割、地点识别与检测上分别评估；真实 SemanticSTF 的下游模型不重训，三模型平均 mIoU 提高 2.38 点（Tables VIII–X）。
+          SnowRemovalNet 去BEV对照同时去除门控和FiLM，CADC/WADS F1为92.58/92.60%，完整98.10/97.23%；增加max/min高度通道五次均值97.52/96.22，原双通道97.35/95.29，Welch
+          p=.77/.35（Tables2–3；Sec.5.2.2）。
         basis: note-summary
         status: source-checked
         evidence:
         - paper: triplemixer-2025
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
           stage: first-pass
           anchor: section-07
           status: source-checked
@@ -2696,6 +2761,15 @@ challenges:
       location: Sec. IV-B–F，Figs. 5–7，Eqs. (2)–(14)；Table XIII
       evidence:
       - paper: triplemixer-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    - paper: snowremovalnet-2026
+      location: Secs.3–4.6，Figs.2–4，Eqs.5–14，PDF pp.3–9；Table1 p.10；Tables2–3 pp.11–12；Sec.5.2.2 p.13；Fig.9 pp.17–18
+      evidence:
+      - paper: snowremovalnet-2026
         stage: first-pass
         anchor: section-05
         status: source-checked
@@ -3035,9 +3109,13 @@ challenges:
     - 目标级恢复与保留
     - context intervention
     - candidate tracing
+    - 误删计入原类错误
+    - 类别级收益与损害
+    - VGICP
+    - 跨数据集评测
     status: inferred
-    transfer_boundary: 3D-UnOutDet 平均 mIoU 提升时 road/fence 仍可能下降；LTDNet 真实几何无配对验证；SET-Det 的天气迁移未证实。 AWCR
-      的晴天构造外部损失诊断与自然 adverse development 检测须分开；不推广为全部真实雪/传感器的机制。
+    transfer_boundary: 3D-UnOutDet 平均 mIoU 提升时 road/fence 仍可能下降；LTDNet 真实几何无配对验证；SET-Det 的天气迁移未证实。 AWCR 的晴天构造外部损失诊断与自然
+      adverse development 检测须分开；不推广为全部真实雪/传感器的机制。
     source_papers:
     - ltdnet-2026
     - 3d-unoutdet-2025
@@ -3045,6 +3123,8 @@ challenges:
     - triplemixer-2025
     - shape-enhanced-set-det-2026
     - awcr-2026
+    - snowremovalnet-2026
+    - beyondsnowflakes-2026
     evidence:
     - paper: ltdnet-2026
       stage: first-pass
@@ -3079,6 +3159,18 @@ challenges:
     - paper: awcr-2026
       stage: first-pass
       anchor: section-07
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: snowremovalnet-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: beyondsnowflakes-2026
+      stage: first-pass
+      anchor: result-filter
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
@@ -3126,6 +3218,7 @@ challenges:
     playbook:
       use_when:
         text: 去噪指标变好但检测/分割收益不明，或生成结构是否可靠尚不清楚时。 AWCR 补充适用情形：协同总体分数掩盖先前正确目标丢失，需区分接收端本可识别却受协同损害，与接收端一直未识别而丢失协同帮助。
+          SnowRemovalNet 展示点级去雪后还需按原任务统计收益与误删代价；其下游为语义分割和里程计，不能替代其他论文的检测评测。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3165,9 +3258,16 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       mechanism:
         text: LTDNet 走 degraded-to-clean 恢复，SET-Det 走 RoI 补全加特征融合；3D-UnOutDet、RPSnowNet、TripleMixer 则主要过滤后输入下游模型。技术动作不同，下游评估是共同验证环节。
           AWCR 的模拟分支先过滤新增天气点；真实分支保持检测器固定，构造有界修正候选并以双源当前量测重评分。其控制诊断保留标注物体内部点、只改外部，再用原输入前融合特征做区域替换；诊断替换并非在线模块。
+          SnowRemovalNet 将原扫描/去雪扫描送同一个WADS分割网络，误删点仍计入原类别错误；Boreas原扫描/去雪扫描使用相同VGICP设置（Sec.5.4，pp.15–16）。
         basis: note-summary
         status: source-checked
         evidence:
@@ -3207,9 +3307,17 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       engineering_tricks:
         text: 明确下游是否重训、输入是否更换、阈值是否固定，并单列保留真实结构的代价；这些是阅读者整理的评测使用方式，不是新增网络模块。 AWCR 将原/修正候选并池后以输入置信度截为 4096；Ordinary
           Quality 使用相同候选/质量目标/回归器但将 60 项点统计置零，Selection Only 只对原候选重评分。训练 correction 最后层零初始化、残差有界并使用保留损失（Secs.4.3–5.1）。
+          SnowRemovalNet：分割训练先按标签移除falling snow，网络不设该类；沿LiSnowNet划分并排除与测试重复的训练序列。Boreas用WADS模型无重训，按KITTI协议RPE及94个重叠子段的rigid-aligned
+          ATE分别记录（Sec.5.4）。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3249,9 +3357,15 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       assumptions_cost:
-        text: 需要对应任务标签和一致的评测设置；重训模型、预处理和生成分支各有额外成本。 AWCR 真实实现需要标注训练观察、已有晴天及构造损失变体、双源当前点的集中统计；自然行还共享固定背景图
-          support filter。无自然配对记录不等于无监督；不据此声称满足通信或延时预算。
+        text: 需要对应任务标签和一致的评测设置；重训模型、预处理和生成分支各有额外成本。 AWCR 真实实现需要标注训练观察、已有晴天及构造损失变体、双源当前点的集中统计；自然行还共享固定背景图 support
+          filter。无自然配对记录不等于无监督；不据此声称满足通信或延时预算。 SnowRemovalNet：需要语义标注或GNSS/INS参考；Boreas结果限13,624帧、7.9km单路线和VGICP。94个4323帧子段每100帧起始，非独立94路线；模型迁移同时改变传感器与场景。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3286,6 +3400,12 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
         - paper: awcr-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
           stage: first-pass
           anchor: section-07
           status: source-checked
@@ -3294,7 +3414,8 @@ challenges:
       failure_boundary:
         text: 3D-UnOutDet 平均 mIoU 提升时 road/fence 仍可能下降；LTDNet 真实几何无配对验证；SET-Det 的天气迁移未证实。 原文 Sec. 5.1–5.4（PDF
           pp. 6–7）：真实输入来自 CoInfra 两个固定路侧节点对，结果是 development 数据；自然天气行共用双源点与固定背景图 support filter，控制行不使用该过滤。控制干预是晴天真实输入上的构造
-          exterior loss，不是自然配对雪天观测；特征恢复需原输入特征，属于诊断而非部署模块。真实修复只改变 Car 输出且集中计算双源点统计；未验证跨传感器泛化或所有真实天气因果机制。
+          exterior loss，不是自然配对雪天观测；特征恢复需原输入特征，属于诊断而非部署模块。真实修复只改变 Car 输出且集中计算双源点统计；未验证跨传感器泛化或所有真实天气因果机制。 SnowRemovalNet
+          分割mIoU上升同时building IoU77.82→74.21、accumulated snow57.08→51.59；Boreas定性仍删部分树点，旋转RPE仅.151→.150°/100m（Sec.5.3–5.4；Tables4–5）。
         basis: note-summary
         status: source-checked
         evidence:
@@ -3334,9 +3455,17 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       evidence_scope:
         text: 原论文报告检测、分割或补全的对应结果；不能从整体收益推出“去噪越多越好”，也不能从单个定性例宣称稳定下游增益。 AWCR Table 1 的 30/31 是真实晴天构造损失下的诊断特征恢复，不是自然雪检测或部署恢复率；Table
-          3 的 AWCR 控制恢复为 11/31 且新增 6 个损失。自然天气候选追踪另显示 9 个 gained 目标由不足阈值的原几何经修正获得准确框；不能混同两种恢复机制。
+          3 的 AWCR 控制恢复为 11/31 且新增 6 个损失。自然天气候选追踪另显示 9 个 gained 目标由不足阈值的原几何经修正获得准确框；不能混同两种恢复机制。 SnowRemovalNet：支持论文指定分割/里程计设置下的平均收益，同时保留受损类别与结构反例；不是所有任务收益保证，也不证明哪一个去雪模块独立造成下游改善。
+          Beyond the Snowflakes 的 WADS-3D 使用 KITTI 预训练模型直接推理，CADC 则以 50:50 划分并在过滤训练数据上微调，64线/32线传感器亦不同；两者不能构成只改变雪或传感器的控制实验，也不支持所有去雪方法普遍有用/无用。
+          SnowRemovalNet 点级主表仅对应指定测试样本：CADC 47,132 个标注点，WADS Table 3 为一个测试帧；不是全数据集均值（Secs.5.1、5.6）。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3376,14 +3505,34 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: module-ablation
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: result-filter
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       reported_effect:
         text: ltdnet-2026：IQA3D 使用合成配对测质量、真实序列测检测；LTDNet 的 NR-F1 并非所有天气组合最高（Tables 1–2）。；3d-unoutdet-2025：WADS
-          上 3D-UnOutDet mIoU 89.04%，SSR 81.76%，监督 3D-OutDet 90.00%；总耗时 82 ms（Table I）。；rpsnownet-2026：WADS
-          上 DMROR mIoU 88.06%、897 ms；RPSnowNet 88.92%、15 ms。CADC 逐点去雪为定性，检测另有 box 定量（Table III）。；triplemixer-2025：在去噪、语义分割、地点识别与检测上分别评估；真实
-          SemanticSTF 的下游模型不重训，三模型平均 mIoU 提高 2.38 点（Tables VIII–X）。；shape-enhanced-set-det-2026：KITTI、Waymo
-          上分别报告检测指标与补全指标，另比较不同距离、遮挡与效率（Sec. IV）。 AWCR（Tables 2–3，pp.7）：CoInfra natural adverse development
-          的 V2X-ViT Car BEV AP@0.7 25.70→30.37，作者报 +4.66（表值相减为 4.67；原文未提供未舍入值）；AttFuse +5.56；模拟 fog 固定 4096 候选 vehicle
-          AP@0.7 +4.47。自然天气保留原正确 220/230、协同帮助 131/140；这些是原文报告，非复现。
+          上 3D-UnOutDet mIoU 89.04%，SSR 81.76%，监督 3D-OutDet 90.00%；总耗时 82 ms（Table I）。；rpsnownet-2026：WADS 上
+          DMROR mIoU 88.06%、897 ms；RPSnowNet 88.92%、15 ms。CADC 逐点去雪为定性，检测另有 box 定量（Table III）。；triplemixer-2025：在去噪、语义分割、地点识别与检测上分别评估；真实
+          SemanticSTF 的下游模型不重训，三模型平均 mIoU 提高 2.38 点（Tables VIII–X）。；shape-enhanced-set-det-2026：KITTI、Waymo 上分别报告检测指标与补全指标，另比较不同距离、遮挡与效率（Sec.
+          IV）。 AWCR（Tables 2–3，pp.7）：CoInfra natural adverse development 的 V2X-ViT Car BEV AP@0.7 25.70→30.37，作者报
+          +4.66（表值相减为 4.67；原文未提供未舍入值）；AttFuse +5.56；模拟 fog 固定 4096 候选 vehicle AP@0.7 +4.47。自然天气保留原正确 220/230、协同帮助
+          131/140；这些是原文报告，非复现。 SnowRemovalNet WADS八类mIoU44.90→48.40%，10m内31.48→48.79%；Boreas保留77.4%点，平移RPE .645→.614%，平均ATE3.70→3.60m，94子段中83下降（Tables4–5，pp.15–16）。
+          Beyond the Snowflakes：DSOR→LIOR 过滤在 WADS-3D 上作者报告平均 6.72% AP improvement，CADC 增益可忽略；保留原文百分比表述，不改写为百分点（Sec.IV-A3
+          / Fig.4，PDF p.4）。
         basis: note-summary
         status: source-checked
         evidence:
@@ -3420,6 +3569,18 @@ challenges:
         - paper: awcr-2026
           stage: first-pass
           anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: result-filter
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
@@ -3470,8 +3631,8 @@ challenges:
         basis: existing-note
         original_pdf_review_status: source-checked
     - paper: awcr-2026
-      location: arXiv:2610.35110v1；Secs. 3.1–3.5，PDF pp. 3–4（控制诊断正文）；Fig. 1 在 p. 1，Fig. 2 / Table 1 在 p. 4，Fig. 3 在 p. 5；Secs. 4.1–4.4，pp.
-        4–6 / Fig. 2（两种修复）；Secs. 5.1–5.4，pp. 6–7，Tables 2–3（development 条件、候选追踪与 retention）。
+      location: arXiv:2610.35110v1；Secs. 3.1–3.5，PDF pp. 3–4（控制诊断正文）；Fig. 1 在 p. 1，Fig. 2 / Table 1 在 p. 4，Fig.
+        3 在 p. 5；Secs. 4.1–4.4，pp. 4–6 / Fig. 2（两种修复）；Secs. 5.1–5.4，pp. 6–7，Tables 2–3（development 条件、候选追踪与 retention）。
       evidence:
       - paper: awcr-2026
         stage: first-pass
@@ -3497,9 +3658,287 @@ challenges:
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    - paper: snowremovalnet-2026
+      location: Secs.5.3–5.4，Tables4–5，Figs.7–8，PDF pp.14–16；Sec.5.6 Fig.9 pp.17–18
+      evidence:
+      - paper: snowremovalnet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    - paper: beyondsnowflakes-2026
+      location: arXiv:2610.13891v1；Sec.III-A/D（PDF pp.2–3），Sec.IV-A3 / Fig.4（p.4）：训练/传感器条件及原始/过滤对照。
+      evidence:
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: module-ablation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-filter
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
     open_questions:
-      text: 统一控制下游训练/阈值后，哪些被删或被补结构导致具体类别收益/损害，不能由平均指标作因果归因。 AWCR 在未报告传感器/场景下的泛化、自然天气中 context pathway
-        的独立因果占比及通信/时延代价，仍未核验。
+      text: 统一控制下游训练/阈值后，哪些被删或被补结构导致具体类别收益/损害，不能由平均指标作因果归因。 AWCR 在未报告传感器/场景下的泛化、自然天气中 context pathway 的独立因果占比及通信/时延代价，仍未核验。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-confound-control
+    name: 先拆检测错误，再核对天气混杂
+    techniques:
+    - weather bins
+    - 等目标数分箱
+    - TP/FN
+    - Kendall Tau
+    - mutual information
+    - conditional SHAP
+    - 原始与过滤对照
+    status: inferred
+    transfer_boundary: Sec. III-A/D–E、IV-C–E、V-B（PDF pp.2–7）：WADS-3D 只标 Car；WADS 使用 KITTI 预训练模型直接推理，CADC 则以 50:50
+      划分并在去雪训练数据上微调，传感器也不同，因此不是只改变一个因素的跨数据集控制实验。RF/SHAP 解释元特征对 TP/FN 的预测，不是原检测器内部权重或物理因果干预。三种积雪机制在 IV-E 作为假设提出；后续受控研究
+      [52] 仅被本文引用，本轮未独立核验该研究。滤波参数、RF 完整搜索空间、速度/计算成本和具体临界雪密度未在已读正文明确报告。
+    source_papers:
+    - beyondsnowflakes-2026
+    evidence:
+    - paper: beyondsnowflakes-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: beyondsnowflakes-2026
+      stage: first-pass
+      anchor: result-correlations
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    principle:
+      text: 先把总分变化拆成具体错误，再检查影响该错误的对象属性是否与天气分组共变；将统计解释、滤波对照和物理机制假设分层记录。该归纳不是因果识别已完成。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-recall
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-meta
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-correlations
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 天气分组总分出现反直觉趋势，或想判断去雪是否真正改变某类检测错误时。该工具属于评测诊断，不是新的去雪算法。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: result-trend
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: result-recall
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: 在每套数据/训练条件内，用 DSOR→LIOR 计前视绝对雪点数并分箱；比较原始/过滤 AP，再拆 TP/FN/FP 与 PR。对 TP/FN 用对象和场景元特征训练 RF，结合 Tau、MI、conditional
+          SHAP；最后查主要元特征随雪箱的 Pearson 相关。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: module-bins
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: module-ablation
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: module-errors
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: module-meta
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 分位数边界以各箱 GT Car 数近似相当为目标，不是每箱帧数相等；SHAP 使用 conditional sampling 以避免相关特征产生外推；两个传感器数据独立基准而非直接混合。作者没有给这些实现选择逐一做必要性消融（Sec.III-B–E）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: module-bins
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: module-meta
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 需对象框、检测输出及对象/场景元信息，可计算雪点代理量；本篇只评估 Car。RF 网格搜索、五检测器推理和 CADC 微调均有成本，原文未量化该分析流水线运行时间。WADS 2050 个唯一原始扫描旋转成
+          4100 帧，不能当作 4100 个独立原始扫描。 DSOR→LIOR 雪点计数是天气代理量，不是校准的物理降雪率；该分析未排除滤波误判。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: module-dataset
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: module-meta
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: Sec. III-A/D–E、IV-C–E、V-B（PDF pp.2–7）：WADS-3D 只标 Car；WADS 使用 KITTI 预训练模型直接推理，CADC 则以 50:50 划分并在去雪训练数据上微调，传感器也不同，因此不是只改变一个因素的跨数据集控制实验。RF/SHAP
+          解释元特征对 TP/FN 的预测，不是原检测器内部权重或物理因果干预。三种积雪机制在 IV-E 作为假设提出；后续受控研究 [52] 仅被本文引用，本轮未独立核验该研究。滤波参数、RF 完整搜索空间、速度/计算成本和具体临界雪密度未在已读正文明确报告。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: section-12
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: Sec.IV-A3 / Fig.4（p.4）：作者报告 WADS-3D 去雪平均 6.72% AP improvement；CADC gains negligible。两套数据的总体正向雪箱趋势去雪后仍在，CADC
+          与个别相邻 WADS 箱存在波动，不是严格单调。 Figs.7–8（pp.6–7）：WADS 对象点数 SHAP 0.21–0.33、距离 0.15–0.25，CADC 点数 0.54–0.57、均值强度
+          0.17–0.19。Table III（p.6）：雪箱与 WADS 对象点数 r=0.820,p=3.70e−3；与距离 r=−0.282,p=.430；CADC 点数 r=.733,p=1.86e−3，强度
+          r=.694,p=4.12e−3。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: result-filter
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: result-meta
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: result-correlations
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: WADS 与 CADC 的结果支持分条件检查，不组成跨数据集排行榜。雪箱与点数相关、RF 认为点数重要，尚不能确认所有天气损伤路径已分离；过滤不等于受控去掉空中雪的完美物理干预。本文提出背景平滑、点数膨胀和反射变化假设，引用
+          [52] 的支持不冒充本轮独立验证。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: result-correlations
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: beyondsnowflakes-2026
+          stage: first-pass
+          anchor: boundary-physics
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: beyondsnowflakes-2026
+      location: arXiv:2610.13891v1；Secs.III-A–E pp.2–4 / Fig.3 p.5（数据和分析流程）；Sec.IV-A / Fig.4 p.4（滤波对照）；Sec.IV-B
+        / Figs.5–6 pp.4–5（错误分解）；Sec.IV-C–E / Fig.7、Table III p.6、Fig.8 p.7（统计分析及物理假设）。
+      evidence:
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-filter
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-meta
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-correlations
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: boundary-physics
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 尚未核验 RF 完整划分/搜索设置、滤波参数与伪雪点计数偏差；本文引用的受控积雪研究 [52] 未独立审阅。目标属性匹配后趋势是否保留、具体物理机制的独立因果占比，不由现有相关性结果回答。
       basis: not-assessed
       status: unverified
       evidence: []
@@ -3705,6 +4144,7 @@ challenges:
     source_papers:
     - 3d-unoutdet-2025
     - rpsnownet-2026
+    - snowremovalnet-2026
     techniques:
     - 伪标签
     - SSR
@@ -3712,6 +4152,11 @@ challenges:
     - 离线摊销
     - 教师偏差
     - 累计消融
+    - ASDR+C-GLP（既有标签器）
+    - 概率伪标签
+    - 课程掩码
+    - 不确定权重下限
+    - 第三阶段选模
     principle:
       text: 规则可提供训练信号而不必留在在线路径；学习器承担部署预测，将标签构建成本与实时执行分开，但不会自动消除教师错误。
       basis: analyst-inference
@@ -3731,11 +4176,27 @@ challenges:
         original_pdf_review_status: source-checked
     transfer_boundary: SSR 对 fog/dirt 不保证同等效力，WADS→CADC 需调 k；RPS 也依赖低强度/近距/低高度先验。无人工标签不等于无偏监督。
     evidence:
-    - *id034
-    - *id035
+    - paper: 3d-unoutdet-2025
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: rpsnownet-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: snowremovalnet-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
     playbook:
       use_when:
-        text: 缺少人工逐点标签、已有适用的物理/几何规则，并愿意支付离线标签与训练成本时。
+        text: 缺少人工逐点标签、已有适用的物理/几何规则，并愿意支付离线标签与训练成本时。 SnowRemovalNet 对离线规则输出保留连续置信度，并将其用于训练课程；适用于已有可用规则监督而希望部署仅运行网络的情形，不保证教师概率已校准。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3751,9 +4212,15 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       mechanism:
         text: 3D-UnOutDet 用 SSR 邻域强度 FFT 范数给伪标签，训练原 3D-OutDet 后端；RPS 的 DMROR 离线生成伪标签，在线只运行 point/range 网络及其后处理。FFT
-          在 SSR 标签路径，不是插入后端的 DWT 模块。
+          在 SSR 标签路径，不是插入后端的 DWT 模块。 SnowRemovalNet 沿用先前工作[11]的ASDR+C-GLP离线概率标签；网络训练以软BCE、置信课程mask及max(.5,2|y−.5|)权重共同监督，推理只运行网络并在概率≥.5时删点（Sec.4.2，Eqs.1–4，Algorithm1；Sec.4.6）。
         basis: note-summary
         status: source-checked
         evidence:
@@ -3764,13 +4231,19 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
         - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
           stage: first-pass
           anchor: section-05
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
       engineering_tricks:
-        text: SSR 与后端共享 kNN 索引/距离，强度可做距离平方校正；DMROR 组合两次判定，RPS 后处理把预测先验参数与初始先验加权融合。
+        text: SSR 与后端共享 kNN 索引/距离，强度可做距离平方校正；DMROR 组合两次判定，RPS 后处理把预测先验参数与初始先验加权融合。 SnowRemovalNet：100epochs分1–34/35–67/68–100；先纳入y≤.1或≥.9，再≤.3或≥.7，最后全部。加权损失除以有效权重和；验证不用课程mask，只在第三阶段选最低验证损失；权重下限.5避免最终阶段彻底忽略含糊点（pp.5–6）。
         basis: note-summary
         status: source-checked
         evidence:
@@ -3786,8 +4259,14 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       assumptions_cost:
-        text: 教师先验、阈值和传感器配置必须适用；还需离线搜索/训练。SSR 最近邻仍是瓶颈，DMROR 的慢速计算被移到训练前。
+        text: 教师先验、阈值和传感器配置必须适用；还需离线搜索/训练。SSR 最近邻仍是瓶颈，DMROR 的慢速计算被移到训练前。 SnowRemovalNet 的监督仍依赖ASDR+C-GLP规则与局部传播。每数据集30帧实际21训练+9验证；CADC/WADS标签计算217/927ms，学生17/59ms，均为论文硬件报告，不是无成本无监督。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3803,8 +4282,14 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       failure_boundary:
-        text: SSR 对 fog/dirt 不保证同等效力，WADS→CADC 需调 k；RPS 也依赖低强度/近距/低高度先验。无人工标签不等于无偏监督。
+        text: SSR 对 fog/dirt 不保证同等效力，WADS→CADC 需调 k；RPS 也依赖低强度/近距/低高度先验。无人工标签不等于无偏监督。 SnowRemovalNet 学生F1 CADC98.10/WADS97.23仍低于离线标签器98.61/98.01；教师概率不能等同物理真值。论文报告学生对稀疏树叶与建筑误删，不能据此认定已纠正教师偏差（Tables2–3；Fig.9）。
         basis: note-summary
         status: source-checked
         evidence:
@@ -3815,6 +4300,12 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
         - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
           stage: first-pass
           anchor: section-08
           status: source-checked
@@ -3822,6 +4313,8 @@ challenges:
           original_pdf_review_status: source-checked
       evidence_scope:
         text: SSR 与学习器主表可比较，3D-UnOutDet Table V 有标签/后端设计对照；RPS Table VIII 比较标签源，Table VII 是累计组件配置，不能把相邻差当任意组合独立贡献。
+          SnowRemovalNet：该消融只检验概率监督训练组合，不能把增益独立归于软标签、课程或权重。C-GLP标签器来自前作，本篇不是其首创；离线到在线的共同路线不说明各论文教师偏差相同。 SnowRemovalNet
+          点级主表仅对应指定测试样本：CADC 47,132 个标注点，WADS Table 3 为一个测试帧；不是全数据集均值（Secs.5.1、5.6）。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3837,9 +4330,16 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       reported_effect:
-        text: 3d-unoutdet-2025：WADS 上 3D-UnOutDet mIoU 89.04%，SSR 81.76%，监督 3D-OutDet 90.00%；总耗时 82 ms（Table I）。；rpsnownet-2026：WADS
-          上 DMROR mIoU 88.06%、897 ms；RPSnowNet 88.92%、15 ms。CADC 逐点去雪为定性，检测另有 box 定量（Table III）。
+        text: 3d-unoutdet-2025：WADS 上 3D-UnOutDet mIoU 89.04%，SSR 81.76%，监督 3D-OutDet 90.00%；总耗时 82 ms（Table
+          I）。；rpsnownet-2026：WADS 上 DMROR mIoU 88.06%、897 ms；RPSnowNet 88.92%、15 ms。CADC 逐点去雪为定性，检测另有 box 定量（Table
+          III）。 SnowRemovalNet 硬标签变体同时关闭课程和不确定加权，CADC/WADS F1 94.33/94.44%，完整98.10/97.23%。五种子30帧均值另为97.35±1.00/95.29±1.73%，不与主表单次结果混用（Tables2–3、6）。
         basis: note-summary
         status: source-checked
         evidence:
@@ -3850,6 +4350,12 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
         - paper: rpsnownet-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
           stage: first-pass
           anchor: section-07
           status: source-checked
@@ -3869,6 +4375,16 @@ challenges:
       location: Sec. III-A–C，Fig. 2，Algorithm 1；Tables VII–VIII
       evidence:
       - paper: rpsnownet-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    - paper: snowremovalnet-2026
+      location: Sec.2 p.3；Sec.4.2 Eqs.1–4 p.5、Algorithm1 p.6；Sec.4.6 p.9；Tables1–3 pp.10–12；Sec.5.2.2 p.13；Table6
+        p.16
+      evidence:
+      - paper: snowremovalnet-2026
         stage: first-pass
         anchor: section-05
         status: source-checked

@@ -506,3 +506,87 @@ nodes:
     basis: existing-note
     original_pdf_review_status: source-checked
   parent: task-cooperative-detection
+- id: module-snowremovalnet-2026
+  kind: follow-up
+  name: SnowRemovalNet · BEV 引导与概率监督
+  novelty_class: 4
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 单帧点空间判别，以 BEV 强度/密度上下文门控并调制图消息；沿用先前 ASDR+C-GLP 离线软标签，训练加入课程掩码与不确定加权。Secs.4.2–4.6，pp.5–9。 按既有路线增量登记，不认定首创。
+  source_papers:
+  - snowremovalnet-2026
+  evidence:
+  - paper: snowremovalnet-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-point
+- id: task-weather-evaluation
+  kind: task
+  name: 天气感知鲁棒性评测
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 对天气条件下检测与去噪收益做条件化评测；这是任务归类，不声称本文首创天气评测。
+  source_papers:
+  - beyondsnowflakes-2026
+  evidence:
+  - paper: beyondsnowflakes-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-weather-meta-evaluation
+  kind: pipeline
+  name: 分层对照与对象级元分析
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 数据独立基准、原始/过滤对照、错误分解和元特征分析；为评测流程，不视为新的检测或去雪网络。
+  source_papers:
+  - beyondsnowflakes-2026
+  evidence:
+  - paper: beyondsnowflakes-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-weather-evaluation
+- id: module-beyondsnowflakes-benchmark
+  kind: module
+  name: 独立基准与去雪对照
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: WADS-3D 与 CADC 各自训练/传感器条件内比较原始及 DSOR→LIOR 输入；module 仅表示分析步骤，不是新算法模块。
+  source_papers:
+  - beyondsnowflakes-2026
+  evidence:
+  - paper: beyondsnowflakes-2026
+    stage: first-pass
+    anchor: module-ablation
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-weather-meta-evaluation
+- id: module-beyondsnowflakes-meta
+  kind: module
+  name: 错误分解与条件元分析
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 以 TP/FN 为目标用 Tau、MI、RF/conditional SHAP 和雪箱相关性分析；统计关联不升级为物理因果。
+  source_papers:
+  - beyondsnowflakes-2026
+  evidence:
+  - paper: beyondsnowflakes-2026
+    stage: first-pass
+    anchor: module-meta
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-weather-meta-evaluation

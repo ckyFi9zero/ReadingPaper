@@ -32,11 +32,24 @@ class ResearchMapTests(unittest.TestCase):
         self.assertFalse(pending & represented)
         self.assertFalse(pending & facts.keys())
 
+    def pending_fixture(self):
+        """Keep pending-state regressions independent of real papers becoming mapped."""
+        data = copy.deepcopy(self.data)
+        papers = copy.deepcopy(self.papers)
+        paper = copy.deepcopy(next(p for p in papers if p['category'] == 'in-field'))
+        paper.update(slug='pending-fixture-2026', name='Pending fixture')
+        papers.append(paper)
+        data['pending']['papers'] = [{
+            'paper': paper['slug'], 'status': 'pending', 'registered_at': '2026-10-30',
+            'reason': 'Test-only source awaiting a factual map',
+        }]
+        return data, papers
+
     def test_unregistered_in_field_paper_is_not_silently_omitted(self):
-        bad = copy.deepcopy(self.data)
+        bad, papers = self.pending_fixture()
         bad['pending']['papers'] = []
-        with self.assertRaisesRegex(ValueError, 'Missing in-field coverage.*beyondsnowflakes-2026'):
-            research_map.validate(bad, ROOT, self.papers)
+        with self.assertRaisesRegex(ValueError, 'Missing in-field coverage.*pending-fixture-2026'):
+            research_map.validate(bad, ROOT, papers)
 
     def test_pending_does_not_allow_withdrawing_old_map_coverage(self):
         bad = copy.deepcopy(self.data)
@@ -61,32 +74,53 @@ class ResearchMapTests(unittest.TestCase):
             ('status', 'organized', 'Invalid pending status'),
         ]:
             with self.subTest(field=field, value=value):
-                bad = copy.deepcopy(self.data)
+                bad, papers = self.pending_fixture()
                 bad['pending']['papers'][0][field] = value
                 with self.assertRaisesRegex(ValueError, message):
-                    research_map.validate(bad, ROOT, self.papers)
+                    research_map.validate(bad, ROOT, papers)
 
     def test_pending_registration_cannot_be_duplicate_or_mapped(self):
-        bad = copy.deepcopy(self.data)
+        bad, papers = self.pending_fixture()
         bad['pending']['papers'].append(copy.deepcopy(bad['pending']['papers'][0]))
         with self.assertRaisesRegex(ValueError, 'Duplicate pending paper'):
-            research_map.validate(bad, ROOT, self.papers)
-        bad = copy.deepcopy(self.data)
+            research_map.validate(bad, ROOT, papers)
+        bad, papers = self.pending_fixture()
         bad['pending']['papers'][0]['paper'] = 'dsor-2021'
         # Isolate the generic mapped/pending conflict from the stricter historical
         # coverage protection, which has its own regression above.
         with mock.patch.object(research_map, 'BASELINE_MAPPED', research_map.BASELINE_MAPPED - {'dsor-2021'}):
             with self.assertRaisesRegex(ValueError, 'Mapped paper cannot also be pending'):
-                research_map.validate(bad, ROOT, self.papers)
+                research_map.validate(bad, ROOT, papers)
 
     def test_pending_notice_does_not_fabricate_map_nodes(self):
         from build_site import shell
-        outputs = research_map.render(ROOT, self.papers, shell)
+        data, papers = self.pending_fixture()
+        with mock.patch.object(research_map, 'load', return_value=data):
+            outputs = research_map.render(ROOT, papers, shell)
         for output in outputs.values():
-            self.assertIn(f'地图待整理 · {len(self.data["pending"]["papers"])} 篇领域内论文', output)
-            self.assertIn('papers/beyondsnowflakes-2026/index.html', output)
-            self.assertNotIn('id="paper-beyondsnowflakes-2026"', output)
-        self.assertNotIn('beyondsnowflakes-2026', self.data['facts'])
+            self.assertIn('地图待整理 · 1 篇领域内论文', output)
+            self.assertIn('papers/pending-fixture-2026/index.html', output)
+            self.assertNotIn('id="paper-pending-fixture-2026"', output)
+        self.assertNotIn('pending-fixture-2026', data['facts'])
+
+    def test_completed_snow_papers_have_facts_and_both_tree_links(self):
+        from build_site import shell
+        slugs = {'beyondsnowflakes-2026', 'snowremovalnet-2026'}
+        represented = {s for n in self.data['literature']['nodes'] for s in n['source_papers']}
+        insights = {s for c in self.data['challenges']['challenges'] for i in c['insights'] for s in i['source_papers']}
+        pending = {p['paper'] for p in self.data['pending']['papers']}
+        self.assertTrue(slugs <= self.data['facts'].keys())
+        self.assertTrue(slugs <= represented)
+        self.assertTrue(slugs <= insights)
+        self.assertFalse(slugs & pending)
+        outputs = research_map.render(ROOT, self.papers, shell)
+        for slug in slugs:
+            self.assertIn(f'id="paper-{slug}"', outputs['research-map.html'])
+            self.assertIn(f'papers/{slug}/first-pass.html#', outputs['literature-tree.html'])
+            self.assertIn(f'papers/{slug}/first-pass.html#', outputs['challenge-insight-tree.html'])
+        if not pending:
+            for output in outputs.values():
+                self.assertNotIn('id="map-pending"', output)
 
     def test_novelty_labels_are_separate(self):
         literature = self.data['literature']

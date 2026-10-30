@@ -1,0 +1,422 @@
+version: 1
+paper: beyondsnowflakes-2026
+scope: in-field
+source_basis: original-pdf-and-reading-note
+source_sha256: d2890a94219151cbcbb1779010b89fc6486feee16e639ee922ed743b38f8b734
+checked_at: '2026-10-30'
+source_version: arXiv:2610.13891v1
+source_url: https://arxiv.org/abs/2610.13891v1
+read_scope: PDF pp.1–8 全文与 References；实际查看 Figures 1–8、Tables I–III 的页面渲染；关键地图判断回到原文而非仅复用笔记。
+tags:
+- 雪天检测
+- WADS-3D
+- CADC
+- 评测混杂
+- 目标元信息
+- conditional SHAP
+task:
+  name: 雪天 LiDAR 车辆检测的分层评测与混杂分析
+  input: WADS-3D / CADC 原始及 DSOR→LIOR 过滤点云、Car 框标注、五类检测器预测和对象/场景元特征
+  output: AP、错误分解、TP/FN 元分析及雪箱与对象属性的相关性，不输出新的去雪网络
+  evidence:
+  - paper: beyondsnowflakes-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: beyondsnowflakes-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 粗天气分组下 AP 随雪强度总体增加，去雪后该趋势仍在；仅据天气箱总分评价鲁棒性，可能把同步变化的对象点数/强度与天气本身混淆（Sec.IV-A–D，Figs.4–8，Table
+    III）。
+  evidence:
+  - paper: beyondsnowflakes-2026
+    stage: first-pass
+    anchor: result-filter
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: beyondsnowflakes-2026
+    stage: first-pass
+    anchor: result-correlations
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-weather-meta-evaluation
+  name: 独立基准、去雪对照与对象级元分析
+  description: 在各自传感器/训练条件内分箱比较原始与去雪输入，分解检测错误，再以 Tau、MI、RF+conditional SHAP 分析 TP/FN，并核对主要元特征与雪箱的相关性（Secs.III-B–E、IV-B3–D；Fig.3）。
+  evidence:
+  - paper: beyondsnowflakes-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-beyondsnowflakes-benchmark
+  name: 独立数据基准与原始/去雪对照
+  role: evaluation-control
+  motivation: 避免把异构传感器数据合并后的总体变化直接当作天气效应。
+  evidence:
+  - paper: beyondsnowflakes-2026
+    stage: first-pass
+    anchor: module-ablation
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-beyondsnowflakes-meta
+  name: 错误分解与条件元信息分析
+  role: evaluation-analysis
+  motivation: 从 AP 变化定位 TP/FN，再检查目标属性与天气分箱共同变化。
+  evidence:
+  - paper: beyondsnowflakes-2026
+    stage: first-pass
+    anchor: module-meta
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-downstream
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 作为已有检测任务的评测/分析增量登记，不把数据集或分析组合认定为首创检测 pipeline；作者首创性未独立检索。
+limitations:
+- text: Sec. III-A/D–E、IV-C–E、V-B（PDF pp.2–7）：WADS-3D 只标 Car；WADS 使用 KITTI 预训练模型直接推理，CADC
+    则以 50:50 划分并在去雪训练数据上微调，传感器也不同，因此不是只改变一个因素的跨数据集控制实验。RF/SHAP 解释元特征对 TP/FN 的预测，不是原检测器内部权重或物理因果干预。三种积雪机制在
+    IV-E 作为假设提出；后续受控研究 [52] 仅被本文引用，本轮未独立核验该研究。滤波参数、RF 完整搜索空间、速度/计算成本和具体临界雪密度未在已读正文明确报告。
+  evidence:
+  - paper: beyondsnowflakes-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: beyondsnowflakes-2026
+    stage: first-pass
+    anchor: section-12
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: beyondsnowflakes-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+analysis:
+  updated_at: '2026-10-30'
+  previous_methods:
+    text: 作者指出粗天气分类、主要模拟空中雪而忽略表面积雪，以及合并异构传感器数据，会使天气效应与对象/传感器因素纠缠；这是作者对前人的概括，不据此宣布整个领域没有控制混杂（Sec.II-E，p.2）。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: beyondsnowflakes-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 整理者归纳：天气组间同时改变检测相关对象属性，跨组 AP 差异便不能单独归因于雪；过滤只改变输入中的一部分点，不能把其结果当作独立去除所有物理雪效应（Secs.III-E、IV-A–E）。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: beyondsnowflakes-2026
+      stage: first-pass
+      anchor: result-filter
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: beyondsnowflakes-2026
+      stage: first-pass
+      anchor: result-correlations
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 先把总分变化拆成具体错误，再检查影响该错误的对象属性是否与天气分组共变；将统计解释、滤波对照和物理机制假设分层记录。该归纳不是因果识别已完成。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: beyondsnowflakes-2026
+      stage: first-pass
+      anchor: result-recall
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: beyondsnowflakes-2026
+      stage: first-pass
+      anchor: result-meta
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: beyondsnowflakes-2026
+      stage: first-pass
+      anchor: result-correlations
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-evaluation
+    name: 独立基准与滤波对照
+    module_ids:
+    - module-beyondsnowflakes-benchmark
+    motivation:
+      text: 区分天气、传感器和对象因素，避免粗天气总分掩盖相反影响（Sec.II-E）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: section-03
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: WADS-3D 由 2050 个唯一原始 360° 扫描旋转得到 4100 个前视标注帧、30104 个 Car；CADC 7000 帧。以 DSOR→LIOR
+        估计前视绝对雪点数，按分位数使各箱 GT Car 数量近似相当；五模型在各数据集内做原始/过滤对照（Secs.III-A–E，pp.2–4；Fig.3
+        p.5）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: module-dataset
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: module-bins
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: module-ablation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 原始/过滤同箱对照提供对滤波操作的比较，独立基准避免直接合并传感器；但不同数据集训练策略仍不同，不能隔离跨传感器因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: module-ablation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 让去雪是否有收益与雪组总体趋势成为两个可分别检查的问题。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-filter
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: contribution-meta
+    name: 以错误类型为入口的元信息分析
+    module_ids:
+    - module-beyondsnowflakes-meta
+    motivation:
+      text: 错误分解显示 AP 的总体改善主要来自 Recall，作者因此聚焦 TP/FN（Sec.IV-B3，p.5）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-recall
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 将 TP/FN 构成二分类目标；Tau 查单变量趋势、MI 查非线性依赖、网格搜索 RF 后用 conditional sampling SHAP
+        处理相关特征外推问题。再计算主要对象元特征与雪箱的 Pearson r（Secs.III-E、IV-C–D，pp.3–6）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: module-meta
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 将某类检测失败映射到对象/场景属性，寻找与天气分组共同变化的统计因素；这是可检验的关联解释链，不等价于干预识别。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: module-meta
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-correlations
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 能发现天气强度特征在 TP/FN 代理分析中贡献较小，而目标点数等更突出，避免将 AP 的天气趋势直接解释为落雪有益。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-meta
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-filter
+    name: 原始/去雪的条件性收益
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-evaluation
+    result:
+      text: Sec.IV-A3 / Fig.4（p.4）：作者报告 WADS-3D 去雪平均 6.72% AP improvement；CADC gains
+        negligible。两套数据的总体正向雪箱趋势去雪后仍在，CADC 与个别相邻 WADS 箱存在波动，不是严格单调。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-filter
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: fig-4
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 仅支持各自训练/传感器/数据条件下该 DSOR→LIOR 处理的结果。不是所有去雪器共同收益，也不能证明某个未量化阈值以上过滤必需。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-filter
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: fig-4
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-meta
+    name: TP/FN 元特征与雪箱共同变化
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-meta
+    result:
+      text: Figs.7–8（pp.6–7）：WADS 对象点数 SHAP 0.21–0.33、距离 0.15–0.25，CADC 点数 0.54–0.57、均值强度
+        0.17–0.19。Table III（p.6）：雪箱与 WADS 对象点数 r=0.820,p=3.70e−3；与距离 r=−0.282,p=.430；CADC
+        点数 r=.733,p=1.86e−3，强度 r=.694,p=4.12e−3。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-meta
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-correlations
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: SHAP 为以元特征预测 TP/FN 的 RF 解释，不是五个检测器网络内部因果权重；Pearson 对分箱及平均元特征统计，不当成逐点独立样本。WADS
+        雪强度文字称 <.03，但 Fig.7 为 .03–.04，不能静默统一。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-meta
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-correlations
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-errors
+    name: 错误分解定位 Recall
+    kind: comparison
+    assessment: reported
+    contribution_ids: []
+    result:
+      text: Sec.IV-B / Figs.5–6（pp.4–5）：作者报告 TP 增、FN 减与 PR 外移，背景 FP 有波动；将 TP/FN 转为后续二分类分析对象。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-recall
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 错误分解用于选择分析目标，不是增加检测 Recall 的新模块，也不意味着 FP 可忽略或所有雪箱均改善。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: beyondsnowflakes-2026
+        stage: first-pass
+        anchor: result-recall
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: Sec. III-A/D–E、IV-C–E、V-B（PDF pp.2–7）：WADS-3D 只标 Car；WADS 使用 KITTI 预训练模型直接推理，CADC
+      则以 50:50 划分并在去雪训练数据上微调，传感器也不同，因此不是只改变一个因素的跨数据集控制实验。RF/SHAP 解释元特征对 TP/FN 的预测，不是原检测器内部权重或物理因果干预。三种积雪机制在
+      IV-E 作为假设提出；后续受控研究 [52] 仅被本文引用，本轮未独立核验该研究。滤波参数、RF 完整搜索空间、速度/计算成本和具体临界雪密度未在已读正文明确报告。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: beyondsnowflakes-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: beyondsnowflakes-2026
+      stage: first-pass
+      anchor: section-12
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: beyondsnowflakes-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

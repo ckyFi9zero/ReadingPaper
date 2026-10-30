@@ -106,3 +106,12 @@ FIREFOX_BIDI_URL=ws://127.0.0.1:9333/session node --test tests/test_research_map
 搜索覆盖使用条件、机制、补丁、边界和原文定位，允许空格组合关键词，例如 `SDOR boundary band`、`SSR 教师`、`CRFOR ICM`。筛选位于脑图上方；节点保持短标题，完整内容在详情和下方可展开使用卡中阅读。生成器验证卡片完备性、来源归属、锚点和状态；不能代替学术判断。无新增原文审查记录，也不修改阅读页图文门禁、方法树事实和 novelty gate。
 
 武器库页面的共享 JS/CSS 引用附内容哈希版本，避免 Pages 浏览器缓存将新字段配上旧详情渲染；哈希由源资产生成，仍可离线阅读。
+
+## 2026-10-30 两篇待整理来源完成
+
+Beyond the Snowflakes 与 SnowRemovalNet 已根据原文及图表核对补充事实层、单篇解析、Literature tree 和 Challenge–Insight 关联，`pending-papers.yaml` 现为空。加上当日 AWCR 后，当前地图共 29 篇来源（22 篇领域内、7 篇领域外），7 类挑战、21 张使用卡。历史日期下的数量是当时快照，不代表当前覆盖。
+
+- SnowRemovalNet 并入 `insight-multidomain`、`insight-offline-labels`、`insight-task`，保留 ASDR+C-GLP 的既有工作身份、概率训练与组合消融边界，不把整体增益归因于单一模块。
+- Beyond the Snowflakes 并入 `insight-task` 并新增 `insight-confound-control`：新增分支来自错误分解—对象元信息—天气共变这一独立诊断思路，不按论文数复制卡片。RF/SHAP 为代理预测模型的统计解释，不是检测器内部因果权重；各数据集的训练/传感器条件单独记录。
+- 新事实文件记录本轮原 PDF 核验范围、版本、SHA-256；可点击证据仍指向既有阅读页锚点。旧来源维持原核验等级，本轮不声称重新审查全部历史 PDF。未取得的配置、原文未报告的独立消融和物理机制仍明确保留待核验。
+- pending 回归测试改用独立测试样例，避免因真实论文完成而失去对遗漏、非法登记、重复与伪造节点的检查；新增两篇事实/两树/非 pending 覆盖回归。
