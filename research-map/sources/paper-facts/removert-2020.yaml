@@ -10,9 +10,10 @@ tags:
 - 范围图
 - 多分辨率
 task:
-  name: 静态地图构建
-  input: 本任务输入，见关联初读
-  output: 本任务输出，见关联初读
+  name: 动态场景中的静态地图构建
+  input: 已有相应位姿的多帧 LiDAR scans，以及配准形成、含动态残影的点云地图；批处理 scan-to-map。 设置：使用已配准 scans 和对应
+    poses 的离线批处理；不把动态伪标签输出误写成预先需要人工动态标签。
+  output: 移除动态点并恢复误删静态点后的静态地图；可反向解析动态点。
   evidence:
   - paper: removert-2020
     stage: first-pass
@@ -20,8 +21,20 @@ task:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+  - paper: removert-2020
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: removert-2020
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
 problem:
-  failure_case: 动态点删除与静态结构保留存在冲突
+  failure_case: 位姿误差与 LiDAR 采样导致静态点也出现 scan-to-map discrepancy；彻底清除动态残影与保留静态结构相冲突。
   evidence:
   - paper: removert-2020
     stage: first-pass
@@ -30,8 +43,8 @@ problem:
     basis: existing-note
     original_pdf_review_status: source-checked
 pipeline:
-  id: pipeline-external
-  name: 领域外技术来源
+  id: pipeline-range-map-cleaning
+  name: 多分辨率可见性比较—删除与恢复
   description: 先保守删除疑似动态点，再以多分辨率 range image 扩大关联窗口并恢复误删静态点。
   evidence:
   - paper: removert-2020
@@ -53,8 +66,8 @@ modules:
     basis: existing-note
     original_pdf_review_status: source-checked
 challenges:
+- challenge-map-motion-ambiguity
 - challenge-temporal
-- challenge-structure
 novelty_assessment:
   novelty_class: 2
   confidence: provisional
@@ -68,26 +81,37 @@ limitations:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+- text: range image 只保留最近回波，静态遮挡物后方动态点可漏删；Fig. 11 的水泥隔离带是具体反例。依赖预先获取的 scans/poses，作者仓库当前流程离线。
+  evidence:
+  - paper: removert-2020
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
 evidence_status: source-checked
 source_excerpt:
-  problem: 二、Research Problem 作者表述 具体问题：从含车辆和行人的城市点云地图中构造静态地图。 （Abstract；Sec. I 前两段；PDF p. 1） 作者表述 场景：户外
-    SLAM、先验地图定位、地图维护与更新。 （Abstract；Sec. I 前两段；PDF p. 1） 作者表述 重要性：静态结构是鲁棒定位和长期地图的基础。 （Abstract；Sec. I 前两段；PDF
-    p. 1） 作者表述 后果：动态残留造成假结构，错误删除又损害地图完整性。 （Abstract；Sec. I 前两段；PDF p. 1）
-  method: 五、Method：只看宏观逻辑 做了什么： 输入多帧配准后的 query scans 与含动态残影的原始地图。 为什么： 批处理可跨多个视角统计每个地图点的静态/动态证据。 （Sec.
-    III-A–C；Fig. 2；PDF pp. 2–4） 做了什么： 把 query scan 与 map 投影为 range image，并按 visibility 计算 discrepancy。
-    为什么： 二维 range image 使 scan-to-map 可见性比较高效。 （Sec. III-B；Fig. 3；PDF pp. 2–4） 做了什么： 累计 static/dynamic
-    marks，先批量删除低 staticity score 点。 为什么： 作者优先彻底移除动态残影，即使暂时产生较多 FN。 （Sec. III-C；Eqs. (7)–(8)；Algorithm
-    1；PDF p. 4） 做了什么： 逐轮降低 range-image 分辨率并 revert 被误删点。 为什么： 更粗分辨率提供更大的隐式关联窗口，用于容忍位姿误差并恢复静态点。 （Sec. III-D；Fig.
-    4；Algorithm 1；PDF pp. 4–5） 做了什么： 输出静态地图，并可反向解析动态对象。 为什么： 静态地图既服务定位/地图维护，也能生成动态对象伪标签。 （Sec. IV-B–C；Figs.
-    6–10；PDF pp. 6–8） 原图裁剪：Fig. 4，PDF p. 4。先 remove 再 revert 静态点的集合更新过程；点击查看原尺寸。 概括 核心变化是把一次性动态点删除改为 batch
-    remove 后的 multiresolution revert，用逐级扩大关联范围来容忍 LiDAR motion ambiguity。 （Sec. I；Sec. III-C–D；Figs. 2、4；Algorithm
-    1；PDF pp. 2–5）
-  limitations: 八、Limitations 作者明确承认的 limitation 作者表述 作者明确指出：range image 的 visibility 只选最近点，因此可能看不到静态遮挡物后的动态点；Fig.
-    11 的水泥隔离带造成漏删。 （Sec. IV-D；Fig. 11；PDF p. 8） 从实验结果中直接可见，但作者没有明确称为 limitation 的现象 直接观察 ‘优于人工标签’只由 Fig.
-    6 的模糊区域定性展示支持，不能视为全序列总体定量优势。 （Sec. IV-B；Fig. 6；PDF p. 6）
+  problem: 二、Research Problem 作者表述 具体问题：从含车辆和行人的城市点云地图中构造静态地图。 （Abstract；Sec. I 前两段；PDF
+    p. 1） 作者表述 场景：户外 SLAM、先验地图定位、地图维护与更新。 （Abstract；Sec. I 前两段；PDF p. 1） 作者表述 重要性：静态结构是鲁棒定位和长期地图的基础。
+    （Abstract；Sec. I 前两段；PDF p. 1） 作者表述 后果：动态残留造成假结构，错误删除又损害地图完整性。 （Abstract；Sec.
+    I 前两段；PDF p. 1）
+  method: 五、Method：只看宏观逻辑 做了什么： 输入多帧配准后的 query scans 与含动态残影的原始地图。 为什么： 批处理可跨多个视角统计每个地图点的静态/动态证据。
+    （Sec. III-A–C；Fig. 2；PDF pp. 2–4） 做了什么： 把 query scan 与 map 投影为 range image，并按
+    visibility 计算 discrepancy。 为什么： 二维 range image 使 scan-to-map 可见性比较高效。 （Sec. III-B；Fig.
+    3；PDF pp. 2–4） 做了什么： 累计 static/dynamic marks，先批量删除低 staticity score 点。 为什么： 作者优先彻底移除动态残影，即使暂时产生较多
+    FN。 （Sec. III-C；Eqs. (7)–(8)；Algorithm 1；PDF p. 4） 做了什么： 逐轮降低 range-image 分辨率并
+    revert 被误删点。 为什么： 更粗分辨率提供更大的隐式关联窗口，用于容忍位姿误差并恢复静态点。 （Sec. III-D；Fig. 4；Algorithm
+    1；PDF pp. 4–5） 做了什么： 输出静态地图，并可反向解析动态对象。 为什么： 静态地图既服务定位/地图维护，也能生成动态对象伪标签。 （Sec.
+    IV-B–C；Figs. 6–10；PDF pp. 6–8） 原图裁剪：Fig. 4，PDF p. 4。先 remove 再 revert 静态点的集合更新过程；点击查看原尺寸。
+    概括 核心变化是把一次性动态点删除改为 batch remove 后的 multiresolution revert，用逐级扩大关联范围来容忍 LiDAR
+    motion ambiguity。 （Sec. I；Sec. III-C–D；Figs. 2、4；Algorithm 1；PDF pp. 2–5）
+  limitations: 八、Limitations 作者明确承认的 limitation 作者表述 作者明确指出：range image 的 visibility
+    只选最近点，因此可能看不到静态遮挡物后的动态点；Fig. 11 的水泥隔离带造成漏删。 （Sec. IV-D；Fig. 11；PDF p. 8） 从实验结果中直接可见，但作者没有明确称为
+    limitation 的现象 直接观察 ‘优于人工标签’只由 Fig. 6 的模糊区域定性展示支持，不能视为全序列总体定量优势。 （Sec. IV-B；Fig.
+    6；PDF p. 6）
 transfer_status: inferred
 analysis:
-  updated_at: '2026-10-15'
+  updated_at: '2026-10-30'
   previous_methods:
     text: 单尺度 visibility association 依赖正确配准，一次性动态点删除会误伤静态结构。
     basis: note-summary
@@ -228,7 +252,7 @@ analysis:
         basis: existing-note
         original_pdf_review_status: source-checked
   boundary:
-    text: 静态地图机制与天气噪声不同，迁移未验证
+    text: range image 只保留最近回波，静态遮挡物后方动态点可漏删；Fig. 11 的水泥隔离带是具体反例。依赖预先获取的 scans/poses，作者仓库当前流程离线。
     basis: note-summary
     status: source-checked
     evidence:
@@ -238,3 +262,10 @@ analysis:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+source_review:
+  checked_at: '2026-10-30'
+  scope: 本轮材料：Author repository README observed 2026-10-30 (not commit-pinned)；实际核对范围：What
+    is removert, Preparations, Requirements, Further Improvements。未核对范围：Full paper
+    fetch from repository failed as unsupported application/octet-stream. Remove/revert
+    mechanism and obstruction counterexample remain note-summary (Sec. III and Fig.
+    11 in note). 本轮局部核对不升级历史整篇核验状态；机制、数值与边界仍按各处笔记转述/阅读者归纳标注。

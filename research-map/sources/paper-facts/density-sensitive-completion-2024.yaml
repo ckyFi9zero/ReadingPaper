@@ -1,0 +1,221 @@
+version: 1
+paper: density-sensitive-completion-2024
+scope: out-of-field
+source_basis: existing-reading-note
+source_sha256: 977b97ab74b00a253f2f2486d99c0515666161f3fbadeaf9e60e6b61cb869568
+checked_at: '2026-10-30'
+tags:
+- 点云补全
+- 密度均匀性
+- 工业零件
+- Transformer
+task:
+  name: 对象点云结构与密度联合补全
+  input: 2048点不完整小型工业零件或PCN选定对象点云
+  output: 16384点完整且密度更均匀的对象点云
+  conditions: 有完整扫描真值的监督补全；9类零件真实扫描真值上人工构造缺失，PCN只含airplane/car/lamp且单独训练300 epochs，不是零样本迁移。
+  evidence:
+  - paper: density-sensitive-completion-2024
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  - paper: density-sensitive-completion-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  - paper: density-sensitive-completion-2024
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+problem:
+  failure_case: 恢复几何距离并不保证输入区域与补全区域的点密度一致。
+  evidence:
+  - paper: density-sensitive-completion-2024
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+pipeline:
+  id: pipeline-native-density-sensitive-completion-2024
+  name: 先重分配粗点，再细化几何
+  description: 位置与特征联合编码形成粗点；比较粗点与输入提取缺失区域，将三类点组合后用全局特征打分重选；重建粗点参与Transformer解码，细化输出；CD约束几何，DCD约束局部密度。
+  evidence:
+  - paper: density-sensitive-completion-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+modules:
+- id: module-density-sensitive-completion-2024
+  name: 先重分配粗点，再细化几何
+  role: core-module
+  motivation: 恢复几何距离并不保证输入区域与补全区域的点密度一致。
+  evidence:
+  - paper: density-sensitive-completion-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+challenges:
+- challenge-native-density-sensitive-completion-2024
+novelty_assessment:
+  novelty_class: 3
+  confidence: provisional
+  reason: 原任务机制分类，不是首创性判定；保留领域外归类，不要求天气迁移。
+limitations:
+- text: 严重缺失且不对称对象仍失败；PCN car CD-l2×1000=0.187，AdaPoinTr0.185更低；评分方案iii几何更好但NUC0.7777比采用方案ii0.6178差。
+  evidence:
+  - paper: density-sensitive-completion-2024
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+evidence_status: source-checked
+source_excerpt:
+  problem: 恢复几何距离并不保证输入区域与补全区域的点密度一致。
+  method: 位置与特征联合编码形成粗点；比较粗点与输入提取缺失区域，将三类点组合后用全局特征打分重选；重建粗点参与Transformer解码，细化输出；CD约束几何，DCD约束局部密度。
+  limitations: 严重缺失且不对称对象仍失败；PCN car CD-l2×1000=0.187，AdaPoinTr0.185更低；评分方案iii几何更好但NUC0.7777比采用方案ii0.6178差。
+transfer_status: inferred
+source_review:
+  checked_at: '2026-10-30'
+  scope: 本轮直接查看既有HTML嵌入原图Fig.2和原表Table I，确认流程与表格数值；其余内容为笔记转述，未重新取得独立PDF。
+  status: partial-primary-or-note-only
+  no_full_reread: true
+analysis:
+  updated_at: '2026-10-30'
+  previous_methods:
+    text: 恢复几何距离并不保证输入区域与补全区域的点密度一致。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: density-sensitive-completion-2024
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  technical_reason:
+    text: 恢复几何距离并不保证输入区域与补全区域的点密度一致。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: density-sensitive-completion-2024
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  insight:
+    text: 先重分配粗点，再细化几何；位置与特征联合编码形成粗点；比较粗点与输入提取缺失区域，将三类点组合后用全局特征打分重选；重建粗点参与Transformer解码，细化输出；CD约束几何，DCD约束局部密度。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: density-sensitive-completion-2024
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  contributions:
+  - id: contribution-main
+    name: 先重分配粗点，再细化几何
+    module_ids:
+    - module-density-sensitive-completion-2024
+    motivation:
+      text: 恢复几何距离并不保证输入区域与补全区域的点密度一致。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: density-sensitive-completion-2024
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    implementation:
+      text: 位置与特征联合编码形成粗点；比较粗点与输入提取缺失区域，将三类点组合后用全局特征打分重选；重建粗点参与Transformer解码，细化输出；CD约束几何，DCD约束局部密度。
+        工程细节：FPS构造多分辨率代理；在粗到细的中间表示重分配点而非简单保留输入拼接；NUC用Poisson网格顶点密度评价全局均匀性，不能替代几何质量。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: density-sensitive-completion-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    mechanism:
+      text: 位置与特征联合编码形成粗点；比较粗点与输入提取缺失区域，将三类点组合后用全局特征打分重选；重建粗点参与Transformer解码，细化输出；CD约束几何，DCD约束局部密度。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: density-sensitive-completion-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    advantage:
+      text: 在所列原任务条件下，以该操作回应所述失败模式；不由总体指标推导独立因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: density-sensitive-completion-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+  experiments:
+  - id: experiment-overall
+    name: 原任务结果与对照
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 零件Table I：F1 0.6521→0.6948，CD-l1×1000 8.8377→8.1719，平均NUC 0.7003→0.6136；Table
+        III最后加入CRG时NUC(p=10%)0.6806→0.6178，是累计配置差异。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: density-sensitive-completion-2024
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    interpretation:
+      text: 严重缺失且不对称对象仍失败；PCN car CD-l2×1000=0.187，AdaPoinTr0.185更低；评分方案iii几何更好但NUC0.7777比采用方案ii0.6178差。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: density-sensitive-completion-2024
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+  boundary:
+    text: 有完整扫描真值的监督补全；9类零件真实扫描真值上人工构造缺失，PCN只含airplane/car/lamp且单独训练300 epochs，不是零样本迁移。
+      两张RTX A5000环境；Table I 推理135.80ms/17.26G FLOPs/35.09M参数，对照AdaPoinTr131.77ms/15.09G/32.49M；约900样本计时，多卡计时分配未明确。
+      严重缺失且不对称对象仍失败；PCN car CD-l2×1000=0.187，AdaPoinTr0.185更低；评分方案iii几何更好但NUC0.7777比采用方案ii0.6178差。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: density-sensitive-completion-2024
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered

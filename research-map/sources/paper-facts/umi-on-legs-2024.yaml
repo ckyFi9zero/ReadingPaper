@@ -1,0 +1,310 @@
+version: 1
+paper: umi-on-legs-2024
+scope: out-of-field
+source_basis: original-pdf-and-reading-note
+source_sha256: f1e6e478132d0d9384829068d5052298be24d7bf09fe7ac26dc153f06e248b2c
+checked_at: '2026-10-30'
+source_version: arXiv:2407.10353v1
+source_url: https://arxiv.org/pdf/2407.10353v1
+read_scope: 本轮定点核对原PDF Sec.3–3.3、Table1及Sec.4.3–4.4（pp.3–8）；全部既有阶段作为索引。附录延迟与源码差异只转述既有笔记，未复查源码或运行。
+source_review:
+  scope: 本轮定点核对原PDF Sec.3–3.3、Table1及Sec.4.3–4.4（pp.3–8）；全部既有阶段作为索引。附录延迟与源码差异只转述既有笔记，未复查源码或运行。
+  checked_at: '2026-10-30'
+  source_url: https://arxiv.org/pdf/2407.10353v1
+  source_version: arXiv:2407.10353v1
+  source_sha256: 05029e9b84c09ccff31b63604bb5cb30f06fbc09fb311c4db4d1ea453867ec49
+tags:
+- 移动操作
+- 四足机械臂
+- 全身控制
+- 模仿学习
+- 强化学习
+task:
+  name: 有腿移动操作
+  input: 腕部视觉、末端轨迹及机器人状态；高层真实手持示范、低层仿真轨迹跟踪训练
+  output: 12腿关节与6臂关节位置目标及独立夹爪命令，用于抛掷、推动、抓放
+  conditions: 腕部视觉、末端轨迹及机器人状态；高层真实手持示范、低层仿真轨迹跟踪训练；结果只对应各实验数据/监督与硬件设置。
+  evidence:
+  - paper: umi-on-legs-2024
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  - paper: umi-on-legs-2024
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+problem:
+  failure_case: 身体速度与单步身体系末端目标绑定机器人形态；底座扰动把任务空间稳定责任留给低频高层。
+  evidence:
+  - paper: umi-on-legs-2024
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  - paper: umi-on-legs-2024
+    stage: first-pass
+    anchor: section-04
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+pipeline:
+  id: pipeline-task-frame-wbc
+  name: 任务系轨迹接口与机器人专属全身跟踪
+  description: 真实 UMI 示范训练高层 Diffusion Policy；相机系末端位姿序列变换到持久任务系，仿真 RL WBC 读取轨迹预览与机器人状态，输出腿臂关节目标并以
+    PD 跟踪。
+  evidence:
+  - paper: umi-on-legs-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+modules:
+- id: module-task-frame-interface
+  name: 把任务目标稳定责任交给高频低层
+  role: core-module
+  motivation: 低频视觉策略给出操作目标，但动态底座使目标随身体漂移，且示范需要跨平台复用时。
+  evidence:
+  - paper: umi-on-legs-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+- id: module-trajectory-preview
+  name: 用未来轨迹预览安排全身准备动作
+  role: core-module
+  motivation: 动作有明显未来加速、抛掷或需要提前迈步，当前位姿误差不足以决定准备动作时。
+  evidence:
+  - paper: umi-on-legs-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+challenges:
+- challenge-manipulation-interface
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 按原生任务的方法设计登记；路线与模块为整理者分类，未独立检索首创归属，不以领域外分类降低原任务机制价值。
+limitations:
+- text: 仅验证夹爪操作与特定 Go2+ARX5；高层不含机器人可行性约束，碰撞规避与力控制尚未完成。iPhone 位姿延迟约140ms，过热和时序误差影响部署。现有代码笔记固定
+    SHA 的实机预览偏移乘零、高层自主桥接未提供，不能宣称论文与发布实现逐项一致。
+  evidence:
+  - paper: umi-on-legs-2024
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+evidence_status: source-checked
+analysis:
+  updated_at: '2026-10-30'
+  previous_methods:
+    text: 真实遥操作绑定硬件，完整任务仿真难覆盖物体动力学；既有身体指令接口限制跨形态示范复用。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: umi-on-legs-2024
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  technical_reason:
+    text: 身体速度与单步身体系末端目标绑定机器人形态；底座扰动把任务空间稳定责任留给低频高层。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: umi-on-legs-2024
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  insight:
+    text: 分离任务意图与机器人执行；目标坐标系保持任务稳定性，未来目标让低层提前协调全身，而非只追当前误差。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: umi-on-legs-2024
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  contributions:
+  - id: contribution-task-frame-interface
+    name: 把任务目标稳定责任交给高频低层
+    module_ids:
+    - module-task-frame-interface
+    motivation:
+      text: 低频视觉策略给出操作目标，但动态底座使目标随身体漂移，且示范需要跨平台复用时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: umi-on-legs-2024
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    implementation:
+      text: 用task-frame末端轨迹连接高层Diffusion Policy与仿真RL WBC；以新机器人反馈更新末端跟踪误差，MLP联合产生12腿/6臂关节目标，再由PD执行。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: umi-on-legs-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    mechanism:
+      text: 接口应描述不随底座运动改变的操作意图；机器人专属协调留在低层，而非让高层反复补偿底座。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: umi-on-legs-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    advantage:
+      text: 低频视觉策略给出操作目标，但动态底座使目标随身体漂移，且示范需要跨平台复用时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: umi-on-legs-2024
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+  - id: contribution-trajectory-preview
+    name: 用未来轨迹预览安排全身准备动作
+    module_ids:
+    - module-trajectory-preview
+    motivation:
+      text: 动作有明显未来加速、抛掷或需要提前迈步，当前位姿误差不足以决定准备动作时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: umi-on-legs-2024
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    implementation:
+      text: WBC观测加入相对当前时刻−60至+60ms每20ms的密集目标，以及+1s目标，以同时提供近时速度/加速度线索与远时全身动作意图。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: umi-on-legs-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    mechanism:
+      text: 跟踪器不仅需要现在偏了多少，也需要接下来要求怎样变化；预览信息与目标坐标系是不同设计轴。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: umi-on-legs-2024
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    advantage:
+      text: 动作有明显未来加速、抛掷或需要提前迈步，当前位姿误差不足以决定准备动作时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: umi-on-legs-2024
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+  experiments:
+  - id: experiment-overall
+    name: 原任务整体结果与条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-task-frame-interface
+    - contribution-trajectory-preview
+    result:
+      text: Table 1：500个仿真抛掷episode，完整方法位置误差2.12cm、姿态3.35°、存活98.4%；真实 iPhone 抛掷/推动/杯子分别70%/90%/80%。杯子
+        zero-shot 只指高层策略不微调，WBC仍需专属训练。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: umi-on-legs-2024
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    interpretation:
+      text: 此为该文所测配置的整体/任务级证据；贡献关联用于导航，不是每个模块的独立因果证明。本轮定点核对范围见来源记录；未运行复现。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: umi-on-legs-2024
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+  - id: experiment-components
+    name: 组件、设计选择与未分离因素
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-task-frame-interface
+    - contribution-trajectory-preview
+    result:
+      text: Table 1：去预览位置3.02cm、姿态4.23°、存活93.0%；去task-space为15.49cm、15.55°、存活0%。比较支持所测接口配置，不证明各奖励课程独立必要。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: umi-on-legs-2024
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    interpretation:
+      text: 需要按具体训练、数据与累计配置解释；不将总体指标提升反推为候选覆盖、机制最优性或每个子模块的独立因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: umi-on-legs-2024
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+  boundary:
+    text: 仅验证夹爪操作与特定 Go2+ARX5；高层不含机器人可行性约束，碰撞规避与力控制尚未完成。iPhone 位姿延迟约140ms，过热和时序误差影响部署。现有代码笔记固定
+      SHA 的实机预览偏移乘零、高层自主桥接未提供，不能宣称论文与发布实现逐项一致。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: umi-on-legs-2024
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered

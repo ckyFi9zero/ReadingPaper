@@ -1,0 +1,305 @@
+version: 1
+paper: bevformer-2022
+scope: out-of-field
+source_basis: original-pdf-and-reading-note
+source_sha256: acf89786221d761acdee78162216b8b65c1e6c988678b1caf1c4658bf6dcf4c7
+checked_at: '2026-10-30'
+source_version: arXiv:2203.17270v2（与既有18页PDF版式不同）
+source_url: https://arxiv.org/pdf/2203.17270v2
+read_scope: 本轮核对arXiv v2 Secs.3.3–3.4、Tables1、5、6及相关结果段；核心机制和所选nuScenes值与笔记对应。该版本含Waymo表，不追加Waymo结论；原笔记Tables4/5对应此版Tables5/6。代码只作为既有笔记索引，未复查源码。
+source_review:
+  scope: 本轮核对arXiv v2 Secs.3.3–3.4、Tables1、5、6及相关结果段；核心机制和所选nuScenes值与笔记对应。该版本含Waymo表，不追加Waymo结论；原笔记Tables4/5对应此版Tables5/6。代码只作为既有笔记索引，未复查源码。
+  checked_at: '2026-10-30'
+  source_url: https://arxiv.org/pdf/2203.17270v2
+  source_version: arXiv:2203.17270v2（与既有18页PDF版式不同）
+  source_sha256: 641561d0e4c1d46d6883a3d38c68b475030de5bbbcdf747af268366f47f97a6b
+tags:
+- 多相机感知
+- BEV
+- 时空 Transformer
+- 3D 目标检测
+task:
+  name: 多相机 BEV 感知
+  input: 标定多相机当前图像、ego-motion 与递归历史BEV；检测/分割标注监督
+  output: BEV表示、3D框与速度，或BEV语义地图
+  conditions: 标定多相机当前图像、ego-motion 与递归历史BEV；检测/分割标注监督；结果只对应各实验数据/监督与硬件设置。
+  evidence:
+  - paper: bevformer-2022
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: bevformer-2022
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 二维多视角到BEV存在深度歧义；全局跨视图注意力昂贵，单帧缺乏遮挡与速度线索。
+  evidence:
+  - paper: bevformer-2022
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: bevformer-2022
+    stage: first-pass
+    anchor: section-04
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-bev-query-spatiotemporal
+  name: BEV网格查询的空间采样与递归时间融合
+  description: BEV网格query沿高度构造参考点并投影到hit views，以deformable attention采局部图像特征；历史BEV按ego-motion对齐，再以可学习offset关联当前和历史表示。
+  evidence:
+  - paper: bevformer-2022
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-hit-view-sparse-query
+  name: 按投影可见性查询局部图像证据
+  role: core-module
+  motivation: 多相机到BEV映射需要跨视角证据，全局注意力成本过高且不想完全依赖显式深度预测时。
+  evidence:
+  - paper: bevformer-2022
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-aligned-recurrent-bev
+  name: 先对齐自车运动，再学习历史目标偏移
+  role: core-module
+  motivation: 单帧难估速度或发现重遮挡目标，需在固定状态规模下利用历史时。
+  evidence:
+  - paper: bevformer-2022
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-view-temporal-fusion
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 按原生任务的方法设计登记；路线与模块为整理者分类，未独立检索首创归属，不以领域外分类降低原任务机制价值。
+limitations:
+- text: 依赖相机投影标定与ego-motion；时间信息不改善尺度预测。联合训练对road/lane有negative transfer；多视图backbone是效率瓶颈，默认V100整系统1.7FPS，不是实时保证。
+  evidence:
+  - paper: bevformer-2022
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+analysis:
+  updated_at: '2026-10-30'
+  previous_methods:
+    text: 逐相机后处理缺跨视角交互；显式深度提升依赖深度精度；固定窗口历史堆叠增加计算与干扰。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: bevformer-2022
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 二维多视角到BEV存在深度歧义；全局跨视图注意力昂贵，单帧缺乏遮挡与速度线索。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: bevformer-2022
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 用同一几何索引承载空间查询与递归记忆，但空间可见性约束与动态目标的时间偏移是不同问题。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: bevformer-2022
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-hit-view-sparse-query
+    name: 按投影可见性查询局部图像证据
+    module_ids:
+    - module-hit-view-sparse-query
+    motivation:
+      text: 多相机到BEV映射需要跨视角证据，全局注意力成本过高且不想完全依赖显式深度预测时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: bevformer-2022
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 每个BEV网格沿高度放参考点，投影到相机；只在hit views中的参考点附近做deformable sampling，按命中视角聚合。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: bevformer-2022
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 几何投影先缩小可搜索区域，再让可学习局部偏移选择证据；不是对全部像素做同等搜索。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: bevformer-2022
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 多相机到BEV映射需要跨视角证据，全局注意力成本过高且不想完全依赖显式深度预测时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: bevformer-2022
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: contribution-aligned-recurrent-bev
+    name: 先对齐自车运动，再学习历史目标偏移
+    module_ids:
+    - module-aligned-recurrent-bev
+    motivation:
+      text: 单帧难估速度或发现重遮挡目标，需在固定状态规模下利用历史时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: bevformer-2022
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 保存上一帧BEV并按ego-motion对齐；当前query与历史特征共同预测deformable offsets，通过TSA递归形成当前BEV。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: bevformer-2022
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 自车对齐解决静态场景坐标一致性，移动物体残余运动需学习对应；二者不能互相替代。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: bevformer-2022
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 单帧难估速度或发现重遮挡目标，需在固定状态规模下利用历史时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: bevformer-2022
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 原任务整体结果与条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-hit-view-sparse-query
+    - contribution-aligned-recurrent-bev
+    result:
+      text: nuScenes test V2-99：NDS0.569、mAP0.481；mAVE0.378m/s对静态BEVFormer-S0.842；最低可见度分组召回提高超过6点。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: bevformer-2022
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 此为该文所测配置的整体/任务级证据；贡献关联用于导航，不是每个模块的独立因果证明。本轮定点核对范围见来源记录；未运行复现。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: bevformer-2022
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 组件、设计选择与未分离因素
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-hit-view-sparse-query
+    - contribution-aligned-recurrent-bev
+    result:
+      text: 静态BEVFormer-S local NDS0.448/mAP0.375，reference-only0.423/0.351，global0.404/0.325；global因显存采用fp16、单尺度及100×100网格，不能称完全同预算单变量对照。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: bevformer-2022
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 需要按具体训练、数据与累计配置解释；不将总体指标提升反推为候选覆盖、机制最优性或每个子模块的独立因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: bevformer-2022
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 依赖相机投影标定与ego-motion；时间信息不改善尺度预测。联合训练对road/lane有negative transfer；多视图backbone是效率瓶颈，默认V100整系统1.7FPS，不是实时保证。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: bevformer-2022
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

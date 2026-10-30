@@ -1,0 +1,222 @@
+version: 1
+paper: sld-ala-2026
+scope: out-of-field
+source_basis: existing-reading-note
+source_sha256: 7d9669b6c011f499ff07b48626bf5d913bdd97546c1b9773507d7c7080a65aa3
+checked_at: '2026-10-30'
+tags:
+- 恶劣天气
+- 目标检测
+- 知识蒸馏
+- 标签分配
+task:
+  name: 退化图像的轻量目标检测
+  input: 雾/雨/雪/沙尘/低照度图像；训练另需GT框、预训练教师
+  output: 学生检测器类别与边界框；推理不需要教师
+  conditions: ResNet50 teacher/ResNet18 student，FPN/FCOS；GT监督检测加蒸馏；VOC训练用于RTTS/ExDark设置，DAWN
+    8:2划分；不可称无监督域适应。
+  evidence:
+  - paper: sld-ala-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sld-ala-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sld-ala-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 教师定位分布也会受退化影响，照单模仿可能传递错误；固定蒸馏区域过稀或不适应场景。
+  evidence:
+  - paper: sld-ala-2026
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-native-sld-ala-2026
+  name: 分别控制蒸馏分布惩罚与正区域
+  description: 对师生四条边的离散分布形成平均中间分布，以双向KL到该中间分布的平均构成JS损失；另用候选GIoU分数的均值/标准差构成γ(μ+σ)阈值，选择动态正区域，联合GT检测损失训练。
+  evidence:
+  - paper: sld-ala-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-sld-ala-2026
+  name: 分别控制蒸馏分布惩罚与正区域
+  role: core-module
+  motivation: 教师定位分布也会受退化影响，照单模仿可能传递错误；固定蒸馏区域过稀或不适应场景。
+  evidence:
+  - paper: sld-ala-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-native-sld-ala-2026
+novelty_assessment:
+  novelty_class: 3
+  confidence: provisional
+  reason: 原任务机制分类，不是首创性判定；保留领域外归类，不要求天气迁移。
+limitations:
+- text: 严重遮挡和模糊边界仍失败；γ可能需按天气重调；ExDark的LD40.1→39.6只支持本设置负例，不证明所有KL失效。
+  evidence:
+  - paper: sld-ala-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 教师定位分布也会受退化影响，照单模仿可能传递错误；固定蒸馏区域过稀或不适应场景。
+  method: 对师生四条边的离散分布形成平均中间分布，以双向KL到该中间分布的平均构成JS损失；另用候选GIoU分数的均值/标准差构成γ(μ+σ)阈值，选择动态正区域，联合GT检测损失训练。
+  limitations: 严重遮挡和模糊边界仍失败；γ可能需按天气重调；ExDark的LD40.1→39.6只支持本设置负例，不证明所有KL失效。
+transfer_status: inferred
+source_review:
+  checked_at: '2026-10-30'
+  scope: 本轮查看嵌入原图Fig.2，核实平均分布JS与GIoU候选统计/阈值图；未重新读取独立PDF或证明、数值主表，维持笔记转述。
+  status: partial-primary-or-note-only
+  no_full_reread: true
+analysis:
+  updated_at: '2026-10-30'
+  previous_methods:
+    text: 教师定位分布也会受退化影响，照单模仿可能传递错误；固定蒸馏区域过稀或不适应场景。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: sld-ala-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 教师定位分布也会受退化影响，照单模仿可能传递错误；固定蒸馏区域过稀或不适应场景。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: sld-ala-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 分别控制蒸馏分布惩罚与正区域；对师生四条边的离散分布形成平均中间分布，以双向KL到该中间分布的平均构成JS损失；另用候选GIoU分数的均值/标准差构成γ(μ+σ)阈值，选择动态正区域，联合GT检测损失训练。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: sld-ala-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 分别控制蒸馏分布惩罚与正区域
+    module_ids:
+    - module-sld-ala-2026
+    motivation:
+      text: 教师定位分布也会受退化影响，照单模仿可能传递错误；固定蒸馏区域过稀或不适应场景。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sld-ala-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 对师生四条边的离散分布形成平均中间分布，以双向KL到该中间分布的平均构成JS损失；另用候选GIoU分数的均值/标准差构成γ(μ+σ)阈值，选择动态正区域，联合GT检测损失训练。
+        工程细节：把蒸馏差异与蒸馏位置分开控制；温度τ与区域缩放γ调节软分布和区域范围；只在训练使用教师，避免在线双网络。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sld-ala-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 对师生四条边的离散分布形成平均中间分布，以双向KL到该中间分布的平均构成JS损失；另用候选GIoU分数的均值/标准差构成γ(μ+σ)阈值，选择动态正区域，联合GT检测损失训练。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sld-ala-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 在所列原任务条件下，以该操作回应所述失败模式；不由总体指标推导独立因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sld-ala-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 原任务结果与对照
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: RTTS Table I mAP50 60.3，对照CrossKD60.0；DAWN Table III 42.7 vs41.6；Table
+        IV消融AP50 46.2→49.8，与60.3整体主表不合并为同一增益。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sld-ala-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 严重遮挡和模糊边界仍失败；γ可能需按天气重调；ExDark的LD40.1→39.6只支持本设置负例，不证明所有KL失效。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sld-ala-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: ResNet50 teacher/ResNet18 student，FPN/FCOS；GT监督检测加蒸馏；VOC训练用于RTTS/ExDark设置，DAWN
+      8:2划分；不可称无监督域适应。 RTX4090、12 epochs；学生19.42M参数；笔记记FLOPs增加4.86%，该计量口径未回原表核验，不能直接称零开销。
+      严重遮挡和模糊边界仍失败；γ可能需按天气重调；ExDark的LD40.1→39.6只支持本设置负例，不证明所有KL失效。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: sld-ala-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

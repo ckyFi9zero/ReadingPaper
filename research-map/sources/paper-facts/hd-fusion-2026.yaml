@@ -1,0 +1,305 @@
+version: 1
+paper: hd-fusion-2026
+scope: out-of-field
+source_basis: existing-reading-note
+source_sha256: db1e390400057275d0834894fec1da9c86a1955b90940f0b38e7d758675c7715
+checked_at: '2026-10-30'
+source_version: IEEE TII 22(7), 2026；本轮未获全文
+source_url: https://doi.org/10.1109/TII.2026.3678060
+read_scope: 已读既有first-pass/deep-read；出版社搜索可见摘要支持SLF/CLF架构概况，直接打开返回418。未取得PDF，故具体操作/消融/数字为note-summary而非本轮原文核验。
+source_review:
+  scope: 已读既有first-pass/deep-read；出版社搜索可见摘要支持SLF/CLF架构概况，直接打开返回418。未取得PDF，故具体操作/消融/数字为note-summary而非本轮原文核验。
+  checked_at: '2026-10-30'
+  source_url: https://doi.org/10.1109/TII.2026.3678060
+  source_version: IEEE TII 22(7), 2026；本轮未获全文
+tags:
+- 3D目标检测
+- LiDAR-相机融合
+- BEV
+- 鲁棒感知
+task:
+  name: LiDAR–相机融合3D检测
+  input: 同步标定的LiDAR点云与六路图像；3D检测监督
+  output: 类别、3D框位置/尺寸/朝向
+  conditions: 同步标定的LiDAR点云与六路图像；3D检测监督；结果只对应各实验数据/监督与硬件设置。
+  evidence:
+  - paper: hd-fusion-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: hd-fusion-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 图像BEV深度边界不清，跨模态上下文差异与背景响应妨碍小/远目标检测。
+  evidence:
+  - paper: hd-fusion-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: hd-fusion-2026
+    stage: first-pass
+    anchor: section-04
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-pillar-context-fusion
+  name: 几何锚定后双向上下文与频带精炼
+  description: SLF用pillar内点投影采样图像，经柱内self-attention/max pooling写回BEV；CLF双向跨模态注意力后进行DWT频带分解与残差融合。
+  evidence:
+  - paper: hd-fusion-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-measured-depth-anchor
+  name: 以量测深度锚定图像BEV证据
+  role: core-module
+  motivation: LiDAR与相机融合检测中图像提升后的前景/背景边界混淆，而有可靠LiDAR深度支持时。
+  evidence:
+  - paper: hd-fusion-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-crossmodal-frequency-refine
+  name: 交互后分频精炼，保留原始残差支路
+  role: core-module
+  motivation: 几何对齐后仍存在模态上下文差异与混杂特征响应，需要长程交互及特征精炼时。
+  evidence:
+  - paper: hd-fusion-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-crossmodal-alignment
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 按原生任务的方法设计登记；路线与模块为整理者分类，未独立检索首创归属，不以领域外分类降低原任务机制价值。
+limitations:
+- text: 本轮仅核对已有笔记与出版社可见摘要，未取得原全文；所有实现细节、消融和成本仍为笔记转述。笔记报告显存/参数增加，跨Lyft下降，更极端条件未验证。
+  evidence:
+  - paper: hd-fusion-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+analysis:
+  updated_at: '2026-10-30'
+  previous_methods:
+    text: 一次性拼接或通用注意力未显式处理LiDAR深度锚定与上下文精炼的不同职责。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: hd-fusion-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 图像BEV深度边界不清，跨模态上下文差异与背景响应妨碍小/远目标检测。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: hd-fusion-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 先把不同模态对齐到几何支持，再处理上下文；不能把小波高频简单等同传感器噪声。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: hd-fusion-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-measured-depth-anchor
+    name: 以量测深度锚定图像BEV证据
+    module_ids:
+    - module-measured-depth-anchor
+    motivation:
+      text: LiDAR与相机融合检测中图像提升后的前景/背景边界混淆，而有可靠LiDAR深度支持时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: hd-fusion-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 笔记转述：SLF将pillar内点投影到各图像，双线性采样特征，经柱内self-attention抑制不一致响应，再max pooling写回image
+        BEV。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: hd-fusion-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 先以几何量测限定图像证据的位置，再做模态交互；有深度支持的pillar与虚拟高度参考点不是同一机制。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: hd-fusion-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: LiDAR与相机融合检测中图像提升后的前景/背景边界混淆，而有可靠LiDAR深度支持时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: hd-fusion-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: contribution-crossmodal-frequency-refine
+    name: 交互后分频精炼，保留原始残差支路
+    module_ids:
+    - module-crossmodal-frequency-refine
+    motivation:
+      text: 几何对齐后仍存在模态上下文差异与混杂特征响应，需要长程交互及特征精炼时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: hd-fusion-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 笔记转述：BCMA先由图像query LiDAR，再由LiDAR query已融合上下文；DWT分解多尺度频带并经融合，与原始拼接残差组成最终BEV。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: hd-fusion-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 跨模态对应和频带精炼处理不同问题；高频同时含边缘与噪声，不能无条件全部删除。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: hd-fusion-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 几何对齐后仍存在模态上下文差异与混杂特征响应，需要长程交互及特征精炼时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: hd-fusion-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 原任务整体结果与条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-measured-depth-anchor
+    - contribution-crossmodal-frequency-refine
+    result:
+      text: 笔记TableII：nuScenes val 70.5%mAP/72.9%NDS；TableVII传感器drop子集有所保留。不同基线和跨数据集指标不可混为统一增益。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: hd-fusion-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 此为该文所测配置的整体/任务级证据；贡献关联用于导航，不是每个模块的独立因果证明。本轮尚未取得全文，数值仅转述已登记笔记。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: hd-fusion-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 组件、设计选择与未分离因素
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-measured-depth-anchor
+    - contribution-crossmodal-frequency-refine
+    result:
+      text: 笔记TableIX：SLF69.1/71.2，CLF65.8/70.8，组合70.5/72.9；TableX记录BCAFL/DWT内部对照，但本轮未重新取得表格，不能独立确认各项因果幅度。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: hd-fusion-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 需要按具体训练、数据与累计配置解释；不将总体指标提升反推为候选覆盖、机制最优性或每个子模块的独立因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: hd-fusion-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 本轮仅核对已有笔记与出版社可见摘要，未取得原全文；所有实现细节、消融和成本仍为笔记转述。笔记报告显存/参数增加，跨Lyft下降，更极端条件未验证。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: hd-fusion-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

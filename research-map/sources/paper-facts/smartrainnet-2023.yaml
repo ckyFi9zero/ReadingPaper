@@ -1,0 +1,225 @@
+version: 1
+paper: smartrainnet-2023
+scope: out-of-field
+source_basis: existing-reading-note
+source_sha256: 50307baf61f3b7ea812fa794756afe2675e48a5b4828f18c4d99ff0d878883ca
+checked_at: '2026-10-30'
+tags:
+- 雨
+- 量测不确定性
+- Mixture Density Network
+- Attention
+- 传感器退化
+task:
+  name: 逐激光量测可靠性估计
+  input: 保留无回波位置的固定通道 LiDAR 扫描，包含距离、强度和坐标
+  output: 有效及缺失量测的逐位置不确定性分数，而非直接补点或删点
+  conditions: 仅晴天正常驾驶量测训练条件分布；NDD 为32线 RoboSense 的真实降雨过程，SDD 为晴天数据随机加入10/20/30%退化；测试二分类标签与训练正常分布不同角色。
+  evidence:
+  - paper: smartrainnet-2023
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: smartrainnet-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: smartrainnet-2023
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 整帧退化分数无法定位不可靠回波；边缘和多径使正常量测本身多峰。
+  evidence:
+  - paper: smartrainnet-2023
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-native-smartrainnet-2023
+  name: 按邻域正常分布评估每次发射
+  description: 把激光发射位置映射到含空回波的2D图像；邻域切片加相对位置编码，经 self-attention 提供条件，再由两个 Gaussian
+    component 的 MDN 建模正常量测；低条件密度转为高不确定性。
+  evidence:
+  - paper: smartrainnet-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-smartrainnet-2023
+  name: 按邻域正常分布评估每次发射
+  role: core-module
+  motivation: 整帧退化分数无法定位不可靠回波；边缘和多径使正常量测本身多峰。
+  evidence:
+  - paper: smartrainnet-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-native-smartrainnet-2023
+novelty_assessment:
+  novelty_class: 3
+  confidence: provisional
+  reason: 原任务机制分类，不是首创性判定；保留领域外归类，不要求天气迁移。
+limitations:
+- text: SDD 低于自然降雨数据，作者归因于分布不同；无其他方法数值基线；Fig.6下游过滤/检测仅示例，无检测AP或定位收益；动态环境覆盖不足。
+  evidence:
+  - paper: smartrainnet-2023
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 整帧退化分数无法定位不可靠回波；边缘和多径使正常量测本身多峰。
+  method: 把激光发射位置映射到含空回波的2D图像；邻域切片加相对位置编码，经 self-attention 提供条件，再由两个 Gaussian component
+    的 MDN 建模正常量测；低条件密度转为高不确定性。
+  limitations: SDD 低于自然降雨数据，作者归因于分布不同；无其他方法数值基线；Fig.6下游过滤/检测仅示例，无检测AP或定位收益；动态环境覆盖不足。
+transfer_status: inferred
+source_review:
+  checked_at: '2026-10-30'
+  scope: 本轮通读既有初读；未取得独立全文。可保留笔记支持结果，不声称重新核对全部 PDF。
+  status: partial-primary-or-note-only
+  no_full_reread: true
+analysis:
+  updated_at: '2026-10-30'
+  previous_methods:
+    text: 整帧退化分数无法定位不可靠回波；边缘和多径使正常量测本身多峰。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: smartrainnet-2023
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 整帧退化分数无法定位不可靠回波；边缘和多径使正常量测本身多峰。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: smartrainnet-2023
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 按邻域正常分布评估每次发射；把激光发射位置映射到含空回波的2D图像；邻域切片加相对位置编码，经 self-attention 提供条件，再由两个
+      Gaussian component 的 MDN 建模正常量测；低条件密度转为高不确定性。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: smartrainnet-2023
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 按邻域正常分布评估每次发射
+    module_ids:
+    - module-smartrainnet-2023
+    motivation:
+      text: 整帧退化分数无法定位不可靠回波；边缘和多径使正常量测本身多峰。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: smartrainnet-2023
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 把激光发射位置映射到含空回波的2D图像；邻域切片加相对位置编码，经 self-attention 提供条件，再由两个 Gaussian component
+        的 MDN 建模正常量测；低条件密度转为高不确定性。 工程细节：固定发射位置保留无回波槽位，避免缺失量测从点集消失；混合分布保留边缘多模态而不强迫单峰；训练不需主观挑选异常样本。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: smartrainnet-2023
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 把激光发射位置映射到含空回波的2D图像；邻域切片加相对位置编码，经 self-attention 提供条件，再由两个 Gaussian component
+        的 MDN 建模正常量测；低条件密度转为高不确定性。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: smartrainnet-2023
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 在所列原任务条件下，以该操作回应所述失败模式；不由总体指标推导独立因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: smartrainnet-2023
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 原任务结果与对照
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: Table I：NDD 三地点 acc@avg=0.83/0.84/0.75；SDD 三档为0.71/0.68/0.61，平均由 acc@0.1/0.2/0.5/0.8
+        构成。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: smartrainnet-2023
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: SDD 低于自然降雨数据，作者归因于分布不同；无其他方法数值基线；Fig.6下游过滤/检测仅示例，无检测AP或定位收益；动态环境覆盖不足。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: smartrainnet-2023
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 仅晴天正常驾驶量测训练条件分布；NDD 为32线 RoboSense 的真实降雨过程，SDD 为晴天数据随机加入10/20/30%退化；测试二分类标签与训练正常分布不同角色。
+      需要正常晴天训练分布与固定扫描索引；笔记未记录硬件、运行时间或模块消融，不能声称实时。 SDD 低于自然降雨数据，作者归因于分布不同；无其他方法数值基线；Fig.6下游过滤/检测仅示例，无检测AP或定位收益；动态环境覆盖不足。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: smartrainnet-2023
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

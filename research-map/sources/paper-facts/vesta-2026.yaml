@@ -1,0 +1,335 @@
+version: 1
+paper: vesta-2026
+scope: out-of-field
+source_basis: original-pdf-and-reading-note
+source_sha256: b30a2b31c8edd48536e3d93386bf8b04fd6f280485378b46e6b977708e8a0dba
+checked_at: '2026-10-30'
+source_version: arXiv:2610.25687v1
+source_url: https://arxiv.org/pdf/2610.25687v1
+read_scope: 本轮原PDF文本定点核对Secs.3.1–3.3、Algorithms1–2、Tables3–4、A12–A14/TablesA9–A10；全文初读笔记作为索引。未运行代码、未重复训练，不把历史候选shard当最终生成覆盖对照。
+source_review:
+  scope: 本轮原PDF文本定点核对Secs.3.1–3.3、Algorithms1–2、Tables3–4、A12–A14/TablesA9–A10；全文初读笔记作为索引。未运行代码、未重复训练，不把历史候选shard当最终生成覆盖对照。
+  checked_at: '2026-10-30'
+  source_url: https://arxiv.org/pdf/2610.25687v1
+  source_version: arXiv:2610.25687v1
+  source_sha256: 72f31bf5c8a0d7318a9d52945992d9d691ee917a64fa86947c9068dac9546696
+tags:
+- 拓展阅读
+- VLN
+- 具身导航
+- 物理可执行性
+- 接触语义
+- 轨迹选择
+task:
+  name: 连续视觉语言导航的物理执行
+  input: RGB视觉与自然语言条件子目标；训练用严格接触探测、状态恢复等特权反馈
+  output: 所选局部轨迹前缀；部署RGB-only，固定高层S2
+  conditions: RGB视觉与自然语言条件子目标；训练用严格接触探测、状态恢复等特权反馈；结果只对应各实验数据/监督与硬件设置。
+  evidence:
+  - paper: vesta-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: vesta-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 宽松接触可把朝障碍的动作转成切向进展；目标成功不区分策略可执行性与模拟器纠正。
+  evidence:
+  - paper: vesta-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: vesta-2026
+    stage: first-pass
+    anchor: section-04
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-vln-support-selection
+  name: 固定高层下的局部生成与候选效用选择
+  description: 固定S2；TR-GRPO在相同恢复状态探测候选，用进度/碰撞/卡住偏好更新局部高斯替代策略；冻结生成器后TRiC学习候选标量效用，部署选argmax候选并执行前缀。
+  evidence:
+  - paper: vesta-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-contact-assumption-diagnostic
+  name: 固定策略，切换接触规则暴露执行依赖
+  role: core-module
+  motivation: 导航成功指标可能依赖模拟器滑动/切向接触修正，而非策略真正发出可执行动作时。
+  evidence:
+  - paper: vesta-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-executable-support-selection
+  name: 分开改善候选支持与最终候选选择
+  role: core-module
+  motivation: 局部生成器给出多个不兼容未来，而可执行候选是否存在与应该选哪个都不确定时。
+  evidence:
+  - paper: vesta-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-physical-execution
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 按原生任务的方法设计登记；路线与模块为整理者分类，未独立检索首创归属，不以领域外分类降低原任务机制价值。
+limitations:
+- text: 严格接触不是安全证书，不涵盖打滑/动态障碍/执行器动态；不能修复错误高层子目标。高斯只是优化替代，未校准风险；未重复完整训练种子。严重尾部缩短但无碰撞episode比例降低。
+  evidence:
+  - paper: vesta-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+analysis:
+  updated_at: '2026-10-30'
+  previous_methods:
+    text: 改进语言/记忆或生成更多未来，不自动解决局部候选可执行支持与最终选择。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: vesta-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 宽松接触可把朝障碍的动作转成切向进展；目标成功不区分策略可执行性与模拟器纠正。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: vesta-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 诊断接触假设、生成可执行候选和选择其中一条是三个层次；组件总结果不能替代候选覆盖或选择后悔值的直接验证。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: vesta-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-contact-assumption-diagnostic
+    name: 固定策略，切换接触规则暴露执行依赖
+    module_ids:
+    - module-contact-assumption-diagnostic
+    motivation:
+      text: 导航成功指标可能依赖模拟器滑动/切向接触修正，而非策略真正发出可执行动作时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: vesta-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 同一策略、同一episode配对运行permissive与strict contact，报告目标指标和CollAvg/CollW差异，而非只对不同模型排行。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: vesta-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 环境执行规则也是评测条件；保持策略和episode不变，才能诊断对该假设的系统敏感性。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: vesta-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 导航成功指标可能依赖模拟器滑动/切向接触修正，而非策略真正发出可执行动作时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: vesta-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: contribution-executable-support-selection
+    name: 分开改善候选支持与最终候选选择
+    module_ids:
+    - module-executable-support-selection
+    motivation:
+      text: 局部生成器给出多个不兼容未来，而可执行候选是否存在与应该选哪个都不确定时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: vesta-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 固定S2；TR-GRPO同恢复状态探测候选，以组相对严格接触偏好和局部高斯替代更新生成；冻结S1/S2后TRiC学习候选标量效用，argmax选择一条并执行前缀再规划。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: vesta-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 候选集合质量和选择规则是两种失败来源；不要平均互不兼容轨迹，也不要把排序改进当生成覆盖增加。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: vesta-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 局部生成器给出多个不兼容未来，而可执行候选是否存在与应该选哪个都不确定时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: vesta-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 原任务整体结果与条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-contact-assumption-diagnostic
+    - contribution-executable-support-selection
+    result:
+      text: R2R CollW34.00%→12.73%，SR51.50%→53.56%；附录ΔSR区间跨零。>50%碰撞episode13.38%→0.27%，Free66.61%→57.59%，不是每条轨迹都更安全。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: vesta-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 此为该文所测配置的整体/任务级证据；贡献关联用于导航，不是每个模块的独立因果证明。本轮定点核对范围见来源记录；未运行复现。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: vesta-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 组件、设计选择与未分离因素
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-contact-assumption-diagnostic
+    - contribution-executable-support-selection
+    result:
+      text: Table4：TR-GRPO-only CollW29.71%，TRiC-only14.31%，完整12.73%，基线34.00%；生成单独SR50.84%低于51.50%。支持所测组件级互补，不是超加和或覆盖已证。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: vesta-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 需要按具体训练、数据与累计配置解释；不将总体指标提升反推为候选覆盖、机制最优性或每个子模块的独立因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: vesta-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-contact
+    name: 固定策略接触假设干预
+    kind: design-choice
+    assessment: reported
+    contribution_ids:
+    - contribution-contact-assumption-diagnostic
+    result:
+      text: Table3 R2R：DualVLN SR65.31%→51.50%，CollW9.03%→34.00%；StreamVLN/JanusVLN也下降，幅度不外推到全部VLN。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: vesta-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持对接触假设的系统级敏感性诊断，与TR-GRPO/TRiC解法效果是分开证据。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: vesta-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 严格接触不是安全证书，不涵盖打滑/动态障碍/执行器动态；不能修复错误高层子目标。高斯只是优化替代，未校准风险；未重复完整训练种子。严重尾部缩短但无碰撞episode比例降低。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: vesta-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

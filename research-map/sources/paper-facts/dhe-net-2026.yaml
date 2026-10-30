@@ -1,0 +1,219 @@
+version: 1
+paper: dhe-net-2026
+scope: out-of-field
+source_basis: existing-reading-note
+source_sha256: 1e2a1f37306a9cea28b0487c3036d47491d713e9b794e763c0689b0ab6c2a1dc
+checked_at: '2026-10-30'
+tags:
+- 真实噪声
+- 低成本 LiDAR
+- 深度学习
+task:
+  name: 低成本传感器真实噪声几何恢复
+  input: 待预测noisy point及按距离排序的500点XYZ KNN patch
+  output: 每个输入点对应的去噪几何预测，不是噪声删留标签
+  conditions: RealLiD监督：Unitree L1与Livox Mid360扫描配对，ICP/人工校验、球面投影匹配提供clean对应；27对基础样本重组为120训练/42测试，不是162个独立物体。
+  evidence:
+  - paper: dhe-net-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  - paper: dhe-net-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  - paper: dhe-net-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+problem:
+  failure_case: 合成噪声不覆盖真实非均匀噪声；点云恢复容易丢边界并收缩。
+  evidence:
+  - paper: dhe-net-2026
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+pipeline:
+  id: pipeline-native-dhe-net-2026
+  name: 以首点和最远点双参照恢复几何
+  description: 以KNN首点与最远点分别构造相对偏差；前者经逐点卷积，后者经随特征更新邻接的EdgeConv；逐点相加后用局部残差与全局max聚合反复细化，解码目标点；监督同时约束target-point与far-point距离。
+  evidence:
+  - paper: dhe-net-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+modules:
+- id: module-dhe-net-2026
+  name: 以首点和最远点双参照恢复几何
+  role: core-module
+  motivation: 合成噪声不覆盖真实非均匀噪声；点云恢复容易丢边界并收缩。
+  evidence:
+  - paper: dhe-net-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+challenges:
+- challenge-native-dhe-net-2026
+novelty_assessment:
+  novelty_class: 3
+  confidence: provisional
+  reason: 原任务机制分类，不是首创性判定；保留领域外归类，不要求天气迁移。
+limitations:
+- text: 锐边仍过平滑和收缩；采用α/β=.4/.6非所有指标最优，Table III .2/.8 RMSD7.693比加粗7.751更小；原文β与表格不一致；未专项验证天气/其他设备/下游任务。
+  evidence:
+  - paper: dhe-net-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+evidence_status: source-checked
+source_excerpt:
+  problem: 合成噪声不覆盖真实非均匀噪声；点云恢复容易丢边界并收缩。
+  method: 以KNN首点与最远点分别构造相对偏差；前者经逐点卷积，后者经随特征更新邻接的EdgeConv；逐点相加后用局部残差与全局max聚合反复细化，解码目标点；监督同时约束target-point与far-point距离。
+  limitations: 锐边仍过平滑和收缩；采用α/β=.4/.6非所有指标最优，Table III .2/.8 RMSD7.693比加粗7.751更小；原文β与表格不一致；未专项验证天气/其他设备/下游任务。
+transfer_status: inferred
+source_review:
+  checked_at: '2026-10-30'
+  scope: 本轮直接阅读既有HTML保留的原PDF p.4与p.10整页，核实两参照、CDE末层、DM操作、模块消融、时间与权重数值矛盾；不是本轮完整PDF重读。
+  status: partial-primary-or-note-only
+  no_full_reread: true
+analysis:
+  updated_at: '2026-10-30'
+  previous_methods:
+    text: 合成噪声不覆盖真实非均匀噪声；点云恢复容易丢边界并收缩。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: dhe-net-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  technical_reason:
+    text: 合成噪声不覆盖真实非均匀噪声；点云恢复容易丢边界并收缩。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: dhe-net-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  insight:
+    text: 以首点和最远点双参照恢复几何；以KNN首点与最远点分别构造相对偏差；前者经逐点卷积，后者经随特征更新邻接的EdgeConv；逐点相加后用局部残差与全局max聚合反复细化，解码目标点；监督同时约束target-point与far-point距离。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: dhe-net-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered
+  contributions:
+  - id: contribution-main
+    name: 以首点和最远点双参照恢复几何
+    module_ids:
+    - module-dhe-net-2026
+    motivation:
+      text: 合成噪声不覆盖真实非均匀噪声；点云恢复容易丢边界并收缩。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dhe-net-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    implementation:
+      text: 以KNN首点与最远点分别构造相对偏差；前者经逐点卷积，后者经随特征更新邻接的EdgeConv；逐点相加后用局部残差与全局max聚合反复细化，解码目标点；监督同时约束target-point与far-point距离。
+        工程细节：首点参照不是算术质心或语义类别；CDE末层去ReLU以减少融合前非线性信息损失；DM用Max→Repeat→Concatenate注入全局上下文；轻量S版替换末层EdgeConv并只保留一个DM。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dhe-net-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    mechanism:
+      text: 以KNN首点与最远点分别构造相对偏差；前者经逐点卷积，后者经随特征更新邻接的EdgeConv；逐点相加后用局部残差与全局max聚合反复细化，解码目标点；监督同时约束target-point与far-point距离。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dhe-net-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    advantage:
+      text: 在所列原任务条件下，以该操作回应所述失败模式；不由总体指标推导独立因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dhe-net-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+  experiments:
+  - id: experiment-overall
+    name: 原任务结果与对照
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: Table I total CD/HD/RMSD=1.451/0.558/8.614，CD/RMSD按10^-2；Table II去DM为1.719/0.585/10.172，完整配置六组最优；消融支持组件关联不独立证明互补机理。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dhe-net-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+    interpretation:
+      text: 锐边仍过平滑和收缩；采用α/β=.4/.6非所有指标最优，Table III .2/.8 RMSD7.693比加粗7.751更小；原文β与表格不一致；未专项验证天气/其他设备/下游任务。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dhe-net-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: unregistered
+  boundary:
+    text: RealLiD监督：Unitree L1与Livox Mid360扫描配对，ICP/人工校验、球面投影匹配提供clean对应；27对基础样本重组为120训练/42测试，不是162个独立物体。
+      RTX4090/24GB，300 epochs；Fig.10仅报告DHE-Net-S=12.57秒/样本，慢于列出基线，不可借其代表完整版耗时或宣称实时。
+      锐边仍过平滑和收缩；采用α/β=.4/.6非所有指标最优，Table III .2/.8 RMSD7.693比加粗7.751更小；原文β与表格不一致；未专项验证天气/其他设备/下游任务。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: dhe-net-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: unregistered

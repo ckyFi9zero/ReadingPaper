@@ -11,9 +11,11 @@ tags:
 - Transformer
 - 遮挡场景
 task:
-  name: 遮挡 LiDAR 目标检测
-  input: 本任务输入，见关联初读
-  output: 本任务输出，见关联初读
+  name: 遮挡与稀疏目标的 LiDAR 3D 检测
+  input: 单帧 LiDAR 点云；先由 voxel/SPConv、BEV 与 RPN 得到 proposals，再抽取 RoI 局部不完整点。 训练/测试：补全预训练使用
+    Completion3D/ShapeNet 派生子集，检测在 KITTI/Waymo 的标注数据训练评估；训练有 foreground/background
+    辅助监督，推理不启用辅助分割分支。
+  output: 物体类别和精化三维框；RoI 完成形状用于特征增强而非独立全场景重建。
   evidence:
   - paper: shape-enhanced-set-det-2026
     stage: first-pass
@@ -21,8 +23,20 @@ task:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+  - paper: shape-enhanced-set-det-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: shape-enhanced-set-det-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
 problem:
-  failure_case: 目标形状不完整影响 RoI refinement
+  failure_case: 遮挡、背面不可见与远距离稀疏使 RoI 缺少边缘和轮廓；独立补全重建目标不必与检测框回归目标一致。
   evidence:
   - paper: shape-enhanced-set-det-2026
     stage: first-pass
@@ -31,10 +45,10 @@ problem:
     basis: existing-note
     original_pdf_review_status: source-checked
 pipeline:
-  id: pipeline-external
-  name: 领域外技术来源
-  description: 在 3D detection 的 RoI refinement 中用 Transformer-based shape completion 恢复遮挡目标形状，再以 Hybrid
-    Attention Fusion 融合 shape 与 spatial features。
+  id: pipeline-roi-shape-completion
+  name: RoI 形状补全—形状/空间特征融合
+  description: 在 3D detection 的 RoI refinement 中用 Transformer-based shape completion
+    恢复遮挡目标形状，再以 Hybrid Attention Fusion 融合 shape 与 spatial features。
   evidence:
   - paper: shape-enhanced-set-det-2026
     stage: first-pass
@@ -55,7 +69,7 @@ modules:
     basis: existing-note
     original_pdf_review_status: source-checked
 challenges:
-- challenge-structure
+- challenge-incomplete-object-shape
 - challenge-downstream
 novelty_assessment:
   novelty_class: 2
@@ -70,30 +84,43 @@ limitations:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+- text: 随距离增长各类 AP 仍下降；依赖 proposal 和补全训练。补全点从 1024 增至 2048 时测试时间上升而 mAP 未改善。
+  evidence:
+  - paper: shape-enhanced-set-det-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
 evidence_status: source-checked
 source_excerpt:
-  problem: 2. Research Problem 具体问题与场景 作者表述 研究自动驾驶 LiDAR-based 3D object detection 中的遮挡场景。LiDAR 是 2.5D
-    观测，无法看到目标背面；目标间重叠会阻断激光，且光度变化、特定反射角和远距离会导致信号中断（Sec. I）。 为什么重要 作者表述 3D 检测需要回归目标的 3D bounding box，完整形状信息缺失会降低检测性能，进而影响自动驾驶系统安全（Abstract,
-    Sec. I）。 最终后果 作者表述 遮挡和稀疏点导致目标后部、边缘和结构轮廓缺失，检测器可能漏检、定位偏差或在远距离/小目标上性能下降（Sec. I, Fig. 1）。 作者的约束 作者表述 需要缓解不完整点云导致的性能下降，同时避免显著计算开销；补全模型应服务检测中的
-    box regression，而非只追求独立 shape completion 的重建指标（Sec. I）。
-  method: 5. Method：只看宏观逻辑 输入单帧 LiDAR 点云 → voxel/SPConv + BEV + RPN → CR / NMS 选高质量 RoI → aware pooling
-    partial points → Transformer 编码 + 粗/稠密解码 → PointNet++ shape feature → HAF + box refinement Proposal
-    generation（Sec. III-A）： 将点云体素化，经 3D sparse convolution、多尺度下采样和 BEV 2D CNN，用 RPN 预测 3D proposals；训练时
-    CR 用预测 IoU 修正置信度，NMS 去冗余。 Segmentation auxiliary（Sec. III-B）： 训练阶段把多层 SPConv 特征插值到点坐标，预测 foreground/background，帮助低密度区域保留目标边界；推理时不启用。
-    Partial-point extraction（Sec. III-C）： 在 proposal 内对有效体素做 aware pooling，得到固定数量 partial points，减少错误
-    proposal 的背景干扰。 Transformer-based completion（Sec. III-C）： DGCNN 提取拓扑关系并加全局位置编码，Transformer self-attention
-    建模长程依赖，KNN 分支补充局部几何；解码器先生成 coarse points，再生成 dense points，用两项 Chamfer loss 监督。 Hybrid Attention Fusion（Sec.
-    III-D）： PointNet++ 从 dense points 提取 shape feature，与 RoI voxel spatial feature 拼接，用 point-wise/channel-wise
-    attention 加权，送入检测头回归 box 和分类。 概括 相比已有检测器，真正变化的核心位置是 RoI refinement：额外建立“partial shape → complete shape
-    → shape/spatial fusion”的路径；RPN、CR 和 SA 是围绕 proposal 质量与结构保持的辅助改动。 Tables VII–X，PDF p. 11，表格局部裁剪：Transformer
-    配置、RoI 特征融合、补全点数和 GNN 补全方案的消融/对比结果。点击图片查看原尺寸。
+  problem: 2. Research Problem 具体问题与场景 作者表述 研究自动驾驶 LiDAR-based 3D object detection
+    中的遮挡场景。LiDAR 是 2.5D 观测，无法看到目标背面；目标间重叠会阻断激光，且光度变化、特定反射角和远距离会导致信号中断（Sec. I）。 为什么重要
+    作者表述 3D 检测需要回归目标的 3D bounding box，完整形状信息缺失会降低检测性能，进而影响自动驾驶系统安全（Abstract, Sec.
+    I）。 最终后果 作者表述 遮挡和稀疏点导致目标后部、边缘和结构轮廓缺失，检测器可能漏检、定位偏差或在远距离/小目标上性能下降（Sec. I, Fig. 1）。
+    作者的约束 作者表述 需要缓解不完整点云导致的性能下降，同时避免显著计算开销；补全模型应服务检测中的 box regression，而非只追求独立 shape
+    completion 的重建指标（Sec. I）。
+  method: 5. Method：只看宏观逻辑 输入单帧 LiDAR 点云 → voxel/SPConv + BEV + RPN → CR / NMS 选高质量
+    RoI → aware pooling partial points → Transformer 编码 + 粗/稠密解码 → PointNet++ shape
+    feature → HAF + box refinement Proposal generation（Sec. III-A）： 将点云体素化，经 3D sparse
+    convolution、多尺度下采样和 BEV 2D CNN，用 RPN 预测 3D proposals；训练时 CR 用预测 IoU 修正置信度，NMS
+    去冗余。 Segmentation auxiliary（Sec. III-B）： 训练阶段把多层 SPConv 特征插值到点坐标，预测 foreground/background，帮助低密度区域保留目标边界；推理时不启用。
+    Partial-point extraction（Sec. III-C）： 在 proposal 内对有效体素做 aware pooling，得到固定数量
+    partial points，减少错误 proposal 的背景干扰。 Transformer-based completion（Sec. III-C）：
+    DGCNN 提取拓扑关系并加全局位置编码，Transformer self-attention 建模长程依赖，KNN 分支补充局部几何；解码器先生成 coarse
+    points，再生成 dense points，用两项 Chamfer loss 监督。 Hybrid Attention Fusion（Sec. III-D）：
+    PointNet++ 从 dense points 提取 shape feature，与 RoI voxel spatial feature 拼接，用 point-wise/channel-wise
+    attention 加权，送入检测头回归 box 和分类。 概括 相比已有检测器，真正变化的核心位置是 RoI refinement：额外建立“partial
+    shape → complete shape → shape/spatial fusion”的路径；RPN、CR 和 SA 是围绕 proposal 质量与结构保持的辅助改动。
+    Tables VII–X，PDF p. 11，表格局部裁剪：Transformer 配置、RoI 特征融合、补全点数和 GNN 补全方案的消融/对比结果。点击图片查看原尺寸。
   limitations: 8. Limitations 作者明确承认的 limitation 论文未明确说明 结论段主要强调效果、参数量和推理时间，没有单独列出失败条件或局限性清单。论文报告了距离增大时所有方法精度下降，但未将其正式命名为
     limitation。 从实验结果中直接可见、但作者没有明确称为 limitation 的现象 直接观察 Fig. 8 和 Sec. IV-C-4 表明随检测距离增加，car、pedestrian、cyclist
-    的 AP 都下降；SET-Det 在各距离段保持相对优势，但绝对性能仍受稀疏点限制。 直接观察 Waymo L2（点更稀疏）比 L1 更具挑战，作者报告的优势在 L2 更明显；这显示方法依赖更强的补全来处理少点目标，但不是作者明确承认的失效边界。
-    直接观察 EMD-Loss 与 CD-Loss 在 F-score/Fidelity/MMD 上接近，但 EMD 训练 memory 约高 2 倍、训练时长约高 27 倍（Sec. IV-G-2）。
+    的 AP 都下降；SET-Det 在各距离段保持相对优势，但绝对性能仍受稀疏点限制。 直接观察 Waymo L2（点更稀疏）比 L1 更具挑战，作者报告的优势在
+    L2 更明显；这显示方法依赖更强的补全来处理少点目标，但不是作者明确承认的失效边界。 直接观察 EMD-Loss 与 CD-Loss 在 F-score/Fidelity/MMD
+    上接近，但 EMD 训练 memory 约高 2 倍、训练时长约高 27 倍（Sec. IV-G-2）。
 transfer_status: inferred
 analysis:
-  updated_at: '2026-10-15'
+  updated_at: '2026-10-30'
   previous_methods:
     text: 通用补全主要优化独立物体重建质量，检测器又会受到 RoI 内不完整形状影响。
     basis: note-summary
@@ -144,8 +171,8 @@ analysis:
         basis: existing-note
         original_pdf_review_status: source-checked
     implementation:
-      text: 在 3D detection 的 RoI refinement 中用 Transformer-based shape completion 恢复遮挡目标形状，再以 Hybrid Attention
-        Fusion 融合 shape 与 spatial features。
+      text: 在 3D detection 的 RoI refinement 中用 Transformer-based shape completion
+        恢复遮挡目标形状，再以 Hybrid Attention Fusion 融合 shape 与 spatial features。
       basis: note-summary
       status: source-checked
       evidence:
@@ -235,7 +262,7 @@ analysis:
         basis: existing-note
         original_pdf_review_status: source-checked
   boundary:
-    text: 远距离稀疏仍影响检测；未证明天气恢复迁移
+    text: 随距离增长各类 AP 仍下降；依赖 proposal 和补全训练。补全点从 1024 增至 2048 时测试时间上升而 mAP 未改善。
     basis: note-summary
     status: source-checked
     evidence:
@@ -245,3 +272,10 @@ analysis:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+source_review:
+  checked_at: '2026-10-30'
+  scope: 本轮材料：Registered journal DOI; no accessible original content this pass；实际核对范围：Existing
+    first-pass note only; bibliographic search did not recover usable primary full
+    text。未核对范围：Primary DOI request inaccessible; not a policy denial. Exact task/architecture/results
+    have not been newly reverified. Do not substitute 2023 GISNet or other similarly
+    worded papers. 本轮局部核对不升级历史整篇核验状态；机制、数值与边界仍按各处笔记转述/阅读者归纳标注。

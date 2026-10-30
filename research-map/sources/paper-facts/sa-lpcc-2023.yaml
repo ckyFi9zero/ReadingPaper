@@ -1,0 +1,303 @@
+version: 1
+paper: sa-lpcc-2023
+scope: out-of-field
+source_basis: original-pdf-and-reading-note
+source_sha256: 10e8a28deadfc2255aa22125c453b669041648281ec5978ec2d37b676d7ce553
+checked_at: '2026-10-30'
+source_version: IEEE TII 19(8), 2023 作者公开正式版12页
+source_url: https://labsun.org/pub/TII2023_a.pdf
+read_scope: 本轮原PDF定点核对Sec.V分流/地面残差/时序预测，Sec.VI-E/F计算成本与ICP协议、Sec.VII孔洞与算力边界；既有两阶段全文作索引。未复现实验。
+source_review:
+  scope: 本轮原PDF定点核对Sec.V分流/地面残差/时序预测，Sec.VI-E/F计算成本与ICP协议、Sec.VII孔洞与算力边界；既有两阶段全文作索引。未复现实验。
+  checked_at: '2026-10-30'
+  source_url: https://labsun.org/pub/TII2023_a.pdf
+  source_version: IEEE TII 19(8), 2023 作者公开正式版12页
+  source_sha256: a41eb685ab33ba9d9af3ab31c3de5ba0aee82bab411eeb5460b88451cc6e2f63
+tags:
+- 点云压缩
+- 语义分割
+- 建图定位
+- 任务驱动
+task:
+  name: 面向静态建图的LiDAR压缩
+  input: 连续含XYZ/intensity的LiDAR扫描与语义分割结果
+  output: 压缩码流及删除可移动物体后的地图点云
+  conditions: 连续含XYZ/intensity的LiDAR扫描与语义分割结果；结果只对应各实验数据/监督与硬件设置。
+  evidence:
+  - paper: sa-lpcc-2023
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sa-lpcc-2023
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 统一保真所有点浪费码率，车辆行人等可移动点还会干扰静态地图配准。
+  evidence:
+  - paper: sa-lpcc-2023
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sa-lpcc-2023
+    stage: first-pass
+    anchor: section-04
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-semantic-residual-coding
+  name: 任务语义分流与几何/帧间残差编码
+  description: 2D纹理与3D拓扑融合分割movable/ground/other；movable丢弃，ground以平面拟合预测，other由ST-LSTM+GHU帧间预测，两类残差用无损编码。
+  evidence:
+  - paper: sa-lpcc-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-task-semantic-coding
+  name: 先按下游任务决定哪些信息不编码
+  role: core-module
+  motivation: 编码结果用于静态地图定位，而部分可移动对象既消耗码率又干扰配准时。
+  evidence:
+  - paper: sa-lpcc-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-structure-specific-residual-code
+  name: 按结构选择预测器，只编码无法预测的残差
+  role: core-module
+  motivation: 数据中地面近似平面、连续帧有重叠，而统一编码仍存在大量空间/时间冗余时。
+  evidence:
+  - paper: sa-lpcc-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-task-coding
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 按原生任务的方法设计登记；路线与模块为整理者分类，未独立检索首创归属，不以领域外分类降低原任务机制价值。
+limitations:
+- text: 仅适合允许丢弃可移动物体的静态地图任务；删除对象留孔洞，误分割不可由残差恢复。预处理1.574s/frame、编码1.715s/frame；结构化地面平面假设和帧间重叠是前提。
+  evidence:
+  - paper: sa-lpcc-2023
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+analysis:
+  updated_at: '2026-10-30'
+  previous_methods:
+    text: 树结构/一般率失真编码未同时处理任务无用信息、地面结构和相邻帧冗余。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: sa-lpcc-2023
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 统一保真所有点浪费码率，车辆行人等可移动点还会干扰静态地图配准。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: sa-lpcc-2023
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 先定义下游需要保留什么，再为不同结构选择不同预测器；无损残差编码不代表完整原始场景无损保留。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: sa-lpcc-2023
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-task-semantic-coding
+    name: 先按下游任务决定哪些信息不编码
+    module_ids:
+    - module-task-semantic-coding
+    motivation:
+      text: 编码结果用于静态地图定位，而部分可移动对象既消耗码率又干扰配准时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sa-lpcc-2023
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 融合2D纹理与3D拓扑完成movable/ground/other分割；在源端丢弃行人/车辆等movable，再编码地图需要的其余集合。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sa-lpcc-2023
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 任务驱动编码的保真对象不一定是完整原始场景；删除必须由下游需求授权，不能泛化成感知中的好操作。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sa-lpcc-2023
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 编码结果用于静态地图定位，而部分可移动对象既消耗码率又干扰配准时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sa-lpcc-2023
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: contribution-structure-specific-residual-code
+    name: 按结构选择预测器，只编码无法预测的残差
+    module_ids:
+    - module-structure-specific-residual-code
+    motivation:
+      text: 数据中地面近似平面、连续帧有重叠，而统一编码仍存在大量空间/时间冗余时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sa-lpcc-2023
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: ground用平面模型及Levenberg–Marquardt估计参数，编码观测与拟合点之差；other用ST-LSTM+GHU结合此前已解码帧预测，再编码预测残差。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sa-lpcc-2023
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 预测器应贴合各数据子集的冗余来源，而不是所有点都用同一模型；残差保证的是被保留数据的重建约束。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sa-lpcc-2023
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 数据中地面近似平面、连续帧有重叠，而统一编码仍存在大量空间/时间冗余时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sa-lpcc-2023
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 原任务整体结果与条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-task-semantic-coding
+    - contribution-structure-specific-residual-code
+    result:
+      text: 'KITTI #11–#21平均CR为4.16%/3.38%/2.77%（1mm/5mm/1cm）；序列20随机6帧ICP实验删除动态对象后匹配误差更小，不是全部导航任务安全验证。'
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sa-lpcc-2023
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 此为该文所测配置的整体/任务级证据；贡献关联用于导航，不是每个模块的独立因果证明。本轮定点核对范围见来源记录；未运行复现。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sa-lpcc-2023
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 组件、设计选择与未分离因素
+    kind: design-choice
+    assessment: not-reported-in-note
+    contribution_ids: []
+    result:
+      text: 笔记未记录典型独立模块消融；压缩器与量化设置对照及6帧ICP检验支持配置级效果，不能把总体码率改善全归因于平面或ST-LSTM。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sa-lpcc-2023
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 需要按具体训练、数据与累计配置解释；不将总体指标提升反推为候选覆盖、机制最优性或每个子模块的独立因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sa-lpcc-2023
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 仅适合允许丢弃可移动物体的静态地图任务；删除对象留孔洞，误分割不可由残差恢复。预处理1.574s/frame、编码1.715s/frame；结构化地面平面假设和帧间重叠是前提。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: sa-lpcc-2023
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

@@ -32,6 +32,86 @@ class ResearchMapTests(unittest.TestCase):
         self.assertFalse(pending & represented)
         self.assertFalse(pending & facts.keys())
 
+    def test_current_outfield_sources_have_native_facts_and_both_trees(self):
+        # Explicit 2026-10-30 scope: relevance classification does not exclude
+        # a source from its own task's evidence map.
+        expected = {
+            'smartrainnet-2023', 'umi-on-legs-2024', 'bevformer-2022',
+            'density-sensitive-completion-2024', 'sa-lpcc-2023', 'hd-fusion-2026',
+            'unidmb-2026', 'sld-ala-2026', 'dhe-net-2026', 'electric-arc-2026',
+            'removert-2020', 'hcdg-2026', 'bev-devils-2024', 'pointnet-2017',
+            'pointnet-plus-plus-2017', 'wnnm-2014',
+            'implicit-point-to-voxel-lidar-imu-slam',
+            'post-refining-lidar-registration', 'metric-semantic-mapping-2025',
+            'shape-enhanced-set-det-2026', 'vesta-2026',
+        }
+        self.assertEqual(len(expected), 21)
+        catalogue = {p['slug']: p for p in self.papers}
+        nodes = {n['id']: n for n in self.data['literature']['nodes']}
+        represented = {s for n in nodes.values() for s in n['source_papers']}
+        cards = {s for c in self.data['challenges']['challenges']
+                 for i in c['insights'] for s in i['source_papers']}
+        self.assertTrue(expected <= self.data['facts'].keys() & represented & cards)
+        for slug in expected:
+            with self.subTest(slug=slug):
+                self.assertEqual(catalogue[slug]['category'], 'out-of-field')
+                fact = self.data['facts'][slug]
+                route = nodes[fact['pipeline']['id']]
+                self.assertEqual(route['kind'], 'pipeline')
+                self.assertNotEqual(route['id'], 'pipeline-external')
+                self.assertEqual(nodes[route['parent']]['kind'], 'task')
+                self.assertNotIn('见关联初读', fact['task']['input'])
+                self.assertNotIn('见关联初读', fact['task']['output'])
+
+    def test_native_sources_cannot_use_unknown_or_unrelated_pipeline(self):
+        for pipeline, message in [('pipeline-invented', 'Unknown fact pipeline'),
+                                  ('pipeline-statistical', 'Fact pipeline must represent source')]:
+            bad = copy.deepcopy(self.data)
+            bad['facts']['pointnet-2017']['pipeline']['id'] = pipeline
+            with self.subTest(pipeline=pipeline), self.assertRaisesRegex(ValueError, message):
+                research_map.validate(bad, ROOT, self.papers)
+
+    def test_native_literature_still_requires_real_source_and_evidence(self):
+        for failure in ('source', 'anchor'):
+            bad = copy.deepcopy(self.data)
+            node = next(n for n in bad['literature']['nodes']
+                        if 'pointnet-2017' in n['source_papers'])
+            if failure == 'source':
+                node['source_papers'].append('invented-source')
+            else:
+                node['evidence'][0]['anchor'] = 'invented-anchor'
+            with self.subTest(failure=failure), self.assertRaises(ValueError):
+                research_map.validate(bad, ROOT, self.papers)
+
+    def test_native_source_labels_do_not_reduce_identity_to_weather_transfer(self):
+        detail = research_map._source_detail('pointnet-2017', self.data['facts'],
+                                             {p['slug']: p for p in self.papers})
+        self.assertEqual(detail['scope'], '领域外来源 · 原任务证据')
+
+    def test_material_scope_and_training_conditions_remain_visible_and_escaped(self):
+        from build_site import shell
+        data = copy.deepcopy(self.data)
+        fact = data['facts']['pointnet-2017']
+        fact['task']['conditions'] = '训练条件 <not-html>'
+        fact['source_review'] = {'scope': '仅核对局部原文 <not-html>，未全文复核'}
+        with mock.patch.object(research_map, 'load', return_value=data):
+            output = research_map.render(ROOT, self.papers, shell)['research-map.html']
+        self.assertIn('训练条件 &lt;not-html&gt;', output)
+        self.assertIn('仅核对局部原文 &lt;not-html&gt;，未全文复核', output)
+        self.assertNotIn('<not-html>', output)
+
+    def test_scope_filter_preserves_mixed_sources_and_native_routes(self):
+        catalogue = {p['slug']: p for p in self.papers}
+        graph = research_map.build_challenge_graph(self.data, self.data['facts'], catalogue)
+        self.assertEqual(graph['details']['insight-geometry']['filters']['scope'], ['out-of-field'])
+        self.assertEqual(graph['details']['insight-temporal']['filters']['scope'], ['in-field', 'out-of-field'])
+        self.assertEqual(graph['details']['insight-adaptive']['filters']['scope'], ['in-field'])
+        markup = research_map.render_tree_graph(graph, graph['type'])
+        self.assertIn('data-scope="in-field|out-of-field"', markup)
+        from build_site import shell
+        for output in research_map.render(ROOT, self.papers, shell).values():
+            self.assertIn('id="map-scope"', output)
+
     def pending_fixture(self):
         """Keep pending-state regressions independent of real papers becoming mapped."""
         data = copy.deepcopy(self.data)
@@ -48,8 +128,16 @@ class ResearchMapTests(unittest.TestCase):
     def test_unregistered_in_field_paper_is_not_silently_omitted(self):
         bad, papers = self.pending_fixture()
         bad['pending']['papers'] = []
-        with self.assertRaisesRegex(ValueError, 'Missing in-field coverage.*pending-fixture-2026'):
+        with self.assertRaisesRegex(ValueError, 'Missing classified coverage.*pending-fixture-2026'):
             research_map.validate(bad, ROOT, papers)
+
+    def test_future_outfield_source_can_be_explicitly_pending_without_fabricated_card(self):
+        data, papers = self.pending_fixture()
+        papers[-1]['category'] = 'out-of-field'
+        research_map.validate(data, ROOT, papers)
+        data['pending']['papers'] = []
+        with self.assertRaisesRegex(ValueError, 'Missing classified coverage.*pending-fixture-2026'):
+            research_map.validate(data, ROOT, papers)
 
     def test_pending_does_not_allow_withdrawing_old_map_coverage(self):
         bad = copy.deepcopy(self.data)
@@ -67,7 +155,7 @@ class ResearchMapTests(unittest.TestCase):
     def test_pending_registration_requires_known_in_field_paper_reason_and_date(self):
         for field, value, message in [
             ('paper', 'unknown-paper', 'Unknown pending paper'),
-            ('paper', 'pointnet-2017', 'Pending paper must be in-field'),
+            ('paper', 'pointnet-2017', 'Mapped paper cannot also be pending'),
             ('reason', '', 'pending reason'),
             ('registered_at', '2026-02-30', 'Invalid pending registration date'),
             ('registered_at', '', 'Invalid pending registration date'),
@@ -98,7 +186,7 @@ class ResearchMapTests(unittest.TestCase):
         with mock.patch.object(research_map, 'load', return_value=data):
             outputs = research_map.render(ROOT, papers, shell)
         for output in outputs.values():
-            self.assertIn('地图待整理 · 1 篇领域内论文', output)
+            self.assertIn('地图待整理 · 1 篇论文', output)
             self.assertIn('papers/pending-fixture-2026/index.html', output)
             self.assertNotIn('id="paper-pending-fixture-2026"', output)
         self.assertNotIn('pending-fixture-2026', data['facts'])

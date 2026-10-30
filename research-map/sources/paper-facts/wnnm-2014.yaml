@@ -1,0 +1,248 @@
+version: 1
+paper: wnnm-2014
+scope: out-of-field
+source_basis: existing-reading-note
+source_sha256: 0dd5f38c1b10015dcc2ca7443a566359361ce8a01f9068f71b11b01979b90e15
+checked_at: '2026-10-30'
+tags:
+- 图像去噪
+- 低秩矩阵
+- 加权核范数
+- 非局部自相似
+- 奇异值收缩
+task:
+  name: 非局部自相似图像块的低秩估计与加性白高斯噪声图像去噪
+  input: 带噪自然图像 y=x+n 与噪声水平 σn；局部搜索窗口内匹配的相似块堆叠为观测矩阵 Yj。
+  output: 各块组干净低秩矩阵估计，经重叠块聚合得到整幅干净图像估计。
+  conditions: 非训练型优化方法，不需监督训练集；用干净测试图合成零均值加性白高斯噪声并以真值计算 PSNR。需噪声水平用于保真项与奇异值估计，需块组有非局部自相似/低秩性。正文评测
+    20 幅图、σn=10/30/50/100。
+  evidence:
+  - paper: wnnm-2014
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: wnnm-2014
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: wnnm-2014
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 标准 NNM 等量收缩所有奇异值，不能区分主成分与较弱成分的重要性；二元截断也不足以提供连续可调惩罚。
+  evidence:
+  - paper: wnnm-2014
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-native-wnnm-2014
+  name: 对主要奇异值少收缩
+  description: 匹配相似图像块并堆成矩阵；从带噪奇异值平方扣除估计噪声能量，再开方截零得到干净奇异值估计；以估计值倒数设权，使大奇异值惩罚小、小奇异值惩罚大。对块组做
+    SVD 和加权软阈值后重建、聚合图像，外层迭代正则化并重复。去噪采用非减权重，CVPR 本文 Corollary 1 将一步块组计算表述为解析固定点，不应笼统改写为任意权重全局最优。
+  evidence:
+  - paper: wnnm-2014
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-wnnm-2014
+  name: 对主要奇异值少收缩
+  role: core-module
+  motivation: 标准 NNM 等量收缩所有奇异值，不能区分主成分与较弱成分的重要性；二元截断也不足以提供连续可调惩罚。
+  evidence:
+  - paper: wnnm-2014
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-native-wnnm-2014
+novelty_assessment:
+  novelty_class: 3
+  confidence: provisional
+  reason: 原任务机制分类，不是首创性判定；保留领域外归类，不要求天气迁移。
+limitations:
+- text: 仅 AWGN 图像去噪结论，不外推任意噪声。大奇异值重要性、块组低秩与噪声能量分配是先验/假设，并非新实验建立的普适规律。正文 House σn=10
+    与 LSSC 同为36.95 dB，不是每个案例严格领先。既有笔记指出 Boats Fig.2 26.98 vs Table1 26.97、Monarch
+    Fig.3 22.91 vs Table1 22.95；保留来源差异。一般权重情形与非减权重情形须分开，未独立检验证明正确性。
+  evidence:
+  - paper: wnnm-2014
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 标准 NNM 等量收缩所有奇异值，不能区分主成分与较弱成分的重要性；二元截断也不足以提供连续可调惩罚。
+  method: 匹配相似图像块并堆成矩阵；从带噪奇异值平方扣除估计噪声能量，再开方截零得到干净奇异值估计；以估计值倒数设权，使大奇异值惩罚小、小奇异值惩罚大。对块组做
+    SVD 和加权软阈值后重建、聚合图像，外层迭代正则化并重复。去噪采用非减权重，CVPR 本文 Corollary 1 将一步块组计算表述为解析固定点，不应笼统改写为任意权重全局最优。
+  limitations: 仅 AWGN 图像去噪结论，不外推任意噪声。大奇异值重要性、块组低秩与噪声能量分配是先验/假设，并非新实验建立的普适规律。正文 House
+    σn=10 与 LSSC 同为36.95 dB，不是每个案例严格领先。既有笔记指出 Boats Fig.2 26.98 vs Table1 26.97、Monarch
+    Fig.3 22.91 vs Table1 22.95；保留来源差异。一般权重情形与非减权重情形须分开，未独立检验证明正确性。
+transfer_status: inferred
+source_review:
+  checked_at: '2026-10-30'
+  scope: 本轮通过官方 CVF 镜像 PDF 文本核对 Sec.2.2.3（非减权重固定点）、Sec.3 / Eq.9–10 / Algorithm1（AWGN、块匹配、权重与噪声能量假设、聚合）、Sec.4.1（δ/c/块大小/K）、Sec.4.2（20图与四档噪声）。未逐页视觉审读、未重读补充材料、未运行代码或独立验证证明；精确表格数字仍为
+    note-summary。
+  status: partial-primary-or-note-only
+  no_full_reread: true
+  audit_detail:
+    date: '2026-10-30'
+    status: partial-original-fulltext-checked
+    url: https://www.cv-foundation.org/openaccess/content_cvpr_2014/papers/Gu_Weighted_Nuclear_Norm_2014_CVPR_paper.pdf
+    version: CVPR 2014, 8-page paper
+    scope: 本轮通过官方 CVF 镜像 PDF 文本核对 Sec.2.2.3（非减权重固定点）、Sec.3 / Eq.9–10 / Algorithm1（AWGN、块匹配、权重与噪声能量假设、聚合）、Sec.4.1（δ/c/块大小/K）、Sec.4.2（20图与四档噪声）。未逐页视觉审读、未重读补充材料、未运行代码或独立验证证明；精确表格数字仍为
+      note-summary。
+    failed_attempt: openaccess.thecvf.com PDF 入口返回403；cv-foundation.org镜像成功。
+    claim_scope_warning: 不可据局部原文核对把全部事实或补充实验升级为原文已检查。
+analysis:
+  updated_at: '2026-10-30'
+  previous_methods:
+    text: 标准 NNM 等量收缩所有奇异值，不能区分主成分与较弱成分的重要性；二元截断也不足以提供连续可调惩罚。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: wnnm-2014
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 标准 NNM 等量收缩所有奇异值，不能区分主成分与较弱成分的重要性；二元截断也不足以提供连续可调惩罚。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: wnnm-2014
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 对主要奇异值少收缩；匹配相似图像块并堆成矩阵；从带噪奇异值平方扣除估计噪声能量，再开方截零得到干净奇异值估计；以估计值倒数设权，使大奇异值惩罚小、小奇异值惩罚大。对块组做
+      SVD 和加权软阈值后重建、聚合图像，外层迭代正则化并重复。去噪采用非减权重，CVPR 本文 Corollary 1 将一步块组计算表述为解析固定点，不应笼统改写为任意权重全局最优。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: wnnm-2014
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 对主要奇异值少收缩
+    module_ids:
+    - module-wnnm-2014
+    motivation:
+      text: 标准 NNM 等量收缩所有奇异值，不能区分主成分与较弱成分的重要性；二元截断也不足以提供连续可调惩罚。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: wnnm-2014
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 匹配相似图像块并堆成矩阵；从带噪奇异值平方扣除估计噪声能量，再开方截零得到干净奇异值估计；以估计值倒数设权，使大奇异值惩罚小、小奇异值惩罚大。对块组做
+        SVD 和加权软阈值后重建、聚合图像，外层迭代正则化并重复。去噪采用非减权重，CVPR 本文 Corollary 1 将一步块组计算表述为解析固定点，不应笼统改写为任意权重全局最优。
+        工程细节：估计式截零以避免负的能量估计，权重分母加 ε=10^-16 避免除零；匹配限定在足够大的局部窗口；δ=0.1、c=2.8。σn≤20、20<σn≤40、40<σn≤60、σn>60
+        时，块宽为 6/7/8/9，外层轮数 K=8/12/14/14。单块固定权重的一步收缩不等于整图只运行一轮。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: wnnm-2014
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 匹配相似图像块并堆成矩阵；从带噪奇异值平方扣除估计噪声能量，再开方截零得到干净奇异值估计；以估计值倒数设权，使大奇异值惩罚小、小奇异值惩罚大。对块组做
+        SVD 和加权软阈值后重建、聚合图像，外层迭代正则化并重复。去噪采用非减权重，CVPR 本文 Corollary 1 将一步块组计算表述为解析固定点，不应笼统改写为任意权重全局最优。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: wnnm-2014
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 在所列原任务条件下，以该操作回应所述失败模式；不由总体指标推导独立因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: wnnm-2014
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 原任务结果与对照
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 既有笔记 Table 1：四档噪声下 20 图平均 WNNM PSNR=34.772/29.214/26.752/23.555 dB，BM3D=34.326/28.905/26.406/23.247，统一权重
+        NNM=33.462/27.753/25.048/21.570。NNM 保持外围参数，仅替换统一权重，是当前管线中更直接的惩罚机制对照。补充 Exp.pdf
+        Table 1：σn=20 的 House 34.04 低于 LSSC 34.11；该补充数值本轮只核对笔记。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: wnnm-2014
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 仅 AWGN 图像去噪结论，不外推任意噪声。大奇异值重要性、块组低秩与噪声能量分配是先验/假设，并非新实验建立的普适规律。正文 House
+        σn=10 与 LSSC 同为36.95 dB，不是每个案例严格领先。既有笔记指出 Boats Fig.2 26.98 vs Table1 26.97、Monarch
+        Fig.3 22.91 vs Table1 22.95；保留来源差异。一般权重情形与非减权重情形须分开，未独立检验证明正确性。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: wnnm-2014
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 非训练型优化方法，不需监督训练集；用干净测试图合成零均值加性白高斯噪声并以真值计算 PSNR。需噪声水平用于保真项与奇异值估计，需块组有非局部自相似/低秩性。正文评测
+      20 幅图、σn=10/30/50/100。 依赖噪声能量在观测 SVD 基对张成子空间均匀分配的估计假设，并承担相似块搜索、各组 SVD、重叠聚合与多轮更新成本；既有笔记未见硬件/整图运行时间，不得由单步解析形式声称实时。
+      仅 AWGN 图像去噪结论，不外推任意噪声。大奇异值重要性、块组低秩与噪声能量分配是先验/假设，并非新实验建立的普适规律。正文 House σn=10
+      与 LSSC 同为36.95 dB，不是每个案例严格领先。既有笔记指出 Boats Fig.2 26.98 vs Table1 26.97、Monarch
+      Fig.3 22.91 vs Table1 22.95；保留来源差异。一般权重情形与非减权重情形须分开，未独立检验证明正确性。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: wnnm-2014
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

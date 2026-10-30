@@ -10,9 +10,10 @@ tags:
 - 对应关系
 - 后优化
 task:
-  name: 点云配准后优化
-  input: 本任务输入，见关联初读
-  output: 本任务输出，见关联初读
+  name: 已有粗变换的 LiDAR 配准后精化
+  input: 源/目标 LiDAR 点云与已有 coarse relative transformation；在粗变换后构造最近邻对应。 训练/测试：训练以 diffusion
+    loss 加 transformation loss 监督；笔记记录 DDPM 训练与 DDIM 三步推理，测试必须提供粗变换。不是无初始化的全局配准器。
+  output: 精化的刚体旋转与平移；中间生成的是目标对应点残差，不是完整清洁场景。
   evidence:
   - paper: post-refining-lidar-registration
     stage: first-pass
@@ -20,8 +21,20 @@ task:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+  - paper: post-refining-lidar-registration
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: post-refining-lidar-registration
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
 problem:
-  failure_case: 稀疏、遮挡与视角变化造成对应误差
+  failure_case: 同一表面在不同扫描中未必被重新采到，遮挡/视角变化使最近邻不是准确对应，限制已有粗配准后的精度。
   evidence:
   - paper: post-refining-lidar-registration
     stage: first-pass
@@ -30,9 +43,10 @@ problem:
     basis: existing-note
     original_pdf_review_status: source-checked
 pipeline:
-  id: pipeline-external
-  name: 领域外技术来源
-  description: 在粗配准之后对目标对应点 residual 做条件扩散去噪，再用 Kabsch 求精化变换，作为可组合的 LiDAR registration post-optimizer。
+  id: pipeline-correspondence-refinement
+  name: 条件残差扩散—对应精化—刚体求解
+  description: 在粗配准之后对目标对应点 residual 做条件扩散去噪，再用 Kabsch 求精化变换，作为可组合的 LiDAR registration
+    post-optimizer。
   evidence:
   - paper: post-refining-lidar-registration
     stage: first-pass
@@ -53,8 +67,7 @@ modules:
     basis: existing-note
     original_pdf_review_status: source-checked
 challenges:
-- challenge-structure
-- challenge-efficiency
+- challenge-correspondence-error
 novelty_assessment:
   novelty_class: 2
   confidence: provisional
@@ -68,31 +81,45 @@ limitations:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+- text: 需要已有粗配准；全局变换噪声达 5 m 时 recall 约 40%；扩散步数由 3 增到 5 不再持续改善且时间增加。KITTI 的 SDMNet
+    组合额外约 43.9 ms。
+  evidence:
+  - paper: post-refining-lidar-registration
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
 evidence_status: source-checked
 source_excerpt:
-  problem: 02 · Research Problem 问题层次 作者的原文故事线 具体问题 概括 给定两个 LiDAR 点云和一个 coarse relative transformation，如何修正由稀疏采样、遮挡和视角变化造成的错误对应，从而进一步降低配准的
-    RTE / RRE。 （Sec. I；Sec. III-A） 发生场景 作者表述 自动驾驶和移动机器人使用的真实、大规模 outdoor LiDAR 点云；实验覆盖 KITTI、NuScenes
-    和 Apollo-Southbay。 （Abstract；Sec. I；IV-A） 为什么重要 作者表述 ICP 等 local registration 的效果依赖准确 correspondence；LiDAR
-    的 beam-based sampling 使同一空间位置不一定在下一帧被重新采样。学习方法虽然提升 global registration 的鲁棒性，却常在稀疏点集上匹配。 （Sec. I） 最终后果
-    概括 global method 可能给出“正确但不够精确”的变换；错误对应会限制 ICP/GICP 等局部后优化，并降低地图构建、定位和重建的相对位姿精度。 （Sec. I）
-  method: 05 · Method：只看宏观逻辑 概括 输入与初始对应： 给定源/目标点云 PS、PT 和 coarse transform (R̂,t̂)，将源点变换到 target space，并在目标点云中取最近邻形成
-    noisy correspondences。 目的： 把任意 global registration 的输出统一成 DCR 的输入格式。 （Fig. 1；Sec. III-A；IV-A.2） 概括
-    残差扩散建模： 固定源点，只生成目标对应点的 residual ΔxT；对 residual 做归一化，在 forward process 加噪，denoising network 直接预测 clean
-    z0。 目的： 把生成空间压缩到更紧凑的误差分布，并直接得到 refined target points。 （Eq. 1–6；Sec. III-B–C.1） 概括 条件与邻域去噪： 用 cG=[x̂S,xT,x̂S−xT]
-    和 cF=[fS,fT,fS−fT] 控制随机性；用两次 PointNet++ 风格 neighborhood aggregation 建模对应点上下文，再由 MLP 输出 residual。 目的：
-    让生成结果同时受位置误差、特征差异和邻域结构约束。 （Eq. 4–7；Fig. 1；Sec. III-C.2–4） 概括 变换求解与训练： 将 refined correspondences 送入
-    Kabsch 闭式求解 R*,t*；训练损失为 diffusion loss Ld 加 transformation loss Lt。 目的： 使网络输出直接服务于相对位姿精化，而非只拟合 latent
-    distribution。 （Eq. 8–9；Sec. III-C.5；III-D） 概括 真正变化的核心位置： 后优化不再直接在位姿或绝对点坐标上扩散，而是在“固定源点 + 目标对应点 residual”的
-    correspondence 空间中去噪，再由几何闭式求解变换。 （Sec. III） Fig. 1，PDF p. 4，论文原图及图注局部裁剪：扩散式 correspondence refinement
-    的整体架构。 点击图片查看原尺寸。
+  problem: 02 · Research Problem 问题层次 作者的原文故事线 具体问题 概括 给定两个 LiDAR 点云和一个 coarse relative
+    transformation，如何修正由稀疏采样、遮挡和视角变化造成的错误对应，从而进一步降低配准的 RTE / RRE。 （Sec. I；Sec. III-A）
+    发生场景 作者表述 自动驾驶和移动机器人使用的真实、大规模 outdoor LiDAR 点云；实验覆盖 KITTI、NuScenes 和 Apollo-Southbay。
+    （Abstract；Sec. I；IV-A） 为什么重要 作者表述 ICP 等 local registration 的效果依赖准确 correspondence；LiDAR
+    的 beam-based sampling 使同一空间位置不一定在下一帧被重新采样。学习方法虽然提升 global registration 的鲁棒性，却常在稀疏点集上匹配。
+    （Sec. I） 最终后果 概括 global method 可能给出“正确但不够精确”的变换；错误对应会限制 ICP/GICP 等局部后优化，并降低地图构建、定位和重建的相对位姿精度。
+    （Sec. I）
+  method: 05 · Method：只看宏观逻辑 概括 输入与初始对应： 给定源/目标点云 PS、PT 和 coarse transform (R̂,t̂)，将源点变换到
+    target space，并在目标点云中取最近邻形成 noisy correspondences。 目的： 把任意 global registration
+    的输出统一成 DCR 的输入格式。 （Fig. 1；Sec. III-A；IV-A.2） 概括 残差扩散建模： 固定源点，只生成目标对应点的 residual
+    ΔxT；对 residual 做归一化，在 forward process 加噪，denoising network 直接预测 clean z0。 目的：
+    把生成空间压缩到更紧凑的误差分布，并直接得到 refined target points。 （Eq. 1–6；Sec. III-B–C.1） 概括 条件与邻域去噪：
+    用 cG=[x̂S,xT,x̂S−xT] 和 cF=[fS,fT,fS−fT] 控制随机性；用两次 PointNet++ 风格 neighborhood aggregation
+    建模对应点上下文，再由 MLP 输出 residual。 目的： 让生成结果同时受位置误差、特征差异和邻域结构约束。 （Eq. 4–7；Fig. 1；Sec.
+    III-C.2–4） 概括 变换求解与训练： 将 refined correspondences 送入 Kabsch 闭式求解 R*,t*；训练损失为 diffusion
+    loss Ld 加 transformation loss Lt。 目的： 使网络输出直接服务于相对位姿精化，而非只拟合 latent distribution。
+    （Eq. 8–9；Sec. III-C.5；III-D） 概括 真正变化的核心位置： 后优化不再直接在位姿或绝对点坐标上扩散，而是在“固定源点 + 目标对应点
+    residual”的 correspondence 空间中去噪，再由几何闭式求解变换。 （Sec. III） Fig. 1，PDF p. 4，论文原图及图注局部裁剪：扩散式
+    correspondence refinement 的整体架构。 点击图片查看原尺寸。
   limitations: 08 · Limitations 作者明确承认的 limitation 论文未单列 limitation 小节 结论与噪声实验给出了适用边界，但没有以“Limitations”标题集中陈述。
-    从实验结果中直接可见、作者没有统一称为 limitation 的现象 直接观察 DCR 面向 post-refinement；global transform noise 增至 5.0 m 时 recall
-    约 40%，作者明确说其恢复能力在显著大扰动下减弱。 （Fig. 5；Sec. IV-C.7） 直接观察 扩散步数从 T=3 增至 T=5，精度不再持续改善且时间约增加 47%；作者把性能下降归因于生成随机性增加。
-    （Table X；Sec. IV-C.5） 直接观察 DCR 增加约 43.9 ms（KITTI，SDMNet 输入）并需要额外 GPU memory，虽然小于 0.1 GB；因此效率收益依赖于与粗配准器的组合。
-    （Table II；Sec. IV-B.3） 直接观察 在作者实验中，NDT 没有进一步改善精度；该结果仅说明本文设置下的实验现象。 （Sec. IV-B.1）
+    从实验结果中直接可见、作者没有统一称为 limitation 的现象 直接观察 DCR 面向 post-refinement；global transform
+    noise 增至 5.0 m 时 recall 约 40%，作者明确说其恢复能力在显著大扰动下减弱。 （Fig. 5；Sec. IV-C.7） 直接观察 扩散步数从
+    T=3 增至 T=5，精度不再持续改善且时间约增加 47%；作者把性能下降归因于生成随机性增加。 （Table X；Sec. IV-C.5） 直接观察 DCR
+    增加约 43.9 ms（KITTI，SDMNet 输入）并需要额外 GPU memory，虽然小于 0.1 GB；因此效率收益依赖于与粗配准器的组合。 （Table
+    II；Sec. IV-B.3） 直接观察 在作者实验中，NDT 没有进一步改善精度；该结果仅说明本文设置下的实验现象。 （Sec. IV-B.1）
 transfer_status: inferred
 analysis:
-  updated_at: '2026-10-15'
+  updated_at: '2026-10-30'
   previous_methods:
     text: 粗配准后优化可在位姿或点坐标空间进行，错误对应仍影响精化变换。
     basis: note-summary
@@ -143,7 +170,8 @@ analysis:
         basis: existing-note
         original_pdf_review_status: source-checked
     implementation:
-      text: 在粗配准之后对目标对应点 residual 做条件扩散去噪，再用 Kabsch 求精化变换，作为可组合的 LiDAR registration post-optimizer。
+      text: 在粗配准之后对目标对应点 residual 做条件扩散去噪，再用 Kabsch 求精化变换，作为可组合的 LiDAR registration
+        post-optimizer。
       basis: note-summary
       status: source-checked
       evidence:
@@ -183,7 +211,8 @@ analysis:
     contribution_ids:
     - contribution-main
     result:
-      text: KITTI 中 SDMNet RTE 0.043 m，加入 DCR 后 0.024 m；时间从 108.6 增至 152.5 ms（Table II）。
+      text: KITTI 中 SDMNet RTE 0.043 m，加入 DCR 后 0.024 m；时间从 108.6 增至 152.5 ms（Table
+        II）。
       basis: note-summary
       status: source-checked
       evidence:
@@ -211,7 +240,8 @@ analysis:
     contribution_ids:
     - contribution-main
     result:
-      text: 比较残差与绝对坐标、条件信号、邻域聚合、步数和损失；残差 latent 的 KITTI RTE/RRE 0.024/0.059 优于绝对坐标 0.036/0.137（Tables V–XI）。
+      text: 比较残差与绝对坐标、条件信号、邻域聚合、步数和损失；残差 latent 的 KITTI RTE/RRE 0.024/0.059 优于绝对坐标
+        0.036/0.137（Tables V–XI）。
       basis: note-summary
       status: source-checked
       evidence:
@@ -233,7 +263,8 @@ analysis:
         basis: existing-note
         original_pdf_review_status: source-checked
   boundary:
-    text: 面向已有粗变换；强扰动削弱恢复能力，增加运行成本
+    text: 需要已有粗配准；全局变换噪声达 5 m 时 recall 约 40%；扩散步数由 3 增到 5 不再持续改善且时间增加。KITTI 的 SDMNet
+      组合额外约 43.9 ms。
     basis: note-summary
     status: source-checked
     evidence:
@@ -243,3 +274,9 @@ analysis:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+source_review:
+  checked_at: '2026-10-30'
+  scope: 本轮材料：IEEE publisher abstract; publication 2025-12-08, volume 23；实际核对范围：Abstract
+    and visible opening of Note to Practitioners。未核对范围：Full-text unavailable in this
+    pass; precise losses, Kabsch solver, perturbation results, timing and other mechanisms
+    remain existing-note only. No new numerical verification. 本轮局部核对不升级历史整篇核验状态；机制、数值与边界仍按各处笔记转述/阅读者归纳标注。

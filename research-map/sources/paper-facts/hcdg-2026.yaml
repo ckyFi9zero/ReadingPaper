@@ -1,0 +1,243 @@
+version: 1
+paper: hcdg-2026
+scope: out-of-field
+source_basis: existing-reading-note
+source_sha256: 846ef35c2718159898699785fb31de6b35773224f25e96c816c48251965e2606
+checked_at: '2026-10-30'
+tags:
+- 工业视觉
+- 无监督异常检测
+- 多类统一建模
+- 条件去噪
+task:
+  name: 统一多类别工业图像异常检测与定位
+  input: 训练：多类别正常 2D 工业图像；测试：待检产品图像。冻结 DINOv2 的多层 patch tokens 为特征输入。
+  output: 图像级异常分数和像素级异常热图，不是去噪后的图像或 LiDAR 点云。
+  conditions: 只用正常样本训练统一模型；异常标注不作为训练监督，噪声注入提供 feature-space noise regression 目标，正常特征提供重建目标。评估限
+    MVTec AD 与 VisA；具体 checkpoint 选取、训练/推理条件去噪差异仍待原文细查。
+  evidence:
+  - paper: hcdg-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: hcdg-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: hcdg-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 多类别正常模式复杂且重叠，统一重建模型可能学到近似恒等映射，把异常也重建好；固定浅深特征权重又难适配各样本纹理/语义需求。
+  evidence:
+  - paper: hcdg-2026
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-native-hcdg-2026
+  name: 用噪声预测误差抑制异常轻易重建
+  description: 对冻结骨干的浅/深特征按样本加权融合；向特征注入噪声并训练预测器估计噪声，以位置相关预测误差调节条件去噪，再以跨注意力建立多层 encoder–decoder
+    特征对应。最终组合重建误差与噪声预测误差产生异常分数。误差条件化抑制 trivial reconstruction 是作者解释，不能由最终指标倒推为独立证明。
+  evidence:
+  - paper: hcdg-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-hcdg-2026
+  name: 用噪声预测误差抑制异常轻易重建
+  role: core-module
+  motivation: 多类别正常模式复杂且重叠，统一重建模型可能学到近似恒等映射，把异常也重建好；固定浅深特征权重又难适配各样本纹理/语义需求。
+  evidence:
+  - paper: hcdg-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-native-hcdg-2026
+novelty_assessment:
+  novelty_class: 3
+  confidence: provisional
+  reason: 原任务机制分类，不是首创性判定；保留领域外归类，不要求天气迁移。
+limitations:
+- text: 作者承认冻结骨干、固定层和预设噪声参数可能限制大 domain shift；只覆盖两个 2D 工业 benchmark。不能把预测误差称为经过概率校准的不确定性，也不能据工业图像结果推断点云或天气性能。现笔记无逐类别反例数值；不把未记录误写为无失败案例。
+  evidence:
+  - paper: hcdg-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 多类别正常模式复杂且重叠，统一重建模型可能学到近似恒等映射，把异常也重建好；固定浅深特征权重又难适配各样本纹理/语义需求。
+  method: 对冻结骨干的浅/深特征按样本加权融合；向特征注入噪声并训练预测器估计噪声，以位置相关预测误差调节条件去噪，再以跨注意力建立多层 encoder–decoder
+    特征对应。最终组合重建误差与噪声预测误差产生异常分数。误差条件化抑制 trivial reconstruction 是作者解释，不能由最终指标倒推为独立证明。
+  limitations: 作者承认冻结骨干、固定层和预设噪声参数可能限制大 domain shift；只覆盖两个 2D 工业 benchmark。不能把预测误差称为经过概率校准的不确定性，也不能据工业图像结果推断点云或天气性能。现笔记无逐类别反例数值；不把未记录误写为无失败案例。
+transfer_status: inferred
+source_review:
+  checked_at: '2026-10-30'
+  scope: 本轮完整读取既有 first-pass 笔记；未取得原 PDF。全部机制与数值保留 note-summary / source-checked（笔记转述），不声称本轮
+    original-pdf checked。 待核验：需原 PDF 核对 EACD 精确公式、噪声注入与条件信号训练/测试路径及表格数值；不可由第三方摘要补足。
+  status: partial-primary-or-note-only
+  no_full_reread: true
+  audit_detail:
+    date: '2026-10-30'
+    status: unavailable
+    attempts:
+    - url: https://doi.org/10.1088/1361-6501/ae9e56
+      result: 'web tool: URL not accessible'
+    - url: https://iopscience.iop.org/article/10.1088/1361-6501/ae9e56/pdf
+      result: 'web tool: URL not accessible'
+    scope: 本轮完整读取既有 first-pass 笔记；未取得原 PDF。全部机制与数值保留 note-summary / source-checked（笔记转述），不声称本轮
+      original-pdf checked。
+    remaining: 需原 PDF 核对 EACD 精确公式、噪声注入与条件信号训练/测试路径及表格数值；不可由第三方摘要补足。
+analysis:
+  updated_at: '2026-10-30'
+  previous_methods:
+    text: 多类别正常模式复杂且重叠，统一重建模型可能学到近似恒等映射，把异常也重建好；固定浅深特征权重又难适配各样本纹理/语义需求。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: hcdg-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 多类别正常模式复杂且重叠，统一重建模型可能学到近似恒等映射，把异常也重建好；固定浅深特征权重又难适配各样本纹理/语义需求。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: hcdg-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 用噪声预测误差抑制异常轻易重建；对冻结骨干的浅/深特征按样本加权融合；向特征注入噪声并训练预测器估计噪声，以位置相关预测误差调节条件去噪，再以跨注意力建立多层
+      encoder–decoder 特征对应。最终组合重建误差与噪声预测误差产生异常分数。误差条件化抑制 trivial reconstruction 是作者解释，不能由最终指标倒推为独立证明。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: hcdg-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 用噪声预测误差抑制异常轻易重建
+    module_ids:
+    - module-hcdg-2026
+    motivation:
+      text: 多类别正常模式复杂且重叠，统一重建模型可能学到近似恒等映射，把异常也重建好；固定浅深特征权重又难适配各样本纹理/语义需求。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: hcdg-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 对冻结骨干的浅/深特征按样本加权融合；向特征注入噪声并训练预测器估计噪声，以位置相关预测误差调节条件去噪，再以跨注意力建立多层 encoder–decoder
+        特征对应。最终组合重建误差与噪声预测误差产生异常分数。误差条件化抑制 trivial reconstruction 是作者解释，不能由最终指标倒推为独立证明。
+        工程细节：浅到深分组融合 + sample-level gating 避免简单均值；特征引导解码器同时对齐纹理与语义层；默认 10k iterations、条件去噪
+        λ=0.5、3-layer LNP 来自各自参数/结构比较。笔记未记录可复写的 EACD 精确公式，不补造实现规则。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: hcdg-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 对冻结骨干的浅/深特征按样本加权融合；向特征注入噪声并训练预测器估计噪声，以位置相关预测误差调节条件去噪，再以跨注意力建立多层 encoder–decoder
+        特征对应。最终组合重建误差与噪声预测误差产生异常分数。误差条件化抑制 trivial reconstruction 是作者解释，不能由最终指标倒推为独立证明。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: hcdg-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 在所列原任务条件下，以该操作回应所述失败模式；不由总体指标推导独立因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: hcdg-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 原任务结果与对照
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: 笔记转述 MVTec AD Table 6：I-AUROC/I-AP/I-F1-max=99.7/99.8/99.4%，P-AUROC/P-AUPRO=98.4/95.0%。Table
+        12 从 baseline 89.3/87.2 到累计加入 AWC、LNP、EACD、FGD 的 99.7/95.0（I-AUROC/P-AUPRO），是累计配置而非全因子独立因果证明。Table
+        13 AWC P-AUPRO 95.0，对照 shallow-only 87.6、deep-only 90.3、简单平均 93.0。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: hcdg-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 作者承认冻结骨干、固定层和预设噪声参数可能限制大 domain shift；只覆盖两个 2D 工业 benchmark。不能把预测误差称为经过概率校准的不确定性，也不能据工业图像结果推断点云或天气性能。现笔记无逐类别反例数值；不把未记录误写为无失败案例。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: hcdg-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 只用正常样本训练统一模型；异常标注不作为训练监督，噪声注入提供 feature-space noise regression 目标，正常特征提供重建目标。评估限
+      MVTec AD 与 VisA；具体 checkpoint 选取、训练/推理条件去噪差异仍待原文细查。 依赖冻结 DINOv2、固定中间层和预设噪声参数。笔记转述
+      Table 8：总参数 152.1M，其中可训练 57.8M；58.3 GFLOPs、32.5 FPS、3980 MB。实验环境 2× RTX 4090
+      24 GB、PyTorch 2.0.0、CUDA 11.8；lightweight 只修饰噪声预测器，不意味着整个模型轻量。 作者承认冻结骨干、固定层和预设噪声参数可能限制大
+      domain shift；只覆盖两个 2D 工业 benchmark。不能把预测误差称为经过概率校准的不确定性，也不能据工业图像结果推断点云或天气性能。现笔记无逐类别反例数值；不把未记录误写为无失败案例。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: hcdg-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

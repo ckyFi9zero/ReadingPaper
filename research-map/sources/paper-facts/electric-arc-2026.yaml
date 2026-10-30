@@ -1,0 +1,218 @@
+version: 1
+paper: electric-arc-2026
+scope: out-of-field
+source_basis: existing-reading-note
+source_sha256: 8e2cbf554a73cf459ca43493c4ce5925e7df34e13cc533e27794b6aa3ac4eae4
+checked_at: '2026-10-30'
+tags:
+- 电弧噪声
+- 多帧
+- 建图
+task:
+  name: 输电线巡检瞬态电弧过滤建图
+  input: 连续LiDAR scans及预任务静态扫描
+  output: 过滤电弧伪障碍的持久全局占据地图，供导航使用
+  conditions: 不训练监督网络；需要在线跨帧空间关联及预任务持久结构；在三个自采输电线环境比较LIOR/ROR，不能泛化为天气任务结果。
+  evidence:
+  - paper: electric-arc-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: electric-arc-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: electric-arc-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 约0.26秒的短寿命电弧伪点被全局地图长期积累；单帧邻域不完整又易误删细导线。
+  evidence:
+  - paper: electric-arc-2026
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-native-electric-arc-2026
+  name: 先积累短时证据再提交持久地图
+  description: 先在有时间界限的k-d tree缓冲区聚集多帧点，按概率邻域规则保留并施加时间衰减，再将保留点批量插入持久OctoMap；短期证据与长期占据分开。
+  evidence:
+  - paper: electric-arc-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-electric-arc-2026
+  name: 先积累短时证据再提交持久地图
+  role: core-module
+  motivation: 约0.26秒的短寿命电弧伪点被全局地图长期积累；单帧邻域不完整又易误删细导线。
+  evidence:
+  - paper: electric-arc-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-native-electric-arc-2026
+novelty_assessment:
+  novelty_class: 3
+  confidence: provisional
+  reason: 原任务机制分类，不是首创性判定；保留领域外归类，不要求天气迁移。
+limitations:
+- text: 大半径可能漏细结构，小半径保留更多噪声；环境2/3较差；无模块消融；90次总测试与每环境10次的统计单位应回原文澄清，不自行补写次数。
+  evidence:
+  - paper: electric-arc-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+source_excerpt:
+  problem: 约0.26秒的短寿命电弧伪点被全局地图长期积累；单帧邻域不完整又易误删细导线。
+  method: 先在有时间界限的k-d tree缓冲区聚集多帧点，按概率邻域规则保留并施加时间衰减，再将保留点批量插入持久OctoMap；短期证据与长期占据分开。
+  limitations: 大半径可能漏细结构，小半径保留更多噪声；环境2/3较差；无模块消融；90次总测试与每环境10次的统计单位应回原文澄清，不自行补写次数。
+transfer_status: inferred
+source_review:
+  checked_at: '2026-10-30'
+  scope: 本轮通读既有初读；在线搜索未取得独立全文，方法细节和数值维持笔记转述。
+  status: partial-primary-or-note-only
+  no_full_reread: true
+analysis:
+  updated_at: '2026-10-30'
+  previous_methods:
+    text: 约0.26秒的短寿命电弧伪点被全局地图长期积累；单帧邻域不完整又易误删细导线。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: electric-arc-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 约0.26秒的短寿命电弧伪点被全局地图长期积累；单帧邻域不完整又易误删细导线。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: electric-arc-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 先积累短时证据再提交持久地图；先在有时间界限的k-d tree缓冲区聚集多帧点，按概率邻域规则保留并施加时间衰减，再将保留点批量插入持久OctoMap；短期证据与长期占据分开。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: electric-arc-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 先积累短时证据再提交持久地图
+    module_ids:
+    - module-electric-arc-2026
+    motivation:
+      text: 约0.26秒的短寿命电弧伪点被全局地图长期积累；单帧邻域不完整又易误删细导线。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: electric-arc-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 先在有时间界限的k-d tree缓冲区聚集多帧点，按概率邻域规则保留并施加时间衰减，再将保留点批量插入持久OctoMap；短期证据与长期占据分开。
+        工程细节：缓冲窗口限制k-d tree增长；概率保留而非一次硬删以照顾稀疏细结构；decay处理间歇返回；批量质心插入控制地图更新开销。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: electric-arc-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 先在有时间界限的k-d tree缓冲区聚集多帧点，按概率邻域规则保留并施加时间衰减，再将保留点批量插入持久OctoMap；短期证据与长期占据分开。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: electric-arc-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 在所列原任务条件下，以该操作回应所述失败模式；不由总体指标推导独立因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: electric-arc-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 原任务结果与对照
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: r=1.5m时三环境F1=95.00/79.01/83.15，Precision=97.27/65.31/74.00；22.40–25.49ms/帧，ROR479.94–524.54ms；不与GPU网络计时横比。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: electric-arc-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 大半径可能漏细结构，小半径保留更多噪声；环境2/3较差；无模块消融；90次总测试与每环境10次的统计单位应回原文澄清，不自行补写次数。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: electric-arc-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 不训练监督网络；需要在线跨帧空间关联及预任务持久结构；在三个自采输电线环境比较LIOR/ROR，不能泛化为天气任务结果。 Linux/i7-11800H/16GB；半径与缓冲时长影响细结构、噪声和搜索开销；跨帧位姿误差的具体容忍范围在笔记中未量化。
+      大半径可能漏细结构，小半径保留更多噪声；环境2/3较差；无模块消融；90次总测试与每环境10次的统计单位应回原文澄清，不自行补写次数。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: electric-arc-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

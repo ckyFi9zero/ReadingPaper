@@ -1,0 +1,307 @@
+version: 1
+paper: metric-semantic-mapping-2025
+scope: out-of-field
+source_basis: original-pdf-and-reading-note
+source_sha256: ad465bdc5d4395af9c6c7e45b5dcc5427cb1eefc224d52bb119822ec82e8e343
+checked_at: '2026-10-30'
+source_version: arXiv:2412.00291v1，作者期刊稿；编目年仍2025
+source_url: https://arxiv.org/pdf/2412.00291v1
+read_scope: 本轮定点核对Sec.IV-C/D非投影距离、GPU布局、Bayesian融合和可通行性，Sec.V-C耗时/覆盖取舍。与既有12页期刊笔记对应，不变更编目年份；未复现。另实际查看旧页内嵌TableIII：mIoU00为76.0，与当前原PDF一致；旧笔记正文70.4误录，本增量更正，同步仅更正旧页该句并保留勘误说明。
+source_review:
+  scope: 本轮定点核对Sec.IV-C/D非投影距离、GPU布局、Bayesian融合和可通行性，Sec.V-C耗时/覆盖取舍。与既有12页期刊笔记对应，不变更编目年份；未复现。另实际查看旧页内嵌TableIII：mIoU00为76.0，与当前原PDF一致；旧笔记正文70.4误录，本增量更正，同步仅更正旧页该句并保留勘误说明。
+  checked_at: '2026-10-30'
+  source_url: https://arxiv.org/pdf/2412.00291v1
+  source_version: arXiv:2412.00291v1，作者期刊稿；编目年仍2025
+  source_sha256: 7e16c8e6dcd27bf271305547d63b0df2cc875f36eb0506c15bfa520f353bd37d
+tags:
+- metric-semantic mapping
+- 自主导航
+- 户外环境
+- 可通行性
+task:
+  name: 户外metric-semantic建图与导航
+  input: LiDAR–视觉–IMU及标定/状态估计；像素语义概率
+  output: 全局metric-semantic mesh、可通行占据图与规划路径
+  conditions: LiDAR–视觉–IMU及标定/状态估计；像素语义概率；结果只对应各实验数据/监督与硬件设置。
+  evidence:
+  - paper: metric-semantic-mapping-2025
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: metric-semantic-mapping-2025
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 相似几何的道路、便道和草地有不同通行规则；户外大地图需要持续更新几何和语义。
+  evidence:
+  - paper: metric-semantic-mapping-2025
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: metric-semantic-mapping-2025
+    stage: first-pass
+    anchor: section-04
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-gpu-semantic-tsdf
+  name: GPU非投影TSDF与概率语义地图
+  description: 点云转depth/height/normal images；GPU hash voxel blocks更新非投影TSDF与梯度；逐体素递归Bayesian类别概率，marching
+    cubes输出mesh；联合几何属性与类别得到可通行图。
+  evidence:
+  - paper: metric-semantic-mapping-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-recursive-semantic-map
+  name: 把逐帧语义概率积累到同一地图体素
+  role: core-module
+  motivation: 单帧分割不稳定，但地图体素可跨视角关联并积累类别证据时。
+  evidence:
+  - paper: metric-semantic-mapping-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-geometric-semantic-traversability
+  name: 几何筛碰撞，语义筛通行规则
+  role: core-module
+  motivation: 道路、便道、草地几何相近，但机器人或车辆通行规则不同时。
+  evidence:
+  - paper: metric-semantic-mapping-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-semantic-navigation
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 按原生任务的方法设计登记；路线与模块为整理者分类，未独立检索首创归属，不以领域外分类降低原任务机制价值。
+limitations:
+- text: GPU显存限制城市规模，无loop correction会累积漂移；FoV造成未标注区域；滤掉无可靠法向/大倾角点降低覆盖。32.3ms是全局mesh更新，不能用模块<7ms冒充端到端导航延迟。
+  evidence:
+  - paper: metric-semantic-mapping-2025
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+analysis:
+  updated_at: '2026-10-30'
+  previous_methods:
+    text: 几何地图缺少任务语义，CPU语义建图难兼顾户外大尺度与更新速度。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: metric-semantic-mapping-2025
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 相似几何的道路、便道和草地有不同通行规则；户外大地图需要持续更新几何和语义。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: metric-semantic-mapping-2025
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 表面形状与通行规则需要不同证据；跨帧概率融合保持标签证据，而不能把同一类别当作机器人无条件可通行。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: metric-semantic-mapping-2025
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-recursive-semantic-map
+    name: 把逐帧语义概率积累到同一地图体素
+    module_ids:
+    - module-recursive-semantic-map
+    motivation:
+      text: 单帧分割不稳定，但地图体素可跨视角关联并积累类别证据时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: metric-semantic-mapping-2025
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 为体素维护类别离散分布；投影可见有效体素到分割概率图，以递归Bayesian更新并归一化，mesh顶点读取最大概率标签。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: metric-semantic-mapping-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 地图应保存语义证据而不是每帧覆盖硬标签；位置一致性先于标签累积。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: metric-semantic-mapping-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 单帧分割不稳定，但地图体素可跨视角关联并积累类别证据时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: metric-semantic-mapping-2025
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: contribution-geometric-semantic-traversability
+    name: 几何筛碰撞，语义筛通行规则
+    module_ids:
+    - module-geometric-semantic-traversability
+    motivation:
+      text: 道路、便道、草地几何相近，但机器人或车辆通行规则不同时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: metric-semantic-mapping-2025
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 从metric-semantic mesh计算高差、坡度、粗糙度，再结合类别与平台先验筛可通行区域，投影成2D occupancy供Hybrid
+        A*规划。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: metric-semantic-mapping-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 可通行性取决于机器人能力与任务规则，不是单一地形几何类别。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: metric-semantic-mapping-2025
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 道路、便道、草地几何相近，但机器人或车辆通行规则不同时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: metric-semantic-mapping-2025
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 原任务整体结果与条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-recursive-semantic-map
+    - contribution-geometric-semantic-traversability
+    result:
+      text: 原文TableIII及既有阅读页内嵌原表：SemanticKITTI00 mIoU76.0%、Acc92.9%（旧笔记正文70.4为转录错误，本增量更正），wo-Bay65.7%/88.7%；两条校园点到点导航约3m/s，非所有户外地形泛化证明。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: metric-semantic-mapping-2025
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 此为该文所测配置的整体/任务级证据；贡献关联用于导航，不是每个模块的独立因果证明。本轮定点核对范围见来源记录；未运行复现。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: metric-semantic-mapping-2025
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 组件、设计选择与未分离因素
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-recursive-semantic-map
+    - contribution-geometric-semantic-traversability
+    result:
+      text: Ours-Proj对照非投影距离；Ours-wo-Bay对照递归语义。TableIV 3080Ti normal/metric/semantic约0.2/1.0/1.0ms，全局mesh32.3ms；精度/覆盖/耗时需联合读。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: metric-semantic-mapping-2025
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 需要按具体训练、数据与累计配置解释；不将总体指标提升反推为候选覆盖、机制最优性或每个子模块的独立因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: metric-semantic-mapping-2025
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: GPU显存限制城市规模，无loop correction会累积漂移；FoV造成未标注区域；滤掉无可靠法向/大倾角点降低覆盖。32.3ms是全局mesh更新，不能用模块<7ms冒充端到端导航延迟。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: metric-semantic-mapping-2025
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

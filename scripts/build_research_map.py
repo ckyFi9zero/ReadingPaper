@@ -184,6 +184,11 @@ def validate(data, root, papers, rendered=None):
             evidence(fact[section].get('evidence'), f'{slug}/{section}')
         for key in ('name', 'input', 'output'):
             text(fact['task'].get(key), f'{slug}/task/{key}')
+        if 'conditions' in fact['task']:
+            text(fact['task']['conditions'], f'{slug}/task/conditions')
+        if 'source_review' in fact:
+            require(isinstance(fact['source_review'], dict), f'Invalid source review: {slug}')
+            text(fact['source_review'].get('scope'), f'{slug}/source review scope')
         text(fact['problem'].get('failure_case'), f'{slug}/problem')
         identifiers(fact.get('modules'), f'{slug}/modules', set())
         require(fact['modules'], f'Missing modules: {slug}')
@@ -237,7 +242,7 @@ def validate(data, root, papers, rendered=None):
         parent = n.get('parent')
         require(parent is None or parent in by_id, f'Unknown parent: {n["id"]}')
         sources(n)
-        require(all(facts[s]['scope'] == 'in-field' for s in n['source_papers']), f'Out-of-field paper in literature tree: {n["id"]}')
+        # Library relevance is independent of native-task map membership.
     # Traverse first to diagnose cycles even when they also violate layer order.
     for n in nodes:
         seen = set(); current = n
@@ -248,7 +253,7 @@ def validate(data, root, papers, rendered=None):
         parent = by_id.get(n.get('parent'))
         allowed = {'task': {None}, 'pipeline': {'task'}, 'module': {'pipeline'}, 'follow-up': {'module', 'pipeline'}}
         require((parent['kind'] if parent else None) in allowed[n['kind']], f'Invalid parent layer: {n["id"]}')
-    expected = {s for s,p in catalogue.items() if p.get('category') == 'in-field'}
+    expected = {s for s,p in catalogue.items() if p.get('category') in {'in-field', 'out-of-field'}}
     represented = {s for n in nodes for s in n['source_papers']}
     pending_document = data.get('pending', {'version': 1, 'papers': []})
     require(isinstance(pending_document, dict) and pending_document.get('version') == 1,
@@ -261,7 +266,7 @@ def validate(data, root, papers, rendered=None):
         slug = item.get('paper')
         require(isinstance(slug, str) and slug in catalogue, f'Unknown pending paper: {slug}')
         require(slug not in pending, f'Duplicate pending paper: {slug}')
-        require(slug in expected, f'Pending paper must be in-field: {slug}')
+        require(slug in expected, f'Pending paper must have a field classification: {slug}')
         require(slug not in BASELINE_MAPPED, f'Previously mapped paper cannot be pending: {slug}')
         require(slug not in represented and slug not in facts,
                 f'Mapped paper cannot also be pending: {slug}')
@@ -279,7 +284,7 @@ def validate(data, root, papers, rendered=None):
     require(BASELINE_MAPPED <= mapped,
             f'Missing previously mapped coverage: {sorted(BASELINE_MAPPED - mapped)}')
     require(expected <= mapped | pending,
-            f'Missing in-field coverage: {sorted(expected - (mapped | pending))}')
+            f'Missing classified coverage: {sorted(expected - (mapped | pending))}')
 
     challenges = data['challenges'].get('challenges')
     identifiers(challenges, 'challenges', all_ids)
@@ -322,7 +327,12 @@ def validate(data, root, papers, rendered=None):
     for slug,f in facts.items():
         strings(f.get('challenges'), slug)
         require(set(f['challenges']) <= challenge_ids, f'Unknown fact challenge: {slug}')
-        require(f['pipeline'].get('id') in by_id or f['scope'] == 'out-of-field', f'Unknown fact pipeline: {slug}')
+        require(f['pipeline'].get('id') in by_id, f'Unknown fact pipeline: {slug}')
+        pipeline = by_id[f['pipeline']['id']]
+        members = {s for node in nodes if node['id'] == pipeline['id']
+                   or node.get('parent') == pipeline['id'] for s in node['source_papers']}
+        require(pipeline['kind'] == 'pipeline' and slug in members,
+                f'Fact pipeline must represent source: {slug}')
         require(f['scope'] == 'in-field' or slug in insight_sources, f'Unused external fact: {slug}')
 
     candidates = data['gate'].get('candidates')
@@ -383,11 +393,11 @@ def _source_detail(slug, facts, catalogue, values=None):
         'year': catalogue[slug].get('year'),
         'href': f'papers/{slug}/index.html',
         'analysis_href': f'research-map.html#paper-{slug}',
-        'scope': '领域内' if fact['scope'] == 'in-field' else '领域外来源 · 天气迁移未验证',
+        'scope': '领域内' if fact['scope'] == 'in-field' else '领域外来源 · 原任务证据',
         'chain': ([{'label': '失败现象', 'text': fact['problem']['failure_case'], 'basis_label': '笔记转述',
                     'evidence': _evidence_detail(fact['problem']['evidence'], catalogue)}] +
                   [dict(_claim_detail(analysis[key], catalogue), label=label) for key, label in
-                   [('technical_reason', '技术原因'), ('insight', '通用 insight')]]) if analysis else [],
+                   [('technical_reason', '技术原因'), ('insight', '技术 insight')]]) if analysis else [],
         'evidence': evidence,
     }
 
@@ -435,6 +445,7 @@ def _filter_fields(source_papers, facts, catalogue, challenge_ids=()):
     weather = [word for word in ['雨', '雪', '雾', '尘'] if word in tags]
     routes = sorted({facts[slug].get('pipeline', {}).get('id', '') for slug in source_papers if facts[slug].get('pipeline')})
     return {
+        'scope': sorted({facts[slug]['scope'] for slug in source_papers}),
         'weather': weather,
         'route': [route for route in routes if route],
         'challenge': sorted(set(challenge_ids)),
@@ -549,7 +560,7 @@ def render_tree_graph(graph, graph_type):
                   ''.join(branch(item['to'], item, f'{path}{ident}-') for item in children[ident]) + '</ul>'
                   if children[ident] else '')
         return f'''<li class="map-tree-item{' map-edge' if edge else ''}"{edge_attrs}>
-<div class="map-node-row"><button type="button" class="map-tree-node node-{e(kind)} {'node-confirmed' if confidence == 'confirmed' else 'node-provisional'}" data-map-item data-node-id="{e(ident)}" data-node-kind="{e(kind)}" data-source-count="{detail['source_count']}" data-search="{e(search, quote=True)}" data-weather="{e('|'.join(filters.get('weather', [])))}" data-route="{e('|'.join(filters.get('route', [])))}" data-challenge="{e('|'.join(filters.get('challenge', [])))}" aria-expanded="false" aria-controls="map-inspector" aria-label="{e(detail['name'])}" title="{e(detail['name'])}"><span class="map-node-name">{e(short_label)}</span><span class="map-node-full">{e(detail['name'])}</span><span class="map-node-meta">{e(meta)}</span></button>{toggle}</div>{nested}</li>'''
+<div class="map-node-row"><button type="button" class="map-tree-node node-{e(kind)} {'node-confirmed' if confidence == 'confirmed' else 'node-provisional'}" data-map-item data-node-id="{e(ident)}" data-node-kind="{e(kind)}" data-source-count="{detail['source_count']}" data-search="{e(search, quote=True)}" data-scope="{e('|'.join(filters.get('scope', [])))}" data-weather="{e('|'.join(filters.get('weather', [])))}" data-route="{e('|'.join(filters.get('route', [])))}" data-challenge="{e('|'.join(filters.get('challenge', [])))}" aria-expanded="false" aria-controls="map-inspector" aria-label="{e(detail['name'])}" title="{e(detail['name'])}"><span class="map-node-name">{e(short_label)}</span><span class="map-node-full">{e(detail['name'])}</span><span class="map-node-meta">{e(meta)}</span></button>{toggle}</div>{nested}</li>'''
 
     return '<div class="map-stage"><svg class="map-connectors" aria-hidden="true"></svg><ul class="map-flow-tree">' + ''.join(branch(ident) for ident in by_id if ident not in targets) + '</ul></div>'
 
@@ -609,6 +620,8 @@ def render_paper_analysis(slug, fact, catalogue):
     intro += render_claim(analysis['technical_reason'], catalogue, '技术原因')
     intro += render_claim(analysis['insight'], catalogue, '可复用的 insight')
     method = f'<div class="analysis-io"><p><strong>输入：</strong>{e(task["input"])}</p><p><strong>输出：</strong>{e(task["output"])}</p></div>'
+    if task.get('conditions'):
+        method += f'<p><strong>监督与评测条件：</strong>{e(task["conditions"])}</p>{evidence_links(task["evidence"], catalogue)}'
     method += '<p class="analysis-caption">以下拆解本轮整理的主要贡献，不代表已经穷尽论文所有模块。</p>'
     for item in analysis['contributions']:
         method += f'<article class="analysis-contribution" id="analysis-{slug}-{item["id"]}"><h4>{e(item["name"])}</h4>'
@@ -649,21 +662,21 @@ def render(root, papers, shell, rendered=None):
         weather = [w for w in ['雨','雪','雾','尘'] if w in tags]
         cs = {cid} if cid else {c for f in fs for c in f['challenges']}
         terms = words+' '+tags+' '+' '.join(catalogue[s]['name']+' '+analysis_search(facts[s]) for s in sources)
-        return f'data-map-item data-weather="{e("|".join(weather))}" data-route="{e("|".join(sorted({f["pipeline"]["id"] for f in fs})))}" data-challenge="{e("|".join(sorted(cs)))}" data-search="{e(terms.lower(), quote=True)}"'
+        return f'data-map-item data-scope="{e("|".join(sorted({f["scope"] for f in fs})))}" data-weather="{e("|".join(weather))}" data-route="{e("|".join(sorted({f["pipeline"]["id"] for f in fs})))}" data-challenge="{e("|".join(sorted(cs)))}" data-search="{e(terms.lower(), quote=True)}"'
     def refs(n):
         links = ' · '.join(f'<a href="papers/{s}/index.html">{e(catalogue[s]["name"])} ({catalogue[s]["year"]})</a>' for s in sorted(n['source_papers'], key=lambda s:(catalogue[s]['year'],s)))
         return f'<p class="map-papers">{links}</p>'+evidence_links(n['evidence'], catalogue)
     def filters():
         def select(id,label,options):
             return f'<label>{label}<select id="{id}"><option value="">全部</option>'+''.join(f'<option value="{e(v,quote=True)}">{e(l)}</option>' for v,l in options)+'</select></label>'
-        return '<div class="map-filters"><label>关键词<input id="map-search" type="search" placeholder="论文、模块或技术挑战"></label>'+select('map-weather','天气',[(w,w) for w in ['雨','雪','雾','尘']])+select('map-route','方法路线',list(routes.items()))+select('map-challenge','技术挑战',[(c['id'],c['name']) for c in challenges])+'<button id="map-reset" type="button">清除筛选</button></div><p id="map-results" role="status" aria-live="polite"></p><p id="map-empty" hidden>没有匹配的节点，请调整筛选条件。</p>'
+        return '<div class="map-filters"><label>关键词<input id="map-search" type="search" placeholder="论文、模块或技术挑战"></label>'+select('map-scope','来源范围',[('in-field','领域内'),('out-of-field','领域外')])+select('map-weather','天气',[(w,w) for w in ['雨','雪','雾','尘']])+select('map-route','方法路线',list(routes.items()))+select('map-challenge','技术挑战',[(c['id'],c['name']) for c in challenges])+'<button id="map-reset" type="button">清除筛选</button></div><p id="map-results" role="status" aria-live="polite"></p><p id="map-empty" hidden>没有匹配的节点，请调整筛选条件。</p>'
     def literature(n):
         kids = [k for k in nodes if k.get('parent') == n['id']]
         sources = list(dict.fromkeys(n['source_papers'] + [s for k in kids for s in k['source_papers']]))
         content = refs(n)
         return f'<details class="map-branch" id="{n["id"]}" {attrs(sources,words=n["name"]+" "+n.get("description",""))} open><summary><strong>{e(n["name"])}</strong> <span class="map-badge">{n["novelty_class"]} 类层级 · {LABELS[n["confidence"]]}</span></summary><p>{e(n.get("description",""))}</p>{content}<div class="map-children">'+''.join(literature(k) for k in kids)+'</div></details>'
-    litbody='<p class="notice">四类 novelty 表示贡献层级候选；当前仅核对已有阅读笔记，未完成首创和引文图检索。方法路线分组并不表示其中每篇论文都是 seminal work。</p><div class="map-tree">'+''.join(literature(n) for n in nodes if not n.get('parent'))+'</div>'
-    challengebody='<p class="notice">challenge 与 insight 是跨论文归纳。领域外技术提供参考，迁移到恶劣天气去噪的有效性尚未验证。</p>'
+    litbody='<p class="notice">四类 novelty 表示贡献层级候选；来源核验范围按单篇记录，未完成首创和引文图检索。方法路线分组并不表示其中每篇论文都是 seminal work。领域内外论文均按各自原任务组织；领域分类不因纳入本树而改变。</p><div class="map-tree">'+''.join(literature(n) for n in nodes if not n.get('parent'))+'</div>'
+    challengebody='<p class="notice">challenge 与 insight 是跨论文归纳。领域外论文按原任务的挑战与机制整理为使用卡，不以天气迁移为收录前提；原任务证据不等于跨域迁移有效性。</p>'
     for c in challenges:
         sources=list(dict.fromkeys(s for ins in c['insights'] for s in ins['source_papers']))
         challengebody+=f'<section class="map-challenge" id="{c["id"]}" {attrs(sources,c["id"],c["name"])}><h2>{e(c["name"])}</h2><p>{e(c["description"])} · {LABELS[c["status"]]}</p>{render_claim(c["why_hard"], catalogue, "为什么难")}<p>可能出现的现象：{e("；".join(c["observable_failures"]))}</p><details><summary>挑战的关联证据</summary>{evidence_links(c["evidence"],catalogue)}</details><div class="map-children">'
@@ -676,19 +689,21 @@ def render(root, papers, shell, rendered=None):
     for s,f in sorted(facts.items(), key=lambda pair: (pair[0] != 'dror-2018', pair[1]['scope'] != 'in-field', pair[0])):
         scope='领域内' if f['scope']=='in-field' else '领域外技术来源'
         factbody+=f'<details class="map-fact" id="paper-{s}" {"open" if s == "dror-2018" else ""} {attrs([s],words=f["task"]["name"]+" "+f["problem"]["failure_case"])}><summary>{e(catalogue[s]["name"])} · {scope} · 贡献候选 {f["novelty_assessment"]["novelty_class"]} 类（暂定）</summary><p><a href="papers/{s}/index.html">打开论文阅读页</a> · <a href="papers/{s}/first-pass.html">打开初读</a></p><p class="analysis-caption">分类依据：{e(f["novelty_assessment"]["reason"])}</p>{render_paper_analysis(s,f,catalogue)}'
+        if f.get('source_review'):
+            factbody += f'<p class="notice"><strong>本轮材料核验范围：</strong>{e(f["source_review"]["scope"])}</p>'
         positions = [n for n in nodes if s in n['source_papers']]
-        factbody += '<p>方法树位置：' + (' · '.join(f'<a href="literature-tree.html#{n["id"]}">{e(n["name"])}</a>' for n in positions) if positions else '领域外技术来源，不并入领域内方法树') + '</p>'
+        factbody += '<p>方法树位置：' + (' · '.join(f'<a href="literature-tree.html#{n["id"]}">{e(n["name"])}</a>' for n in positions) if positions else '尚未登记方法树位置') + '</p>'
         factbody+='<p>关联挑战：'+' · '.join(f'<a href="challenge-insight-tree.html#{c}">{e(next(x["name"] for x in challenges if x["id"]==c))}</a>' for c in f['challenges'])+'</p></details>'
     gates='<section id="novelty-gate"><h2>候选课题与四种情况闸门</h2><p>情况 1：同任务已有好方案；情况 2：技术内核已在多个领域解决；情况 3：仅少数其他领域解决；情况 4：相关领域均缺少好方案。它们与上面的四类贡献标签不同。</p>'
     for c in data['gate']['candidates']:
         g=c['gate']; case=g['novelty_gate_case']; verdict={'needs-more-retrieval':'需更多检索','change-topic':'换题','go':'可进入方案评估'}.get(c['verdict'],c['verdict'])
         gates+=f'<article class="map-insight" id="{c["id"]}"><h3>{e(c["title"])}</h3><p>示例候选 · 尚未选为研究主线</p><p>输入 → 输出：{e(c["setting"]["input"])} → {e(c["setting"]["output"])}</p><p>待验证 failure case：{e(c["failure_case"])}</p><p>技术挑战假设：{e(c["core_technical_challenge"])}</p><p>四种情况判定：{LABELS.get(case, str(case))} · {e(verdict)}</p>{evidence_links(c["evidence"],catalogue)}<p>问题重要性、技术就绪度及候选 pipeline：尚未评估</p><ul>'+''.join(f'<li>{e(q)}</li>' for q in c.get('retrieval_required',[]))+'</ul></article>'
     gates+='</section>'
-    intro=f'<p class="notice">{sum(f["scope"]=="in-field" for f in facts.values())} 篇领域内论文 · {sum(f["scope"]=="out-of-field" for f in facts.values())} 篇领域外技术来源 · {len(challenges)} 类技术挑战。单篇解析为两棵跨论文研究树提供证据。</p><div class="stage-grid"><a class="stage-card" href="literature-tree.html"><h2>Literature tree</h2><p>任务 → 方法路线 → 模块 / 后续工作</p></a><a class="stage-card" href="challenge-insight-tree.html"><h2>Challenge–insight tree</h2><p>技术挑战 → insight → 论文来源</p></a><a class="stage-card" href="#paper-facts"><h2>单篇论文解析树</h2><p>失败原因 → insight → 实现 → 实验与边界</p></a><a class="stage-card" href="#novelty-gate"><h2>Novelty gate</h2><p>具体 failure case 的四种情况判定</p></a></div><p>先看示例：<a href="#paper-dror-2018">DROR</a> · <a href="#paper-lisnownet-2022">LiSnowNet</a> · <a href="#paper-4denoisenet-2023">4DenoiseNet</a> · <a href="#paper-pointnet-plus-plus-2017">PointNet++</a></p>'
+    intro=f'<p class="notice">{sum(f["scope"]=="in-field" for f in facts.values())} 篇领域内论文 · {sum(f["scope"]=="out-of-field" for f in facts.values())} 篇领域外技术来源 · {len(challenges)} 类技术挑战。单篇解析为两棵跨论文研究树提供证据。领域内外仅表示与当前研究方向的相关性；任务树按各论文原任务组织，不统一为天气去噪。</p><div class="stage-grid"><a class="stage-card" href="literature-tree.html"><h2>Literature tree</h2><p>任务 → 方法路线 → 模块 / 后续工作</p></a><a class="stage-card" href="challenge-insight-tree.html"><h2>Challenge–insight tree</h2><p>技术挑战 → insight → 论文来源</p></a><a class="stage-card" href="#paper-facts"><h2>单篇论文解析树</h2><p>失败原因 → insight → 实现 → 实验与边界</p></a><a class="stage-card" href="#novelty-gate"><h2>Novelty gate</h2><p>具体 failure case 的四种情况判定</p></a></div><p>先看示例：<a href="#paper-dror-2018">DROR</a> · <a href="#paper-lisnownet-2022">LiSnowNet</a> · <a href="#paper-4denoisenet-2023">4DenoiseNet</a> · <a href="#paper-pointnet-plus-plus-2017">PointNet++</a></p>'
     pending_items = data.get('pending', {}).get('papers', [])
     pending_notice = ''
     if pending_items:
-        pending_notice = (f'<aside class="notice map-pending" id="map-pending"><h2>地图待整理 · {len(pending_items)} 篇领域内论文</h2>'
+        pending_notice = (f'<aside class="notice map-pending" id="map-pending"><h2>地图待整理 · {len(pending_items)} 篇论文</h2>'
                           '<p>这些论文已在论文库分类，但尚未建立跨论文事实层和两棵树的关联；不计入本地图的已整理来源数量。</p><ul>')
         for item in pending_items:
             slug = item['paper']

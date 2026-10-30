@@ -12,9 +12,10 @@ tags:
 - MSG
 - MRG
 task:
-  name: 密度变化点集识别
-  input: 本任务输入，见关联初读
-  output: 本任务输出，见关联初读
+  name: 点集分类与逐点分割
+  input: 度量空间中的点坐标、可选逐点特征和距离度量；不同区域允许非均匀采样密度。 训练/测试：分类或逐点语义标签监督；random input dropout
+    在训练阶段覆盖稀疏度，测试比较原数据与虚拟非均匀扫描，二者仍有域差。
+  output: 整体点集类别，或原始输入各点的语义/部件标签。
   evidence:
   - paper: pointnet-plus-plus-2017
     stage: first-pass
@@ -22,8 +23,20 @@ task:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+  - paper: pointnet-plus-plus-2017
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: pointnet-plus-plus-2017
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
 problem:
-  failure_case: 全局点集聚合缺乏多尺度局部上下文
+  failure_case: 单次全局聚合缺少局部关系；小邻域在稀疏区域点不足，大邻域又有细节与计算代价取舍。
   evidence:
   - paper: pointnet-plus-plus-2017
     stage: first-pass
@@ -32,8 +45,8 @@ problem:
     basis: existing-note
     original_pdf_review_status: source-checked
 pipeline:
-  id: pipeline-external
-  name: 领域外技术来源
+  id: pipeline-pointset-hierarchical
+  name: 度量邻域—层次局部集合学习
   description: 以度量邻域递归应用PointNet学习局部层次特征，使用MSG/MRG及随机输入丢点训练应对点密度变化。
   evidence:
   - paper: pointnet-plus-plus-2017
@@ -55,8 +68,7 @@ modules:
     basis: existing-note
     original_pdf_review_status: source-checked
 challenges:
-- challenge-density
-- challenge-range
+- challenge-local-shape-density
 novelty_assessment:
   novelty_class: 2
   confidence: provisional
@@ -70,31 +82,42 @@ limitations:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+- text: ScanNet 虚拟非均匀扫描与均匀点随机 dropout 训练存在域差，密度偏移仍使性能下降；MSG 重复大邻域编码成本高，MRG 是折中而非无成本替代。
+  evidence:
+  - paper: pointnet-plus-plus-2017
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
 evidence_status: source-checked
 source_excerpt:
-  problem: 二、Research Problem 具体问题 作者表述 如何从度量空间中的点集学习语义函数，既捕获局部结构，又处理不同区域的非均匀采样密度。（Sec. 1–2） 发生场景 作者表述
-    三维扫描器、配备扫描设备的自动驾驶车辆等得到的几何点集；密度变化可能来自透视、径向变化和运动。任务输出可为整个点集的类别，也可为每个点的标签。（Sec. 1，第1段；Sec. 2） 为何重要 作者表述
-    局部结构对识别细粒度模式和理解复杂场景很重要；从小感受野到大感受野的层次抽象，是作者从 CNN 中借鉴的原则。（Sec. 1，第2–3段） 直接后果 作者表述 密集数据上学习的局部特征可能不能泛化到稀疏区域；只针对稀疏点云训练又可能认不出细粒度局部结构。（Sec.
-    3.3，PDF p.4）
-  method: 五、Method：只看宏观逻辑 PointNet++ Fig. 2，正文PDF p.3。原图及图注裁剪：层次set abstraction，以及分类和分割输出。图中展示单尺度分组。 点击可按原尺寸查看。
-    下面是 概括示意 ，依据 Sec. 3.2–3.4 与 Figs. 2–3。 Input：坐标 + 可选特征 + 距离度量 。输入 N 个点及其特征，用距离定义局部邻域；一般三维任务使用欧氏空间。（Sec.
-    2、3.2） Sampling 。使用 farthest point sampling（FPS）选局部区域中心，作者认为同数量中心下比随机采样更好覆盖输入点集。（Sec. 3.2，Sampling
-    layer） Grouping → 局部 PointNet 。围绕中心用 ball query 分组，把坐标换成相对中心的局部坐标，用 mini-PointNet 把每个邻域编码为固定长度特征；其目的是表示局部点间关系。（Sec.
-    3.2） 递归 set abstraction 。重复采样、分组和局部编码，产生更少的代表点与更大上下文的特征，直至形成整体表示。（Sec. 3.2） 密度适应的两个可选设计 。MSG 在同一中心使用多个尺度，各尺度独立提特征后拼接；MRG
-    拼接较低层子区域汇聚的特征和直接由当前区域原始点计算的特征，以降低大邻域重复计算。作者用 random input dropout 让训练覆盖多种稀疏度。（Sec. 3.3） Output 。分类用全局特征预测类别；分割用距离加权插值、跨层
-    skip links 和逐点更新层，把下采样后的特征逐级传播回原始点集。（Sec. 3.4；Fig. 2） PointNet++ Fig. 3，正文PDF p.4。原图及图注裁剪：(a) MSG；(b)
-    MRG。 点击可按原尺寸查看。 概括 与本文所述 PointNet 的核心差别在于： 把一次整体聚合改成度量驱动的局部分组与递归聚合，并进一步组合多个尺度的信息 。MSG 和 MRG 是替代设计，不是每个网络必须依次通过的两个步骤。（Sec.
-    3.1–3.3）
-  limitations: 八、Limitations 作者明确承认的问题 作者表述 MSG 在每个中心的大尺度邻域重复运行局部 PointNet，尤其底层中心多时，计算代价高；MRG 是为减少这部分开销提出的折中。（Sec.
-    3.3，PDF p.5） 作者表述 补充材料明确指出 MSG 约为 SSG 的2倍计算时间；结论仍提出应进一步加速 MSG / MRG。（补充 C.4；正文 Sec. 6） 作者表述 均匀点加随机
-    dropout 的训练数据，与虚拟非均匀扫描之间仍存在 domain gap。（Sec. 4.2，PDF p.7） 实验直接可见、作者未明确称为 limitation 的现象 直接观察 MSG+DP
-    在 ScanNet 密度偏移时仍从84.5%降到80.4%，没有完全消除性能下降；MRG+DP也从83.4%降到76.2%。（Fig. 5） 直接观察 补充 Table 4 的前向时间为：PointNet
-    25.3 ms、SSG 82.4 ms、MSG 163.2 ms、MRG 87.0 ms；这是 batch size 8 的前向测量设置 ，不改写成单物体延迟，也不能据此称本文速度全面优于 PointNet。（补充
-    C.4，p.4） 直接观察 MNIST 0.51%的错误率高于 NiN 的0.47%；ShapeNet part 的85.1%总体均值也不表示各类别都最好。（正文 Table 1；补充 Table
+  problem: 二、Research Problem 具体问题 作者表述 如何从度量空间中的点集学习语义函数，既捕获局部结构，又处理不同区域的非均匀采样密度。（Sec.
+    1–2） 发生场景 作者表述 三维扫描器、配备扫描设备的自动驾驶车辆等得到的几何点集；密度变化可能来自透视、径向变化和运动。任务输出可为整个点集的类别，也可为每个点的标签。（Sec.
+    1，第1段；Sec. 2） 为何重要 作者表述 局部结构对识别细粒度模式和理解复杂场景很重要；从小感受野到大感受野的层次抽象，是作者从 CNN 中借鉴的原则。（Sec.
+    1，第2–3段） 直接后果 作者表述 密集数据上学习的局部特征可能不能泛化到稀疏区域；只针对稀疏点云训练又可能认不出细粒度局部结构。（Sec. 3.3，PDF
+    p.4）
+  method: 五、Method：只看宏观逻辑 PointNet++ Fig. 2，正文PDF p.3。原图及图注裁剪：层次set abstraction，以及分类和分割输出。图中展示单尺度分组。
+    点击可按原尺寸查看。 下面是 概括示意 ，依据 Sec. 3.2–3.4 与 Figs. 2–3。 Input：坐标 + 可选特征 + 距离度量 。输入 N
+    个点及其特征，用距离定义局部邻域；一般三维任务使用欧氏空间。（Sec. 2、3.2） Sampling 。使用 farthest point sampling（FPS）选局部区域中心，作者认为同数量中心下比随机采样更好覆盖输入点集。（Sec.
+    3.2，Sampling layer） Grouping → 局部 PointNet 。围绕中心用 ball query 分组，把坐标换成相对中心的局部坐标，用
+    mini-PointNet 把每个邻域编码为固定长度特征；其目的是表示局部点间关系。（Sec. 3.2） 递归 set abstraction 。重复采样、分组和局部编码，产生更少的代表点与更大上下文的特征，直至形成整体表示。（Sec.
+    3.2） 密度适应的两个可选设计 。MSG 在同一中心使用多个尺度，各尺度独立提特征后拼接；MRG 拼接较低层子区域汇聚的特征和直接由当前区域原始点计算的特征，以降低大邻域重复计算。作者用
+    random input dropout 让训练覆盖多种稀疏度。（Sec. 3.3） Output 。分类用全局特征预测类别；分割用距离加权插值、跨层 skip
+    links 和逐点更新层，把下采样后的特征逐级传播回原始点集。（Sec. 3.4；Fig. 2） PointNet++ Fig. 3，正文PDF p.4。原图及图注裁剪：(a)
+    MSG；(b) MRG。 点击可按原尺寸查看。 概括 与本文所述 PointNet 的核心差别在于： 把一次整体聚合改成度量驱动的局部分组与递归聚合，并进一步组合多个尺度的信息
+    。MSG 和 MRG 是替代设计，不是每个网络必须依次通过的两个步骤。（Sec. 3.1–3.3）
+  limitations: 八、Limitations 作者明确承认的问题 作者表述 MSG 在每个中心的大尺度邻域重复运行局部 PointNet，尤其底层中心多时，计算代价高；MRG
+    是为减少这部分开销提出的折中。（Sec. 3.3，PDF p.5） 作者表述 补充材料明确指出 MSG 约为 SSG 的2倍计算时间；结论仍提出应进一步加速
+    MSG / MRG。（补充 C.4；正文 Sec. 6） 作者表述 均匀点加随机 dropout 的训练数据，与虚拟非均匀扫描之间仍存在 domain gap。（Sec.
+    4.2，PDF p.7） 实验直接可见、作者未明确称为 limitation 的现象 直接观察 MSG+DP 在 ScanNet 密度偏移时仍从84.5%降到80.4%，没有完全消除性能下降；MRG+DP也从83.4%降到76.2%。（Fig.
+    5） 直接观察 补充 Table 4 的前向时间为：PointNet 25.3 ms、SSG 82.4 ms、MSG 163.2 ms、MRG 87.0 ms；这是
+    batch size 8 的前向测量设置 ，不改写成单物体延迟，也不能据此称本文速度全面优于 PointNet。（补充 C.4，p.4） 直接观察 MNIST
+    0.51%的错误率高于 NiN 的0.47%；ShapeNet part 的85.1%总体均值也不表示各类别都最好。（正文 Table 1；补充 Table
     1） PointNet++ 补充Table 4，补充PDF p.4。原表及表注裁剪：模型大小与batch size 8设置下的前向时间。 点击可按原尺寸查看。
 transfer_status: inferred
 analysis:
-  updated_at: '2026-10-15'
+  updated_at: '2026-10-30'
   previous_methods:
     text: PointNet 直接聚合整体点集，没有显式递归建模多尺度局部关系。
     basis: note-summary
@@ -185,7 +208,8 @@ analysis:
     contribution_ids:
     - contribution-main
     result:
-      text: ModelNet40 同为 1024 点 XYZ 时，PointNet 89.2%、层次模型 90.7%；5000 点加法向量的 91.9% 不能全部归于结构（Table 2）。
+      text: ModelNet40 同为 1024 点 XYZ 时，PointNet 89.2%、层次模型 90.7%；5000 点加法向量的 91.9%
+        不能全部归于结构（Table 2）。
       basis: note-summary
       status: source-checked
       evidence:
@@ -213,7 +237,8 @@ analysis:
     contribution_ids:
     - contribution-main
     result:
-      text: 比较 SSG、MSG、MRG 与输入 dropout；MSG+DP 从 1024 降到 256 点时准确率下降不足 1 个百分点，ScanNet 密度偏移仍有下降（Figs. 4–5）。
+      text: 比较 SSG、MSG、MRG 与输入 dropout；MSG+DP 从 1024 降到 256 点时准确率下降不足 1 个百分点，ScanNet
+        密度偏移仍有下降（Figs. 4–5）。
       basis: note-summary
       status: source-checked
       evidence:
@@ -235,7 +260,7 @@ analysis:
         basis: existing-note
         original_pdf_review_status: source-checked
   boundary:
-    text: MSG 计算量较大，密度偏移仍有性能下降
+    text: ScanNet 虚拟非均匀扫描与均匀点随机 dropout 训练存在域差，密度偏移仍使性能下降；MSG 重复大邻域编码成本高，MRG 是折中而非无成本替代。
     basis: note-summary
     status: source-checked
     evidence:
@@ -245,3 +270,9 @@ analysis:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+source_review:
+  checked_at: '2026-10-30'
+  scope: '本轮材料：NeurIPS 2017 proceedings PDF, 10 pages；实际核对范围：PDF pp. 2–3: Sec. 2 and
+    opening Sec. 3.1–3.2; neighborhood-scale discussion on p. 2。未核对范围：Not a full PDF
+    or new figure/table audit; existing numerical findings and MSG/MRG tradeoffs retain
+    note-summary. 本轮局部核对不升级历史整篇核验状态；机制、数值与边界仍按各处笔记转述/阅读者归纳标注。'

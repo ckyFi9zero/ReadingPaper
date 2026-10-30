@@ -7,6 +7,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {pathToFileURL} = require('node:url');
 const endpoint = process.env.FIREFOX_BIDI_URL;
+const expectedFactCount = fs.readdirSync(path.resolve(__dirname, '../research-map/sources/paper-facts')).filter(name => name.endsWith('.yaml')).length;
 let ws, context, sequence = 0;
 const pending = new Map();
 function command(method, params = {}) {
@@ -70,7 +71,7 @@ browserTest('nested contribution hash opens all enclosing details', async () => 
 browserTest('search indexes insight text and empty search restores all papers', async () => {
   await open('research-map.html');
   assert.equal(await evaluate(`(()=>{const q=document.getElementById('map-search');q.value='排列不变性';q.dispatchEvent(new Event('input'));return !document.getElementById('paper-pointnet-2017').hidden})()`), true);
-  assert.equal(await evaluate(`(()=>{const q=document.getElementById('map-search');q.value='';q.dispatchEvent(new Event('input'));return document.querySelectorAll('.map-fact:not([hidden])').length})()`), 26);
+  assert.equal(await evaluate(`(()=>{const q=document.getElementById('map-search');q.value='';q.dispatchEvent(new Event('input'));return document.querySelectorAll('.map-fact:not([hidden])').length})()`), expectedFactCount);
 });
 
 browserTest('graph hash restores selection, evidence and analysis navigation', async () => {
@@ -153,4 +154,19 @@ browserTest('weapon search finds the actual operation and opens complete evidenc
   assert.equal(await evaluate(`document.querySelectorAll('#map-inspector .weapon-playbook .analysis-claim').length`), 8);
   assert.equal(await evaluate(`document.querySelector('#map-inspector .weapon-locations').textContent.includes('Table IV')`), true);
   assert.equal(await evaluate(`document.querySelector('#map-inspector .weapon-playbook').textContent.includes('尚未核验')`), true);
+});
+
+
+browserTest('scope filter separates native sources and preserves mixed cards and ancestors', async () => {
+  await open('research-map.html');
+  assert.equal(await evaluate(`(()=>{const s=document.getElementById('map-scope');s.value='out-of-field';s.dispatchEvent(new Event('change'));return document.querySelectorAll('.map-fact:not([hidden])').length})()`), 21);
+  assert.equal(await evaluate(`document.getElementById('paper-dror-2018').hidden`), true);
+  await open('challenge-insight-tree.html');
+  await evaluate(`(()=>{const s=document.getElementById('map-scope');s.value='out-of-field';s.dispatchEvent(new Event('change'));return true})()`);
+  assert.equal(await evaluate(`document.getElementById('insight-temporal').hidden`), false);
+  assert.equal(await evaluate(`document.getElementById('insight-adaptive').hidden`), true);
+  assert.equal(await evaluate(`document.querySelector('[data-node-id="challenge-set-representation"]').hidden`), false);
+  await evaluate(`(()=>{document.getElementById('map-reset').click();return true})()`);
+  assert.equal(await evaluate(`document.getElementById('map-scope').value`), '');
+  assert.equal(await evaluate(`document.getElementById('insight-adaptive').hidden`), false);
 });

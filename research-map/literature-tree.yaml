@@ -1,6 +1,6 @@
 version: 1
-domain: adverse-weather-lidar-denoising
-description: 从当前笔记构建的任务与技术路线地图；首创归属尚未检索
+domain: readingpaper-native-tasks
+description: 限定现有论文集合，按天气感知及各来源原任务组织路线；领域分类不变，首创归属尚未检索。
 novelty_classes:
   1: 新 task 的 seminal work
   2: 新 pipeline/representation 的 seminal work
@@ -495,7 +495,8 @@ nodes:
   novelty_class: 2
   confidence: provisional
   first_work_status: not-assessed
-  description: AWCR 分别实现模拟 peer 天气点过滤与真实有界候选修复/量测质量选择；不是统一去噪网络。此为路线覆盖关联，非 pipeline 首创判断。
+  description: AWCR 分别实现模拟 peer 天气点过滤与真实有界候选修复/量测质量选择；不是统一去噪网络。此为路线覆盖关联，非 pipeline
+    首创判断。
   source_papers:
   - awcr-2026
   evidence:
@@ -512,7 +513,8 @@ nodes:
   novelty_class: 4
   confidence: provisional
   first_work_status: not-assessed
-  description: 单帧点空间判别，以 BEV 强度/密度上下文门控并调制图消息；沿用先前 ASDR+C-GLP 离线软标签，训练加入课程掩码与不确定加权。Secs.4.2–4.6，pp.5–9。 按既有路线增量登记，不认定首创。
+  description: 单帧点空间判别，以 BEV 强度/密度上下文门控并调制图消息；沿用先前 ASDR+C-GLP 离线软标签，训练加入课程掩码与不确定加权。Secs.4.2–4.6，pp.5–9。
+    按既有路线增量登记，不认定首创。
   source_papers:
   - snowremovalnet-2026
   evidence:
@@ -590,3 +592,1206 @@ nodes:
     basis: existing-note
     original_pdf_review_status: source-checked
   parent: pipeline-weather-meta-evaluation
+- id: task-pointset-understanding
+  kind: task
+  name: 点集分类与逐点分割
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 无序三维点集（XYZ，可附颜色/法向量）；分类使用形状采样或场景预分割物体，分割使用单物体或场景子区域。 训练/测试：以物体类别、部件或场景逐点标签进行任务监督；ModelNet40
+    归一化 1024 点，训练竖轴旋转与位置扰动；场景分割按块采样训练、测试覆盖全部点。 → 分类输出 k 类分数；分割输出每点 m 类分数（n×m）。 本节点为限定集合的原生任务分类，不声明首创或领域覆盖完整。
+  source_papers:
+  - pointnet-2017
+  - pointnet-plus-plus-2017
+  evidence:
+  - paper: pointnet-2017
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: pointnet-2017
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: pointnet-plus-plus-2017
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: pointnet-plus-plus-2017
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-pointset-global
+  kind: pipeline
+  name: 共享逐点编码—对称全局聚合
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 直接以共享逐点编码和对称最大池化学习无序点集表示，统一物体分类、部件分割与场景语义分割。
+  source_papers:
+  - pointnet-2017
+  evidence:
+  - paper: pointnet-2017
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-pointset-understanding
+- id: module-pointnet-2017
+  kind: module
+  name: 共享逐点编码与对称最大池化
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 学习对点排列不敏感的集合表示 模块层级用于路线组织，不宣称首创。
+  source_papers:
+  - pointnet-2017
+  evidence:
+  - paper: pointnet-2017
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-pointset-global
+- id: pipeline-pointset-hierarchical
+  kind: pipeline
+  name: 度量邻域—层次局部集合学习
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 以度量邻域递归应用PointNet学习局部层次特征，使用MSG/MRG及随机输入丢点训练应对点密度变化。
+  source_papers:
+  - pointnet-plus-plus-2017
+  evidence:
+  - paper: pointnet-plus-plus-2017
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-pointset-understanding
+- id: module-pointnet-plus-plus-2017
+  kind: module
+  name: 层次局部 PointNet、MSG/MRG 与 dropout
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 组合局部到全局特征并适应采样密度 模块层级用于路线组织，不宣称首创。
+  source_papers:
+  - pointnet-plus-plus-2017
+  evidence:
+  - paper: pointnet-plus-plus-2017
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-pointset-hierarchical
+- id: task-static-map
+  kind: task
+  name: 动态场景中的静态地图构建
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 已有相应位姿的多帧 LiDAR scans，以及配准形成、含动态残影的点云地图；批处理 scan-to-map。 设置：使用已配准 scans
+    和对应 poses 的离线批处理；不把动态伪标签输出误写成预先需要人工动态标签。 → 移除动态点并恢复误删静态点后的静态地图；可反向解析动态点。 本节点为限定集合的原生任务分类，不声明首创或领域覆盖完整。
+  source_papers:
+  - removert-2020
+  evidence:
+  - paper: removert-2020
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: removert-2020
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-range-map-cleaning
+  kind: pipeline
+  name: 多分辨率可见性比较—删除与恢复
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 先保守删除疑似动态点，再以多分辨率 range image 扩大关联窗口并恢复误删静态点。
+  source_papers:
+  - removert-2020
+  evidence:
+  - paper: removert-2020
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-static-map
+- id: module-removert-2020
+  kind: module
+  name: Remove then Revert 与多分辨率范围图
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 恢复保守删除阶段误删的静态点 模块层级用于路线组织，不宣称首创。
+  source_papers:
+  - removert-2020
+  evidence:
+  - paper: removert-2020
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-range-map-cleaning
+- id: task-bev-perception
+  kind: task
+  name: 自动驾驶 BEV 感知路线与配方评估
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 相机图像、LiDAR 点云或其组合（按路线分别输入）；融合需要传感器几何关系，时序路线还使用历史信息。 训练/测试：配方实验分别为 Waymo
+    相机检测与 LiDAR 分割；mini/full、backbone、head、训练轮数及输入扫描数需要分开，不能把综述表当成统一受控实验。 → 路线综述覆盖三维框、BEV
+    分割与其他感知输出；实证配方分别评估相机检测与 LiDAR 逐点分割，不是一个统一网络。 本节点为限定集合的原生任务分类，不声明首创或领域覆盖完整。
+  source_papers:
+  - bev-devils-2024
+  - bevformer-2022
+  evidence:
+  - paper: bev-devils-2024
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: bev-devils-2024
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: bevformer-2022
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-bev-representations
+  kind: pipeline
+  name: 视角/高度变换—BEV 表征与融合
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 梳理 Camera、LiDAR 与 Fusion 三条 BEV 感知路线，并以 Waymo 检测和分割消融整理数据增强、编码器及损失等实践配方。
+  source_papers:
+  - bev-devils-2024
+  evidence:
+  - paper: bev-devils-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-bev-perception
+- id: module-bev-devils-2024
+  kind: module
+  name: Camera/LiDAR/Fusion 表征比较
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 梳理空间表征及不同模态的互补和代价 模块层级用于路线组织，不宣称首创。
+  source_papers:
+  - bev-devils-2024
+  evidence:
+  - paper: bev-devils-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-bev-representations
+- id: task-lidar-inertial-slam
+  kind: task
+  name: 非结构化环境 LiDAR–IMU SLAM
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 连续 LiDAR scans、IMU 测量和在线局部体素地图；scan 去畸变/下采样后形成查询点。 训练/测试：网络先在七个高精度
+    scanner 场景地图上训练局部残差模型；在线阶段网络预测残差/不确定性供 IESKF 使用，并更新体素特征，而不是在线端到端训练位姿网络。 → IESKF
+    更新的机器人状态/轨迹及在线地图；网络输出的是局部三维残差与不确定性，不是直接位姿。 本节点为限定集合的原生任务分类，不声明首创或领域覆盖完整。
+  source_papers:
+  - implicit-point-to-voxel-lidar-imu-slam
+  evidence:
+  - paper: implicit-point-to-voxel-lidar-imu-slam
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: implicit-point-to-voxel-lidar-imu-slam
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-implicit-observation-slam
+  kind: pipeline
+  name: 局部隐式几何观测—经典滤波更新
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 用 VE-Net 与 IR-Net 从局部体素点分布直接预测 point-to-voxel residual 和 uncertainty，并在
+    IESKF 中替代显式点到平面观测。
+  source_papers:
+  - implicit-point-to-voxel-lidar-imu-slam
+  evidence:
+  - paper: implicit-point-to-voxel-lidar-imu-slam
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-lidar-inertial-slam
+- id: module-implicit-point-to-voxel-lidar-imu-slam
+  kind: module
+  name: 隐式体素 residual 与 uncertainty
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 以学习型局部几何观测替代强平面假设 模块层级用于路线组织，不宣称首创。
+  source_papers:
+  - implicit-point-to-voxel-lidar-imu-slam
+  evidence:
+  - paper: implicit-point-to-voxel-lidar-imu-slam
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-implicit-observation-slam
+- id: task-registration-refinement
+  kind: task
+  name: 已有粗变换的 LiDAR 配准后精化
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 源/目标 LiDAR 点云与已有 coarse relative transformation；在粗变换后构造最近邻对应。 训练/测试：训练以
+    diffusion loss 加 transformation loss 监督；笔记记录 DDPM 训练与 DDIM 三步推理，测试必须提供粗变换。不是无初始化的全局配准器。
+    → 精化的刚体旋转与平移；中间生成的是目标对应点残差，不是完整清洁场景。 本节点为限定集合的原生任务分类，不声明首创或领域覆盖完整。
+  source_papers:
+  - post-refining-lidar-registration
+  evidence:
+  - paper: post-refining-lidar-registration
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: post-refining-lidar-registration
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-correspondence-refinement
+  kind: pipeline
+  name: 条件残差扩散—对应精化—刚体求解
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 在粗配准之后对目标对应点 residual 做条件扩散去噪，再用 Kabsch 求精化变换，作为可组合的 LiDAR registration
+    post-optimizer。
+  source_papers:
+  - post-refining-lidar-registration
+  evidence:
+  - paper: post-refining-lidar-registration
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-registration-refinement
+- id: module-post-refining-lidar-registration
+  kind: module
+  name: 条件扩散对应点 residual 与 Kabsch
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 精化错误对应点后求相对位姿 模块层级用于路线组织，不宣称首创。
+  source_papers:
+  - post-refining-lidar-registration
+  evidence:
+  - paper: post-refining-lidar-registration
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-correspondence-refinement
+- id: task-3d-object-detection
+  kind: task
+  name: 三维目标检测
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 从 LiDAR 点云或 LiDAR–相机观测估计物体类别与三维框；子路线分别保留遮挡补全、跨模态对齐、不同线束训练与测试条件。本节点仅为任务归类，不主张首创。
+  source_papers:
+  - shape-enhanced-set-det-2026
+  - hd-fusion-2026
+  - unidmb-2026
+  evidence:
+  - paper: shape-enhanced-set-det-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: shape-enhanced-set-det-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: hd-fusion-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: unidmb-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-roi-shape-completion
+  kind: pipeline
+  name: RoI 形状补全—形状/空间特征融合
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 在 3D detection 的 RoI refinement 中用 Transformer-based shape completion
+    恢复遮挡目标形状，再以 Hybrid Attention Fusion 融合 shape 与 spatial features。
+  source_papers:
+  - shape-enhanced-set-det-2026
+  evidence:
+  - paper: shape-enhanced-set-det-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-3d-object-detection
+- id: module-shape-enhanced-set-det-2026
+  kind: module
+  name: RoI Transformer 补全与 HAF 融合
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 让补全形状服务 box regression 模块层级用于路线组织，不宣称首创。
+  source_papers:
+  - shape-enhanced-set-det-2026
+  evidence:
+  - paper: shape-enhanced-set-det-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-roi-shape-completion
+- id: task-lidar-reliability
+  kind: task
+  name: 逐激光量测可靠性估计
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 保留无回波位置的固定通道 LiDAR 扫描，包含距离、强度和坐标 → 有效及缺失量测的逐位置不确定性分数，而非直接补点或删点；仅晴天正常驾驶量测训练条件分布；NDD
+    为32线 RoboSense 的真实降雨过程，SDD 为晴天数据随机加入10/20/30%退化；测试二分类标签与训练正常分布不同角色。
+  source_papers:
+  - smartrainnet-2023
+  evidence:
+  - paper: smartrainnet-2023
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-native-smartrainnet-2023
+  kind: pipeline
+  name: 按邻域正常分布评估每次发射
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 把激光发射位置映射到含空回波的2D图像；邻域切片加相对位置编码，经 self-attention 提供条件，再由两个 Gaussian
+    component 的 MDN 建模正常量测；低条件密度转为高不确定性。
+  source_papers:
+  - smartrainnet-2023
+  evidence:
+  - paper: smartrainnet-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-lidar-reliability
+- id: module-smartrainnet-2023
+  kind: module
+  name: SmartRainNet
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 固定发射位置保留无回波槽位，避免缺失量测从点集消失；混合分布保留边缘多模态而不强迫单峰；训练不需主观挑选异常样本。
+  source_papers:
+  - smartrainnet-2023
+  evidence:
+  - paper: smartrainnet-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-native-smartrainnet-2023
+- id: task-object-completion
+  kind: task
+  name: 对象点云结构与密度联合补全
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 2048点不完整小型工业零件或PCN选定对象点云 → 16384点完整且密度更均匀的对象点云；有完整扫描真值的监督补全；9类零件真实扫描真值上人工构造缺失，PCN只含airplane/car/lamp且单独训练300
+    epochs，不是零样本迁移。
+  source_papers:
+  - density-sensitive-completion-2024
+  evidence:
+  - paper: density-sensitive-completion-2024
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+- id: pipeline-native-density-sensitive-completion-2024
+  kind: pipeline
+  name: 先重分配粗点，再细化几何
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 位置与特征联合编码形成粗点；比较粗点与输入提取缺失区域，将三类点组合后用全局特征打分重选；重建粗点参与Transformer解码，细化输出；CD约束几何，DCD约束局部密度。
+  source_papers:
+  - density-sensitive-completion-2024
+  evidence:
+  - paper: density-sensitive-completion-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  parent: task-object-completion
+- id: module-density-sensitive-completion-2024
+  kind: module
+  name: Density-Sensitive Transformer
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: FPS构造多分辨率代理；在粗到细的中间表示重分配点而非简单保留输入拼接；NUC用Poisson网格顶点密度评价全局均匀性，不能替代几何质量。
+  source_papers:
+  - density-sensitive-completion-2024
+  evidence:
+  - paper: density-sensitive-completion-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  parent: pipeline-native-density-sensitive-completion-2024
+- id: task-image-detection
+  kind: task
+  name: 退化图像的轻量目标检测
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 雾/雨/雪/沙尘/低照度图像；训练另需GT框、预训练教师 → 学生检测器类别与边界框；推理不需要教师；ResNet50 teacher/ResNet18
+    student，FPN/FCOS；GT监督检测加蒸馏；VOC训练用于RTTS/ExDark设置，DAWN 8:2划分；不可称无监督域适应。
+  source_papers:
+  - sld-ala-2026
+  evidence:
+  - paper: sld-ala-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-native-sld-ala-2026
+  kind: pipeline
+  name: 分别控制蒸馏分布惩罚与正区域
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 对师生四条边的离散分布形成平均中间分布，以双向KL到该中间分布的平均构成JS损失；另用候选GIoU分数的均值/标准差构成γ(μ+σ)阈值，选择动态正区域，联合GT检测损失训练。
+  source_papers:
+  - sld-ala-2026
+  evidence:
+  - paper: sld-ala-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-image-detection
+- id: module-sld-ala-2026
+  kind: module
+  name: SLD + ALA
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 把蒸馏差异与蒸馏位置分开控制；温度τ与区域缩放γ调节软分布和区域范围；只在训练使用教师，避免在线双网络。
+  source_papers:
+  - sld-ala-2026
+  evidence:
+  - paper: sld-ala-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-native-sld-ala-2026
+- id: task-sensor-noise-restoration
+  kind: task
+  name: 低成本传感器真实噪声几何恢复
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 待预测noisy point及按距离排序的500点XYZ KNN patch → 每个输入点对应的去噪几何预测，不是噪声删留标签；RealLiD监督：Unitree
+    L1与Livox Mid360扫描配对，ICP/人工校验、球面投影匹配提供clean对应；27对基础样本重组为120训练/42测试，不是162个独立物体。
+  source_papers:
+  - dhe-net-2026
+  evidence:
+  - paper: dhe-net-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+- id: pipeline-native-dhe-net-2026
+  kind: pipeline
+  name: 以首点和最远点双参照恢复几何
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 以KNN首点与最远点分别构造相对偏差；前者经逐点卷积，后者经随特征更新邻接的EdgeConv；逐点相加后用局部残差与全局max聚合反复细化，解码目标点；监督同时约束target-point与far-point距离。
+  source_papers:
+  - dhe-net-2026
+  evidence:
+  - paper: dhe-net-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  parent: task-sensor-noise-restoration
+- id: module-dhe-net-2026
+  kind: module
+  name: DHE-Net
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 首点参照不是算术质心或语义类别；CDE末层去ReLU以减少融合前非线性信息损失；DM用Max→Repeat→Concatenate注入全局上下文；轻量S版替换末层EdgeConv并只保留一个DM。
+  source_papers:
+  - dhe-net-2026
+  evidence:
+  - paper: dhe-net-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  parent: pipeline-native-dhe-net-2026
+- id: task-transient-artifact-mapping
+  kind: task
+  name: 输电线巡检瞬态电弧过滤建图
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 连续LiDAR scans及预任务静态扫描 → 过滤电弧伪障碍的持久全局占据地图，供导航使用；不训练监督网络；需要在线跨帧空间关联及预任务持久结构；在三个自采输电线环境比较LIOR/ROR，不能泛化为天气任务结果。
+  source_papers:
+  - electric-arc-2026
+  evidence:
+  - paper: electric-arc-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-native-electric-arc-2026
+  kind: pipeline
+  name: 先积累短时证据再提交持久地图
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 先在有时间界限的k-d tree缓冲区聚集多帧点，按概率邻域规则保留并施加时间衰减，再将保留点批量插入持久OctoMap；短期证据与长期占据分开。
+  source_papers:
+  - electric-arc-2026
+  evidence:
+  - paper: electric-arc-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-transient-artifact-mapping
+- id: module-electric-arc-2026
+  kind: module
+  name: Electric Arc Noise
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 缓冲窗口限制k-d tree增长；概率保留而非一次硬删以照顾稀疏细结构；decay处理间歇返回；批量质心插入控制地图更新开销。
+  source_papers:
+  - electric-arc-2026
+  evidence:
+  - paper: electric-arc-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-native-electric-arc-2026
+- id: task-industrial-anomaly
+  kind: task
+  name: 统一多类别工业图像异常检测与定位
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 训练：多类别正常 2D 工业图像；测试：待检产品图像。冻结 DINOv2 的多层 patch tokens 为特征输入。 → 图像级异常分数和像素级异常热图，不是去噪后的图像或
+    LiDAR 点云。；只用正常样本训练统一模型；异常标注不作为训练监督，噪声注入提供 feature-space noise regression 目标，正常特征提供重建目标。评估限
+    MVTec AD 与 VisA；具体 checkpoint 选取、训练/推理条件去噪差异仍待原文细查。
+  source_papers:
+  - hcdg-2026
+  evidence:
+  - paper: hcdg-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-native-hcdg-2026
+  kind: pipeline
+  name: 用噪声预测误差抑制异常轻易重建
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 对冻结骨干的浅/深特征按样本加权融合；向特征注入噪声并训练预测器估计噪声，以位置相关预测误差调节条件去噪，再以跨注意力建立多层 encoder–decoder
+    特征对应。最终组合重建误差与噪声预测误差产生异常分数。误差条件化抑制 trivial reconstruction 是作者解释，不能由最终指标倒推为独立证明。
+  source_papers:
+  - hcdg-2026
+  evidence:
+  - paper: hcdg-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-industrial-anomaly
+- id: module-hcdg-2026
+  kind: module
+  name: HCDG
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 浅到深分组融合 + sample-level gating 避免简单均值；特征引导解码器同时对齐纹理与语义层；默认 10k iterations、条件去噪
+    λ=0.5、3-layer LNP 来自各自参数/结构比较。笔记未记录可复写的 EACD 精确公式，不补造实现规则。
+  source_papers:
+  - hcdg-2026
+  evidence:
+  - paper: hcdg-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-native-hcdg-2026
+- id: task-image-denoising
+  kind: task
+  name: 非局部自相似图像块的低秩估计与加性白高斯噪声图像去噪
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 带噪自然图像 y=x+n 与噪声水平 σn；局部搜索窗口内匹配的相似块堆叠为观测矩阵 Yj。 → 各块组干净低秩矩阵估计，经重叠块聚合得到整幅干净图像估计。；非训练型优化方法，不需监督训练集；用干净测试图合成零均值加性白高斯噪声并以真值计算
+    PSNR。需噪声水平用于保真项与奇异值估计，需块组有非局部自相似/低秩性。正文评测 20 幅图、σn=10/30/50/100。
+  source_papers:
+  - wnnm-2014
+  evidence:
+  - paper: wnnm-2014
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-native-wnnm-2014
+  kind: pipeline
+  name: 对主要奇异值少收缩
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 匹配相似图像块并堆成矩阵；从带噪奇异值平方扣除估计噪声能量，再开方截零得到干净奇异值估计；以估计值倒数设权，使大奇异值惩罚小、小奇异值惩罚大。对块组做
+    SVD 和加权软阈值后重建、聚合图像，外层迭代正则化并重复。去噪采用非减权重，CVPR 本文 Corollary 1 将一步块组计算表述为解析固定点，不应笼统改写为任意权重全局最优。
+  source_papers:
+  - wnnm-2014
+  evidence:
+  - paper: wnnm-2014
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-image-denoising
+- id: module-wnnm-2014
+  kind: module
+  name: WNNM
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 估计式截零以避免负的能量估计，权重分母加 ε=10^-16 避免除零；匹配限定在足够大的局部窗口；δ=0.1、c=2.8。σn≤20、20<σn≤40、40<σn≤60、σn>60
+    时，块宽为 6/7/8/9，外层轮数 K=8/12/14/14。单块固定权重的一步收缩不等于整图只运行一轮。
+  source_papers:
+  - wnnm-2014
+  evidence:
+  - paper: wnnm-2014
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-native-wnnm-2014
+- id: task-mobile-manipulation
+  kind: task
+  name: 有腿移动操作
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 输入：腕部视觉、末端轨迹及机器人状态；高层真实手持示范、低层仿真轨迹跟踪训练；输出：12腿关节与6臂关节位置目标及独立夹爪命令，用于抛掷、推动、抓放。本集合中的任务归类，不宣称领域完整或首创。
+  source_papers:
+  - umi-on-legs-2024
+  evidence:
+  - paper: umi-on-legs-2024
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+- id: pipeline-task-frame-wbc
+  kind: pipeline
+  name: 任务系轨迹接口与机器人专属全身跟踪
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 真实 UMI 示范训练高层 Diffusion Policy；相机系末端位姿序列变换到持久任务系，仿真 RL WBC 读取轨迹预览与机器人状态，输出腿臂关节目标并以
+    PD 跟踪。
+  source_papers:
+  - umi-on-legs-2024
+  evidence:
+  - paper: umi-on-legs-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  parent: task-mobile-manipulation
+- id: module-task-frame-interface
+  kind: module
+  name: 把任务目标稳定责任交给高频低层
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 用task-frame末端轨迹连接高层Diffusion Policy与仿真RL WBC；以新机器人反馈更新末端跟踪误差，MLP联合产生12腿/6臂关节目标，再由PD执行。
+  source_papers:
+  - umi-on-legs-2024
+  evidence:
+  - paper: umi-on-legs-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  parent: pipeline-task-frame-wbc
+- id: module-trajectory-preview
+  kind: module
+  name: 用未来轨迹预览安排全身准备动作
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: WBC观测加入相对当前时刻−60至+60ms每20ms的密集目标，以及+1s目标，以同时提供近时速度/加速度线索与远时全身动作意图。
+  source_papers:
+  - umi-on-legs-2024
+  evidence:
+  - paper: umi-on-legs-2024
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: unregistered
+  parent: pipeline-task-frame-wbc
+- id: pipeline-bev-query-spatiotemporal
+  kind: pipeline
+  name: BEV网格查询的空间采样与递归时间融合
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: BEV网格query沿高度构造参考点并投影到hit views，以deformable attention采局部图像特征；历史BEV按ego-motion对齐，再以可学习offset关联当前和历史表示。
+  source_papers:
+  - bevformer-2022
+  evidence:
+  - paper: bevformer-2022
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-bev-perception
+- id: module-hit-view-sparse-query
+  kind: module
+  name: 按投影可见性查询局部图像证据
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 每个BEV网格沿高度放参考点，投影到相机；只在hit views中的参考点附近做deformable sampling，按命中视角聚合。
+  source_papers:
+  - bevformer-2022
+  evidence:
+  - paper: bevformer-2022
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-bev-query-spatiotemporal
+- id: module-aligned-recurrent-bev
+  kind: module
+  name: 先对齐自车运动，再学习历史目标偏移
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 保存上一帧BEV并按ego-motion对齐；当前query与历史特征共同预测deformable offsets，通过TSA递归形成当前BEV。
+  source_papers:
+  - bevformer-2022
+  evidence:
+  - paper: bevformer-2022
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-bev-query-spatiotemporal
+- id: task-task-driven-coding
+  kind: task
+  name: 面向静态建图的LiDAR压缩
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 输入：连续含XYZ/intensity的LiDAR扫描与语义分割结果；输出：压缩码流及删除可移动物体后的地图点云。本集合中的任务归类，不宣称领域完整或首创。
+  source_papers:
+  - sa-lpcc-2023
+  evidence:
+  - paper: sa-lpcc-2023
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-semantic-residual-coding
+  kind: pipeline
+  name: 任务语义分流与几何/帧间残差编码
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 2D纹理与3D拓扑融合分割movable/ground/other；movable丢弃，ground以平面拟合预测，other由ST-LSTM+GHU帧间预测，两类残差用无损编码。
+  source_papers:
+  - sa-lpcc-2023
+  evidence:
+  - paper: sa-lpcc-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-task-driven-coding
+- id: module-task-semantic-coding
+  kind: module
+  name: 先按下游任务决定哪些信息不编码
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 融合2D纹理与3D拓扑完成movable/ground/other分割；在源端丢弃行人/车辆等movable，再编码地图需要的其余集合。
+  source_papers:
+  - sa-lpcc-2023
+  evidence:
+  - paper: sa-lpcc-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-semantic-residual-coding
+- id: module-structure-specific-residual-code
+  kind: module
+  name: 按结构选择预测器，只编码无法预测的残差
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: ground用平面模型及Levenberg–Marquardt估计参数，编码观测与拟合点之差；other用ST-LSTM+GHU结合此前已解码帧预测，再编码预测残差。
+  source_papers:
+  - sa-lpcc-2023
+  evidence:
+  - paper: sa-lpcc-2023
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-semantic-residual-coding
+- id: pipeline-pillar-context-fusion
+  kind: pipeline
+  name: 几何锚定后双向上下文与频带精炼
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: SLF用pillar内点投影采样图像，经柱内self-attention/max pooling写回BEV；CLF双向跨模态注意力后进行DWT频带分解与残差融合。
+  source_papers:
+  - hd-fusion-2026
+  evidence:
+  - paper: hd-fusion-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-3d-object-detection
+- id: module-measured-depth-anchor
+  kind: module
+  name: 以量测深度锚定图像BEV证据
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 笔记转述：SLF将pillar内点投影到各图像，双线性采样特征，经柱内self-attention抑制不一致响应，再max pooling写回image
+    BEV。
+  source_papers:
+  - hd-fusion-2026
+  evidence:
+  - paper: hd-fusion-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-pillar-context-fusion
+- id: module-crossmodal-frequency-refine
+  kind: module
+  name: 交互后分频精炼，保留原始残差支路
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 笔记转述：BCMA先由图像query LiDAR，再由LiDAR query已融合上下文；DWT分解多尺度频带并经融合，与原始拼接残差组成最终BEV。
+  source_papers:
+  - hd-fusion-2026
+  evidence:
+  - paper: hd-fusion-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-pillar-context-fusion
+- id: pipeline-crossbeam-shared-specific
+  kind: pipeline
+  name: 输入对齐、共享全局特征与域专用预测
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 按高度与共同有效范围对齐点云，dataset-wise归一化和几何/特征图提取结构；共享3D backbone+GSSM，再接参数独立的dataset-specific
+    heads。
+  source_papers:
+  - unidmb-2026
+  evidence:
+  - paper: unidmb-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-3d-object-detection
+- id: module-crossbeam-range-alignment
+  kind: module
+  name: 先对齐可观测范围，再共享跨线束结构
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 笔记转述：高度平移与至少两束命中假设给出共同有效range；dataset-wise归一化，几何/特征邻域图提取结构，共享backbone与GSSM建模BEV全局布局。
+  source_papers:
+  - unidmb-2026
+  evidence:
+  - paper: unidmb-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-crossbeam-shared-specific
+- id: module-crossbeam-specific-head
+  kind: module
+  name: 共享骨干，但让不同输出分布各用其头
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 笔记转述：共享前端/骨干后，各数据集使用同构但独立参数的分类与box回归head，训练只由本域数据更新对应头，部署按目标数据集选择。
+  source_papers:
+  - unidmb-2026
+  evidence:
+  - paper: unidmb-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-crossbeam-shared-specific
+- id: task-metric-semantic-mapping
+  kind: task
+  name: 户外metric-semantic建图与导航
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 输入：LiDAR–视觉–IMU及标定/状态估计；像素语义概率；输出：全局metric-semantic mesh、可通行占据图与规划路径。本集合中的任务归类，不宣称领域完整或首创。
+  source_papers:
+  - metric-semantic-mapping-2025
+  evidence:
+  - paper: metric-semantic-mapping-2025
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-gpu-semantic-tsdf
+  kind: pipeline
+  name: GPU非投影TSDF与概率语义地图
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 点云转depth/height/normal images；GPU hash voxel blocks更新非投影TSDF与梯度；逐体素递归Bayesian类别概率，marching
+    cubes输出mesh；联合几何属性与类别得到可通行图。
+  source_papers:
+  - metric-semantic-mapping-2025
+  evidence:
+  - paper: metric-semantic-mapping-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-metric-semantic-mapping
+- id: module-recursive-semantic-map
+  kind: module
+  name: 把逐帧语义概率积累到同一地图体素
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 为体素维护类别离散分布；投影可见有效体素到分割概率图，以递归Bayesian更新并归一化，mesh顶点读取最大概率标签。
+  source_papers:
+  - metric-semantic-mapping-2025
+  evidence:
+  - paper: metric-semantic-mapping-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-gpu-semantic-tsdf
+- id: module-geometric-semantic-traversability
+  kind: module
+  name: 几何筛碰撞，语义筛通行规则
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 从metric-semantic mesh计算高差、坡度、粗糙度，再结合类别与平台先验筛可通行区域，投影成2D occupancy供Hybrid
+    A*规划。
+  source_papers:
+  - metric-semantic-mapping-2025
+  evidence:
+  - paper: metric-semantic-mapping-2025
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-gpu-semantic-tsdf
+- id: task-vln-execution
+  kind: task
+  name: 连续视觉语言导航的物理执行
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 输入：RGB视觉与自然语言条件子目标；训练用严格接触探测、状态恢复等特权反馈；输出：所选局部轨迹前缀；部署RGB-only，固定高层S2。本集合中的任务归类，不宣称领域完整或首创。
+  source_papers:
+  - vesta-2026
+  evidence:
+  - paper: vesta-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-vln-support-selection
+  kind: pipeline
+  name: 固定高层下的局部生成与候选效用选择
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 固定S2；TR-GRPO在相同恢复状态探测候选，用进度/碰撞/卡住偏好更新局部高斯替代策略；冻结生成器后TRiC学习候选标量效用，部署选argmax候选并执行前缀。
+  source_papers:
+  - vesta-2026
+  evidence:
+  - paper: vesta-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-vln-execution
+- id: module-contact-assumption-diagnostic
+  kind: module
+  name: 固定策略，切换接触规则暴露执行依赖
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 同一策略、同一episode配对运行permissive与strict contact，报告目标指标和CollAvg/CollW差异，而非只对不同模型排行。
+  source_papers:
+  - vesta-2026
+  evidence:
+  - paper: vesta-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-vln-support-selection
+- id: module-executable-support-selection
+  kind: module
+  name: 分开改善候选支持与最终候选选择
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 固定S2；TR-GRPO同恢复状态探测候选，以组相对严格接触偏好和局部高斯替代更新生成；冻结S1/S2后TRiC学习候选标量效用，argmax选择一条并执行前缀再规划。
+  source_papers:
+  - vesta-2026
+  evidence:
+  - paper: vesta-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-vln-support-selection

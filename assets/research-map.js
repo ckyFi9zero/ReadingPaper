@@ -7,7 +7,7 @@
   const graph = document.querySelector("#map-graph");
   const detailsScript = document.querySelector("#map-details");
   const inspector = document.querySelector("#map-inspector");
-  const controls = ["weather", "route", "challenge"]
+  const controls = ["scope", "weather", "route", "challenge"]
     .map(k => document.querySelector(`#map-${k}`)).filter(Boolean);
   const items = Array.from(document.querySelectorAll("[data-map-item]"));
   const graphNodes = graph ? Array.from(graph.querySelectorAll("[data-node-id]")) : [];
@@ -123,7 +123,7 @@
       if (edge.dataset.edgeTo === nodeId) related.add(edge.dataset.edgeFrom);
     }
     const relatedMarkup = related.size ? `<h4>关联节点</h4><div class="map-related">${[...related].filter(id => payload.details[id]).map(id => `<button type="button" data-select-node="${esc(id)}">${esc(payload.details[id].name)}</button>`).join("")}</div>` : "";
-    inspector.innerHTML = `<button type="button" class="map-inspector-close" data-close-inspector>收起证据</button><div class="map-inspector-content"><p class="map-inspector-type">${esc(typeLine)}</p><h3>${esc(detail.name)}</h3>${detail.playbook ? "" : `<p>${esc(detail.description || "")}</p>`}${claimMarkup(detail.kind === "challenge" ? detail.why_hard : null, "为什么难")}${claimMarkup(detail.principle, "可复用的技术认识")}${techniques}${failures}${playbookMarkup(detail)}${detail.motivation ? `<p><strong>动机：</strong>${esc(detail.motivation)}</p>` : ""}${detail.transfer_boundary ? `<p class="map-transfer"><strong>迁移边界：</strong>${esc(detail.transfer_boundary)}</p>` : ""}${relatedMarkup}${evidenceMarkup(detail.evidence)}${sources}</div>`;
+    inspector.innerHTML = `<button type="button" class="map-inspector-close" data-close-inspector>收起证据</button><div class="map-inspector-content"><p class="map-inspector-type">${esc(typeLine)}</p><h3>${esc(detail.name)}</h3>${detail.playbook ? "" : `<p>${esc(detail.description || "")}</p>`}${claimMarkup(detail.kind === "challenge" ? detail.why_hard : null, "为什么难")}${claimMarkup(detail.principle, "可复用的技术认识")}${techniques}${failures}${playbookMarkup(detail)}${detail.motivation ? `<p><strong>动机：</strong>${esc(detail.motivation)}</p>` : ""}${detail.transfer_boundary ? `<p class="map-transfer"><strong>适用与迁移边界：</strong>${esc(detail.transfer_boundary)}</p>` : ""}${relatedMarkup}${evidenceMarkup(detail.evidence)}${sources}</div>`;
   }
 
   function highlightNeighbors(nodeId) {

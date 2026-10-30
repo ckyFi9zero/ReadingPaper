@@ -1,0 +1,305 @@
+version: 1
+paper: unidmb-2026
+scope: out-of-field
+source_basis: existing-reading-note
+source_sha256: 73b4e92b606f64c5356f5585210f736ce8c826deb240b30a18cf496c4c3b8ec9
+checked_at: '2026-10-30'
+source_version: IEEE TII22(1),2026；本轮未获全文
+source_url: https://doi.org/10.1109/TII.2025.3609110
+read_scope: 已读既有first-pass/deep-read；定向标题/DOI检索未取得作者或出版社全文，DOI工具不可访问。新事实为既有阅读页转述，不以搜索摘要替代方法核验。
+source_review:
+  scope: 已读既有first-pass/deep-read；定向标题/DOI检索未取得作者或出版社全文，DOI工具不可访问。新事实为既有阅读页转述，不以搜索摘要替代方法核验。
+  checked_at: '2026-10-30'
+  source_url: https://doi.org/10.1109/TII.2025.3609110
+  source_version: IEEE TII22(1),2026；本轮未获全文
+tags:
+- 3D目标检测
+- 多线束LiDAR
+- 统一检测
+- 少样本学习
+task:
+  name: 跨LiDAR线束统一3D检测
+  input: 多数据集/不同线束点云及域内标签；已知传感器配置与数据集身份
+  output: 各目标数据集的3D分类与框回归
+  conditions: 多数据集/不同线束点云及域内标签；已知传感器配置与数据集身份；结果只对应各实验数据/监督与硬件设置。
+  evidence:
+  - paper: unidmb-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: unidmb-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 不同线束改变采样密度与统计，共享输出头还会混合不同标签及box分布。
+  evidence:
+  - paper: unidmb-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: unidmb-2026
+    stage: first-pass
+    anchor: section-04
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-crossbeam-shared-specific
+  name: 输入对齐、共享全局特征与域专用预测
+  description: 按高度与共同有效范围对齐点云，dataset-wise归一化和几何/特征图提取结构；共享3D backbone+GSSM，再接参数独立的dataset-specific
+    heads。
+  evidence:
+  - paper: unidmb-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-crossbeam-range-alignment
+  name: 先对齐可观测范围，再共享跨线束结构
+  role: core-module
+  motivation: 高线束开放数据需辅助低线束定制检测，直接混训或迁移明显受损时。
+  evidence:
+  - paper: unidmb-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-crossbeam-specific-head
+  name: 共享骨干，但让不同输出分布各用其头
+  role: core-module
+  motivation: 多个数据集联合训练时类别、框尺寸或标签约定不同，强共享head出现冲突时。
+  evidence:
+  - paper: unidmb-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-crossbeam-sharing
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 按原生任务的方法设计登记；路线与模块为整理者分类，未独立检索首创归属，不以领域外分类降低原任务机制价值。
+limitations:
+- text: 本轮原全文未取得，以下为既有笔记；共同范围依赖至少两束命中的几何假设，需域身份选择head。实验以SIM16/SIM64和KITTI为主，不证明未见传感器免适配。
+  evidence:
+  - paper: unidmb-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+analysis:
+  updated_at: '2026-10-30'
+  previous_methods:
+    text: 单域模型难直接迁移；简单混训不能区分可共享物理结构与不宜强共享的输出分布。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: unidmb-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 不同线束改变采样密度与统计，共享输出头还会混合不同标签及box分布。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: unidmb-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 共享有层次：先消除可控输入差异，保留域内统计与输出分布，不把全部参数共享等同统一。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: unidmb-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-crossbeam-range-alignment
+    name: 先对齐可观测范围，再共享跨线束结构
+    module_ids:
+    - module-crossbeam-range-alignment
+    motivation:
+      text: 高线束开放数据需辅助低线束定制检测，直接混训或迁移明显受损时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: unidmb-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 笔记转述：高度平移与至少两束命中假设给出共同有效range；dataset-wise归一化，几何/特征邻域图提取结构，共享backbone与GSSM建模BEV全局布局。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: unidmb-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 可共享的物理结构与传感器可观测范围不是一回事；先统一可比较输入条件，再学习全局共性。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: unidmb-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 高线束开放数据需辅助低线束定制检测，直接混训或迁移明显受损时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: unidmb-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: contribution-crossbeam-specific-head
+    name: 共享骨干，但让不同输出分布各用其头
+    module_ids:
+    - module-crossbeam-specific-head
+    motivation:
+      text: 多个数据集联合训练时类别、框尺寸或标签约定不同，强共享head出现冲突时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: unidmb-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 笔记转述：共享前端/骨干后，各数据集使用同构但独立参数的分类与box回归head，训练只由本域数据更新对应头，部署按目标数据集选择。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: unidmb-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 统一模型不等于所有参数相同；共有结构可共享，输出分布与域内统计可明确隔离。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: unidmb-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 多个数据集联合训练时类别、框尺寸或标签约定不同，强共享head出现冲突时。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: unidmb-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 原任务整体结果与条件
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-crossbeam-range-alignment
+    - contribution-crossbeam-specific-head
+    result:
+      text: 笔记TableI：SIM64+SIM16完整训练UniDMB overall71.78/53.11，混合PV-RCNN60.78/40.39；少样本条件必须分别读。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: unidmb-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 此为该文所测配置的整体/任务级证据；贡献关联用于导航，不是每个模块的独立因果证明。本轮尚未取得全文，数值仅转述已登记笔记。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: unidmb-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-components
+    name: 组件、设计选择与未分离因素
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-crossbeam-range-alignment
+    - contribution-crossbeam-specific-head
+    result:
+      text: 笔记TableV：KITTI+1%SIM16，SIM16 specific head37.26对shared26.97；TableIII AM/GSSM均有组件对照。range/head效应随数据组合改变，不能称任何域都独立必要。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: unidmb-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 需要按具体训练、数据与累计配置解释；不将总体指标提升反推为候选覆盖、机制最优性或每个子模块的独立因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: unidmb-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 本轮原全文未取得，以下为既有笔记；共同范围依赖至少两束命中的几何假设，需域身份选择head。实验以SIM16/SIM64和KITTI为主，不证明未见传感器免适配。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: unidmb-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
