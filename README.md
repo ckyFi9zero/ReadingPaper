@@ -31,6 +31,8 @@ ReadingPaper 以论文为单位保存阅读记录，将独立的 HTML 笔记组�
 
 ## 更新记录
 
+- **2026-10-31 · AURORA-KITTI 实质修订与 FLoRe 拓展初读**：新增 AURORA-KITTI / DDCD 的 arXiv v2 十二项初读，围绕恶劣天气 RGB–LiDAR 深度恢复、分区指标和匹配对照核对证据，归为领域内；正文明确未取得其所引附录 A–C，以及论文与作者模型卡的裁剪协议差异。周六拓展阅读新增 FLoRe，按人形机器人接触移动操作的原任务梳理测力输入、力指令执行与评测条件，不称通用 SOTA 或已验证天气迁移。两篇各选三项必要原图表局部并配分析；同步增量维护事实层、任务树与四张 Challenge–Insight 使用卡，保留历史节点、手写内容和核验等级。未公开完整 PDF、私人实验或未发表想法，未改变部署与脑图布局。
+
 - **2026-10-30 · 移除跨论文综述界面**：删除 `overview.html` 及全站入口，构建与导出不再生成该界面，并增加防回归检查。保留 `paper-cards/cross-paper-overview.md` 原始资料、全部论文、文献树和 Challenge–Insight 武器库；未更改部署设置。
 
 - **2026-10-30 · Mapping 数值勘误**：按初读内嵌原图及原文 Table III，将 Metric-Semantic Mapping 的 SemanticKITTI 00 mIoU 从正文误录的 70.4% 更正为 76.0%，加注日期与来源；仅更正该句，原图与其余阅读内容不变。

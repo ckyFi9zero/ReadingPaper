@@ -364,5 +364,176 @@
       "reviewedAt": "2026-10-30"
     }
   }
-}
+},
+  {
+    "slug": "aurora-kitti-2026",
+    "category": "in-field",
+    "name": "AURORA-KITTI / DDCD",
+    "title": "AURORA-KITTI: Any-Weather Depth Completion and Denoising",
+    "year": 2026,
+    "venue": "Information Fusion",
+    "readDate": "2026-10-31",
+    "url": "https://arxiv.org/abs/2603.14701v2",
+    "doi": "10.1016/j.inffus.2026.104830",
+    "tags": [
+      "恶劣天气",
+      "LiDAR",
+      "雨",
+      "雪",
+      "雾",
+      "RGB–LiDAR融合",
+      "深度补全与去噪",
+      "数据集",
+      "教师先验",
+      "跨域评测"
+    ],
+    "summary": "基于共同天气退化的RGB–LiDAR数据和ERR/DCE/CPP分区域指标研究补全与去噪；DDCD以训练期干净教师辅助学生。天气重训贡献主要收益，额外蒸馏收益不可全部归于架构；v2主文完整阅读，所引附录缺失及作者裁剪协议差异显式保留。",
+    "stages": {
+      "first-pass": "first-pass.html"
+    },
+    "reviews": {
+      "first-pass": {
+        "status": "source-checked",
+        "noteStatus": "organized",
+        "checkedAt": "2026-10-31",
+        "evidence": [
+          "已重新获取并阅读全文20页、全部Figures1–12与Tables1–10；固定arXiv2603.14701v2，SHA256 2fdbdebaefd8e254b9549f796eeddab24b452edc86aae64fa6726f918ff4ccaf。正文引用的AppendicesA–C不在PDF内，未核验附录。",
+          "核对Sec3.6/Eqs14–19的成对掩码、ERR分母和DCE/CPP误差定义；Tables7–10区分天气重训、额外教师监督、配置混杂和教师跨域反转。",
+          "重新查看全部PDF图表；只裁取完整Figure5(p8)、Figure8(p13)、Table10(p17)与原图注，未改图内内容。浏览器验收等待集成者完成。",
+          "作者模型卡AURORA全GT/DENSE底部256与PDFp12统一底部裁剪表述不一致，显式保留未解决；未读代码或复现实验。"
+        ]
+      }
+    },
+    "readingQuality": {
+      "version": 1,
+      "classification": {
+        "confirmedCategory": "in-field",
+        "rationale": "直接研究雨雾雪下RGB与LiDAR共同退化、合成数据、深度补全与去噪，以及分区域纠错/补缺/保真评测，属于用户恶劣天气机器人LiDAR感知主线；不以是否提出逐点去雪网络限制领域。",
+        "source": "用户2026-10-28及本次任务确认的数据/评测相关性范围；原文Secs1、3.1–3.6、5，PDFpp1–18。",
+        "reviewedAt": "2026-10-31"
+      },
+      "graphics": {
+        "status": "included",
+        "items": [
+          {
+            "figureId": "fig-5",
+            "kind": "paper-crop",
+            "label": "Figure 5",
+            "pdfPage": 8,
+            "sourceUrl": "https://arxiv.org/pdf/2603.14701v2#page=8",
+            "analysisId": "analysis-fig-5"
+          },
+          {
+            "figureId": "fig-8",
+            "kind": "paper-crop",
+            "label": "Figure 8",
+            "pdfPage": 13,
+            "sourceUrl": "https://arxiv.org/pdf/2603.14701v2#page=13",
+            "analysisId": "analysis-fig-8"
+          },
+          {
+            "figureId": "table-10",
+            "kind": "paper-crop",
+            "label": "Table 10",
+            "pdfPage": 17,
+            "sourceUrl": "https://arxiv.org/pdf/2603.14701v2#page=17",
+            "analysisId": "analysis-table-10"
+          }
+        ]
+      },
+      "rightsReview": {
+        "basis": "arXiv版本页链接CC BY-NC-ND4.0。选取Figure5/8、Table10三项必要的完整图表及原caption，仅去除页面其他内容，保留比例、文字、数值，无重绘/覆盖；用于非商业原创评论并逐图列全作者、固定版本、PDF页码、许可链接和裁剪身份，不公开完整PDF或整页图集，不暗示作者认可，不作法律保证。",
+        "reviewedAt": "2026-10-31"
+      },
+      "visualReview": {
+        "desktop": true,
+        "mobile": true,
+        "zoom": true,
+        "reviewedAt": "2026-10-31"
+      }
+    }
+  },
+  {
+    "slug": "flore-2026",
+    "category": "out-of-field",
+    "name": "FLoRe",
+    "title": "Learning Force-Reactive Humanoid Loco-Manipulation",
+    "year": 2026,
+    "venue": "arXiv",
+    "readDate": "2026-10-31",
+    "url": "https://arxiv.org/abs/2610.35862v1",
+    "doi": "10.48550/arXiv.2610.35862",
+    "tags": [
+      "拓展阅读",
+      "具身智能",
+      "人形机器人",
+      "操作",
+      "传感器融合",
+      "力控制"
+    ],
+    "summary": "以robot-free力示范、force-reactive diffusion policy和实测力闭环全身控制连通力的采集、预测与执行；三任务24/30成功，同网络扣留力命令11/30，保留任务与方向边界。",
+    "stages": {
+      "first-pass": "first-pass.html"
+    },
+    "reviews": {
+      "first-pass": {
+        "status": "source-checked",
+        "noteStatus": "organized",
+        "checkedAt": "2026-10-31",
+        "evidence": [
+          "阅读全文9页及Figure 1–6、Tables I–II；当前PDF无独立附录。",
+          "Secs.III-A、IV-B区分3D力命令与6D wrench、仿真与真实力计及非跌倒片段口径。",
+          "Table II及Sec.IV-F区分同网络执行通路消融、去力输入重新训练、显著结果与趋势。"
+        ]
+      }
+    },
+    "readingQuality": {
+      "version": 1,
+      "classification": {
+        "confirmedCategory": "out-of-field",
+        "rationale": "研究原任务是人形接触操作及视觉、本体状态、腕部力融合；不直接研究恶劣天气LiDAR感知。按用户拓展阅读范围纳入具身与融合，未声称去噪迁移已验证。",
+        "source": "用户授权具身/VLA/VLN/融合拓展线；本文Secs.I、III–IV，PDF pp.1–8。",
+        "reviewedAt": "2026-10-31"
+      },
+      "graphics": {
+        "status": "included",
+        "items": [
+          {
+            "figureId": "fig-2",
+            "kind": "paper-crop",
+            "label": "Figure 2",
+            "pdfPage": 3,
+            "sourceUrl": "https://arxiv.org/pdf/2610.35862v1#page=3",
+            "analysisId": "analysis-fig-2"
+          },
+          {
+            "figureId": "table-1",
+            "kind": "paper-crop",
+            "label": "Table I",
+            "pdfPage": 6,
+            "sourceUrl": "https://arxiv.org/pdf/2610.35862v1#page=6",
+            "analysisId": "analysis-table-1"
+          },
+          {
+            "figureId": "table-2",
+            "kind": "paper-crop",
+            "label": "Table II",
+            "pdfPage": 7,
+            "sourceUrl": "https://arxiv.org/pdf/2610.35862v1#page=7",
+            "analysisId": "analysis-table-2"
+          }
+        ]
+      },
+      "rightsReview": {
+        "basis": "arXiv v1许可链接为CC BY 4.0；Figure 2用于解释力通路，Table I用于分析低层误差与运动代价，Table II用于分析执行通路对照。只裁取三项完整图表保留原图注，逐图作者、版本、页码、源链接和许可归因，注明裁去无关页面内容；无完整PDF或整页。",
+        "reviewedAt": "2026-10-31"
+      },
+      "visualReview": {
+        "desktop": true,
+        "mobile": true,
+        "zoom": true,
+        "reviewedAt": "2026-10-31"
+      }
+    }
+  }
 ]

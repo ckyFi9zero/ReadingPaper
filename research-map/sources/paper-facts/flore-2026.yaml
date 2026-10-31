@@ -1,0 +1,338 @@
+version: 1
+paper: flore-2026
+scope: out-of-field
+source_basis: original-pdf-and-reading-note
+source_sha256: 97222db3e0e662bb5c97cbd037642b58c7890e727cb6fb23025627e63b122953
+checked_at: '2026-10-31'
+source_version: arXiv:2610.35862v1
+source_url: https://arxiv.org/abs/2610.35862v1
+read_scope: 原文 PDF pp.1–9、Figures1–6、TablesI–II；Stage1 原任务阅读，不代表源码或硬件复现。
+source_review:
+  scope: 本轮重新核对 arXiv v1 全文与所有图表，数字按 PDF 表格和正文条件记录；地图中的机制提炼为阅读者归纳。来源是原论文，不据视频构造额外量化结论。
+  checked_at: '2026-10-31'
+tags:
+- 拓展阅读
+- 具身智能
+- 人形机器人
+- 移动操作
+- 视觉力融合
+- 力控制
+- 示范学习
+task:
+  name: 从无机器人示范学习力反应式人形移动操作
+  input: 双腕图像、相对关键点状态、测得 wrench 历史；示范含运动与接触力
+  output: 高层关键点轨迹与三维力命令，经低层 WBC 执行关节位置目标
+  conditions: 单一 Unitree G1、推车/转箱/擦板三个任务，每任务训练独立高层策略；低层仿真训练后实机部署。
+  evidence:
+  - paper: flore-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: flore-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 相似可见运动不能区分是否真正接触、物体静摩擦是否被克服或法向压力是否合适；位置策略在推车时不动/漂移、转箱时失衡、擦板时悬空（Sec.IV-C–F，Fig.6，pp.6–8）。
+  evidence:
+  - paper: flore-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: flore-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-force-reactive-wbc
+  name: 力标注示范连接视觉力策略与全身控制
+  description: 高层扩散策略读取双腕图像、相对身体状态与测得 wrench 历史，预测关键点运动和力命令；低层以 p_target=p_reference+(f_cmd+I)/K 将力命令与测得力误差积分转为位置参考，再由单一 RL
+    WBC 产生关节位置目标。预测力实际送入控制器，与仅把力作为辅助监督不同（Secs.III-A/C，pp.3–5，Fig.2）。
+  evidence:
+  - paper: flore-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-force-command-pathway
+  name: 可执行力命令通道
+  role: method-or-evaluation
+  motivation: 让学得的力真正进入低层执行，而不只作为预测辅助目标。
+  evidence:
+  - paper: flore-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-measured-force-reference
+  name: 测得力闭环参考生成
+  role: method-or-evaluation
+  motivation: 将命令与实测反力误差闭环转成位置目标，同时保留未命令方向顺应。
+  evidence:
+  - paper: flore-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-manipulation-interface
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 原任务中将力示范、策略输入/输出与全身执行连接的具体方案；未独立检索首创，不据作者宣传判定通用 SOTA。
+limitations:
+- text: 原任务为单一 Unitree G1 平台的三个接触丰富操作任务，每任务单独训练策略、每策略每任务 10 次配对条件 rollout。不是通用 VLA 或多平台 SOTA。F-in 是测得的六维 wrench，F-out 包括力/力矩预测与监督，但
+    WBC 实际接收三维力命令，不是六维 wrench 跟踪。仿真仅法向无摩擦接触，切向载荷训练未见；侧向/向下较弱且有跨轴泄漏。未验证恶劣天气去噪迁移。
+  evidence:
+  - paper: flore-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+analysis:
+  updated_at: '2026-10-31'
+  previous_methods:
+    text: 作者以位置型无机器人示范策略、运动跟踪器及外接 admittance 控制作为对照；其问题是接触力未成为示范—策略—控制之间一致且实际执行的接口（Secs.I–II、IV）。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: flore-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 整理者归纳：运动参考有效不代表接触约束已满足，额外预测任务也不等于执行通道。需要区分观测力、预测力和控制器实际收到的命令。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: flore-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 把力作为贯穿示范、策略与控制的共享变量，并让测得接触误差闭合在参考生成器中；这两个设计杠杆在原任务分别记录。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: flore-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-force-pathway
+    name: 力作为可执行的学习接口
+    module_ids:
+    - module-force-command-pathway
+    motivation:
+      text: 仅跟踪姿态不能区分接触状态或产生所需作用力。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: flore-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 高层扩散策略读取双腕图像、相对身体状态与测得 wrench 历史，预测关键点运动和力命令；低层以 p_target=p_reference+(f_cmd+I)/K 将力命令与测得力误差积分转为位置参考，再由单一 RL WBC
+        产生关节位置目标。预测力实际送入控制器，与仅把力作为辅助监督不同（Secs.III-A/C，pp.3–5，Fig.2）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: flore-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 力预测送入低层控制与仅学习力辅助目标作用不同；输入力与执行力也不能混为一谈。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: flore-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 在接触丰富任务中可按阻力调整，范围受三个任务与单平台验证限制。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: flore-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: contribution-force-reference
+    name: 测得力驱动统一位置参考
+    module_ids:
+    - module-measured-force-reference
+    motivation:
+      text: 位置输出的 RL 跟踪器需要将作用力要求转成可追踪参考。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: flore-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 统一参考生成器积分 f_cmd+f_meas，符号约定下理想反力等于 -f_cmd；接触门控 ch 使积分仅在接触建立、释放后清除，clip 限制 windup。目标偏移是 (f_cmd+I)/K，RL 策略观察 I、偏移与接触状态并保持为唯一关节目标执行器。未命令方向的测得外力也改变参考，使手在积分边界内顺应（Sec.III-A，Eq.1，pp.3–4）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: flore-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 通过测量闭环修正位移参考，减少对接触刚度估计的依赖；积分有门控和限幅，不是无条件稳定性定理。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: flore-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 同一执行策略协调力和运动，并可在未命令方向顺应；强度、方向和零点噪声范围仍有限。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: flore-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-force-pathways
+    name: 同网络移除执行力通道
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-force-pathway
+    result:
+      text: TableII（p.7）：完整24/30（80%），w/o F-cmd11/30（36.7%），w/o F-in20/30（66.7%），DP8/30（26.7%）。每任务10次且条件配对；w/o F-cmd 与完整策略是同一网络，执行时令
+        f_cmd 及 ch/I/Δx 通道为0。作者仅对24/30与11/30报告 Fisher p=0.001（Sec.IV-F，p.8）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: flore-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 执行力通道关闭包含关联控制状态，不是只拿掉一个独立网络层；F-in 属较小趋势，不能套用 F-cmd 的显著性。离线误差相同来自同网络，不说明执行效果相同。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: flore-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-sim-force
+    name: 仿真运动与力跟踪
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-force-reference
+    result:
+      text: TableI（p.6）：Isaac Lab 训练、MuJoCo 测试；前向5–25 N命令的增益1.03–1.06，接触误差1.00–1.05 N，SONIC+admittance约0.67–0.70和7.9 N。统计仅包含两配对条件均未跌倒完成的片段；运动误差在
+        f_cmd=0 条件计算。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: flore-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 不是全轴或全部片段平均，成功片段筛选与运动/力条件必须保留。整体对照不能隔离积分、门控、奖励项各自因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: flore-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-real-force
+    name: 外置力计实机核对
+    kind: design-choice
+    assessment: reported
+    contribution_ids:
+    - contribution-force-reference
+    result:
+      text: Sec.IV-B（p.6）：外置刚性力计，4/6/8/10 N阶梯命令；x方向稳态约91%命令幅度，MAE约1.1 N，平均1.8 s进入±1 N范围，波动约±0.3–0.5 N。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: flore-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 此为实机外部参考，不是仿真表格；x方向结果不能外推所有方向，侧向/向下较弱与跨轴泄漏仍被作者报告。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: flore-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 原任务为单一 Unitree G1 平台的三个接触丰富操作任务，每任务单独训练策略、每策略每任务 10 次配对条件 rollout。不是通用 VLA 或多平台 SOTA。F-in 是测得的六维 wrench，F-out 包括力/力矩预测与监督，但
+      WBC 实际接收三维力命令，不是六维 wrench 跟踪。仿真仅法向无摩擦接触，切向载荷训练未见；侧向/向下较弱且有跨轴泄漏。未验证恶劣天气去噪迁移。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: flore-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

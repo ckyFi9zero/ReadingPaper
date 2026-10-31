@@ -42,18 +42,25 @@ nodes:
     original_pdf_review_status: source-checked
 - id: task-restoration
   kind: task
-  name: 天气退化点云结构恢复
+  name: 天气退化几何与深度恢复
   novelty_class: 1
   confidence: provisional
   first_work_status: not-assessed
-  description: 输入退化点云，重建缺失几何；与仅删除噪声点的输出不同。
+  description: 输入受天气退化的点云或 RGB–LiDAR 投影，重建缺失几何或密集深度；全周点云与图像平面深度的输出空间不同，分别在路线中注明，不与仅删除噪声点混同。
   source_papers:
   - ltdnet-2026
+  - aurora-kitti-2026
   evidence:
   - &id019
     paper: ltdnet-2026
     stage: first-pass
     anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: aurora-kitti-2026
+    stage: first-pass
+    anchor: section-02
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
@@ -1375,9 +1382,10 @@ nodes:
   novelty_class: 1
   confidence: provisional
   first_work_status: not-assessed
-  description: 输入：腕部视觉、末端轨迹及机器人状态；高层真实手持示范、低层仿真轨迹跟踪训练；输出：12腿关节与6臂关节位置目标及独立夹爪命令，用于抛掷、推动、抓放。本集合中的任务归类，不宣称领域完整或首创。
+  description: 有腿平台上的运动与操作协调：既有 UMI on Legs 以任务系末端轨迹连接高层与机器人专属 WBC；新增 FLoRe 为人形平台的视觉力示范、策略与执行。机器人、控制变量、监督和测试范围分别记录，不将不同平台成绩直接比较。
   source_papers:
   - umi-on-legs-2024
+  - flore-2026
   evidence:
   - paper: umi-on-legs-2024
     stage: first-pass
@@ -1385,6 +1393,12 @@ nodes:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: unregistered
+  - paper: flore-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
 - id: pipeline-task-frame-wbc
   kind: pipeline
   name: 任务系轨迹接口与机器人专属全身跟踪
@@ -1795,3 +1809,109 @@ nodes:
     basis: existing-note
     original_pdf_review_status: source-checked
   parent: pipeline-vln-support-selection
+- id: pipeline-clean-prior-depth
+  kind: pipeline
+  name: 清洁先验引导深度恢复
+  parent: task-restoration
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: DDCD 以受天气退化的 RGB 与稀疏 LiDAR 投影深度作为学生输入。训练时从对应清洁 RGB 离线预计算冻结单目深度教师输出；以有效
+    GT 拟合尺度/偏置并使用 masked alignment，再由 scale-and-shift invariant 与梯度项传递结构先验，联合监督学生密集深度；教师与清洁
+    RGB 不进入测试输入（Sec.3.3–3.5，pp.7–10，Fig.5）。 这是限定集合的路线归纳，未独立核验首创。
+  source_papers:
+  - aurora-kitti-2026
+  evidence:
+  - paper: aurora-kitti-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-clean-prior-distillation
+  kind: module
+  name: 训练期清洁先验蒸馏
+  parent: pipeline-clean-prior-depth
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 冻结教师用配对清洁 RGB 生成训练先验，按有效GT对齐；学生测试仅用受损RGB与稀疏深度。 这是限定集合的路线归纳，未独立核验首创。
+  source_papers:
+  - aurora-kitti-2026
+  evidence:
+  - paper: aurora-kitti-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-region-restoration-metrics
+  kind: module
+  name: 分区修复与保持评测
+  parent: pipeline-clean-prior-depth
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 分别评测异常回波纠正、回波丢失补全和可靠区域保持；需要清洁/天气配对投影及有效GT。 这是限定集合的路线归纳，未独立核验首创。
+  source_papers:
+  - aurora-kitti-2026
+  evidence:
+  - paper: aurora-kitti-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-force-reactive-wbc
+  kind: pipeline
+  name: 力示范连接视觉策略与WBC
+  parent: task-mobile-manipulation
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 高层扩散策略读取双腕图像、相对身体状态与测得 wrench 历史，预测关键点运动和力命令；低层以 p_target=p_reference+(f_cmd+I)/K
+    将力命令与测得力误差积分转为位置参考，再由单一 RL WBC 产生关节位置目标。预测力实际送入控制器，与仅把力作为辅助监督不同（Secs.III-A/C，pp.3–5，Fig.2）。
+    这是限定集合的路线归纳，未独立核验首创。
+  source_papers:
+  - flore-2026
+  evidence:
+  - paper: flore-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-force-command-pathway
+  kind: module
+  name: 可执行力命令通道
+  parent: pipeline-force-reactive-wbc
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 区分测得力输入、预测力监督与真正送入控制器的命令，不能以离线预测代替部署效果。 这是限定集合的路线归纳，未独立核验首创。
+  source_papers:
+  - flore-2026
+  evidence:
+  - paper: flore-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-measured-force-reference
+  kind: module
+  name: 实测力闭环参考
+  parent: pipeline-force-reactive-wbc
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 用实测反力误差积分与接触门控，将命令转成位置目标；单个RL策略继续执行全身关节目标。 这是限定集合的路线归纳，未独立核验首创。
+  source_papers:
+  - flore-2026
+  evidence:
+  - paper: flore-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked

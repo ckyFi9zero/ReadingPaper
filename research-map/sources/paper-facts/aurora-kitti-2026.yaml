@@ -1,0 +1,368 @@
+version: 1
+paper: aurora-kitti-2026
+scope: in-field
+source_basis: original-pdf-and-reading-note
+source_sha256: 2fdbdebaefd8e254b9549f796eeddab24b452edc86aae64fa6726f918ff4ccaf
+checked_at: '2026-10-31'
+source_version: arXiv:2603.14701v2
+source_url: https://arxiv.org/abs/2603.14701v2
+read_scope: 原文主 PDF pp.1–20、Figures 1–12、Tables 1–10；缺少文中引用的 Appendix A/B/C。仅登记 Stage1，不等于补充材料或代码复现完成。
+source_review:
+  scope: 本轮重新取得并核对 arXiv v2 主文与全部图表；新阅读页提供原文定位。出版社上线/接收元数据与所读 arXiv v2 分开。Appendix A/B/C 未取得，作者模型卡与主文裁剪协议差异仍公开列为缺口，不从 v1 填补。
+  checked_at: '2026-10-31'
+tags:
+- 恶劣天气
+- 雨
+- 雪
+- 雾
+- RGB–LiDAR
+- 深度补全
+- 清洁先验蒸馏
+- 区域误差评估
+task:
+  name: 恶劣天气 RGB–LiDAR 深度补全与去噪
+  input: 天气退化 RGB 与稀疏 LiDAR 投影；训练另需对应清洁 RGB、清洁深度监督及冻结单目教师
+  output: 图像平面密集度量深度，不是全周点云逐点雪标签
+  conditions: AURORA-KITTI 配对模拟雨/雪/雾与真实 DENSE 雨/雾跨域评测；训练监督与真实配对可用性不同。
+  evidence:
+  - paper: aurora-kitti-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: aurora-kitti-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 作者报告晴天训练的深度补全器在天气退化输入上明显退化；整体深度误差又将噪声区修复、缺失补全与原干净区保持混合，无法仅由总分区分三者（Secs.1、3.6、4，Tables4/8，Fig.8）。
+  evidence:
+  - paper: aurora-kitti-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: aurora-kitti-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-clean-prior-depth
+  name: 训练时清洁视觉先验引导联合深度恢复
+  description: DDCD 以受天气退化的 RGB 与稀疏 LiDAR 投影深度作为学生输入。训练时从对应清洁 RGB 离线预计算冻结单目深度教师输出；以有效 GT 拟合尺度/偏置并使用 masked alignment，再由 scale-and-shift
+    invariant 与梯度项传递结构先验，联合监督学生密集深度；教师与清洁 RGB 不进入测试输入（Sec.3.3–3.5，pp.7–10，Fig.5）。
+  evidence:
+  - paper: aurora-kitti-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-clean-prior-distillation
+  name: 清洁先验蒸馏
+  role: method-or-evaluation
+  motivation: 以清洁视觉教师为受损学生提供训练先验；不假定教师处处正确。
+  evidence:
+  - paper: aurora-kitti-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-region-restoration-metrics
+  name: 配对区域恢复指标
+  role: method-or-evaluation
+  motivation: 将受损区域改善与原干净区域深度保持分开观察。
+  evidence:
+  - paper: aurora-kitti-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-weather
+- challenge-restoration-error-mixture
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 按已有深度补全骨干中的训练先验及评测设计登记；作者 any-weather 数据与联合任务主张不等同独立核验首创。
+limitations:
+- text: 阅读依据为 arXiv:2603.14701v2 主文 PDF 20 页；文中引用 Appendix A/B/C，但本轮取得的文件不含这些附录，不能补造完整划分与复现协议。PDF Sec.4（p.12）与作者模型卡的裁剪口径存在差异，见初读限制章节；未在本轮通过实现消除。合成配对
+    AURORA 与真实 DENSE 条件分别记录，DENSE 不含雪天且没有区域配对指标。深度恢复不是逐点雪身份分类，原文未验证下游检测或跨传感器普适性。
+  evidence:
+  - paper: aurora-kitti-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+analysis:
+  updated_at: '2026-10-31'
+  previous_methods:
+    text: 作者比较晴天深度补全器、天气专用方案及既有融合骨干；本篇将受损稀疏输入的补全与去噪联合处理，不声称此前从未考虑天气鲁棒性（Secs.1–2）。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: aurora-kitti-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 整理者归纳：输入退化、训练域差异与评测混合是不同层面，不能把天气重训练、教师监督和骨干结构的总收益统一归因于某个新模块。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: aurora-kitti-2026
+      stage: first-pass
+      anchor: section-07
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 训练时引入清洁视觉几何先验，同时把受损区域修复与干净区域保持分开衡量；新增信息与新增评测各承担不同作用。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: aurora-kitti-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-clean-prior
+    name: 训练期清洁视觉先验
+    module_ids:
+    - module-clean-prior-distillation
+    motivation:
+      text: 受损输入上的学生需要几何参考，但测试时不能依赖清洁输入。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: aurora-kitti-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: DDCD 以受天气退化的 RGB 与稀疏 LiDAR 投影深度作为学生输入。训练时从对应清洁 RGB 离线预计算冻结单目深度教师输出；以有效 GT 拟合尺度/偏置并使用 masked alignment，再由 scale-and-shift
+        invariant 与梯度项传递结构先验，联合监督学生密集深度；教师与清洁 RGB 不进入测试输入（Sec.3.3–3.5，pp.7–10，Fig.5）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: aurora-kitti-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 离线教师产生额外训练约束，学生测试依赖当前受损两模态；这是结构性概括，不证明教师错误已被纠正。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: aurora-kitti-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 可用清洁图像先验训练学生而不增加推理教师，但训练数据和预计算成本仍在。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: aurora-kitti-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: contribution-region-evaluation
+    name: 拆开修复与保持的评测
+    module_ids:
+    - module-region-restoration-metrics
+    motivation:
+      text: 整体 RMSE 无法同时说明受损点修复和干净区域保持。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: aurora-kitti-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 用配对清洁/退化 LiDAR 投影及相对容差 τ=0.05 划出受损与保留区域，再与有效 GT 掩码取交集。ERR 衡量受损区域 RMSE 相对受损输入的降低；DCE 与 CPP 分别为有效回波丢失区域/可靠回波保留区域的深度
+        RMSE。CPP 不是保留点比例；ERR 不是二分类准确率，0 表示该区域 RMSE 与受损输入相同、未降低，负值表示误差扩大（Sec.3.6，Eqs.14–19，pp.9–10）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: aurora-kitti-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 配对掩码使不同区域的误差分别可见，但仍依赖投影、GT 与阈值。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: aurora-kitti-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 可识别总分相近但误差位置不同的配置；不自动证明哪类错误对检测最重要。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: aurora-kitti-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-weather-training
+    name: 同骨干天气训练与额外先验
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-clean-prior
+    result:
+      text: Tables7–8：BP-Net 晴天预训练到天气重训练的 RMSE 为 4945.43→2103.33 mm；DDCD 为 1801.93 mm。DDCD 使用额外教师监督，不能视为只更换结构的同监督对照。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: aurora-kitti-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 天气重训练收益与清洁教师监督收益分开；报告值是本论文配置，不是复现实测或跨论文排行榜。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: aurora-kitti-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-normalization
+    name: 清洁输入与 Norm 的消融边界
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-clean-prior
+    result:
+      text: Table10：B（noisy + Norm）到 C（clean、无 Norm）同时改变教师输入与归一化；B 到完整 DDCD 在同 Norm 条件比较输入，C 到完整 DDCD 的 RMSE 改善但 iMAE 从1.64到1.96变差。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: aurora-kitti-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 不能把 B→C 当单独清洁输入效应，也不能把联合损失结果当 SSI/梯度独立贡献。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: aurora-kitti-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-region-metrics
+    name: 区域指标揭示恢复与保持
+    kind: design-choice
+    assessment: reported
+    contribution_ids:
+    - contribution-region-evaluation
+    result:
+      text: Sec.3.6、Table3、Fig.8：ERR、DCE、CPP按异常回波/丢失/可靠保留区域分别计算。DDCD为0.826/474.41 mm/835.1 mm；UniK3D为0.744/683.03 mm/3136.4
+        mm。BP-Net ERR=0.348，并非所有baseline均接近0；这些指标只用于配对AURORA。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: aurora-kitti-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 不同区域指标不能互换为逐点 precision/recall 或物理雪身份；GT掩码限制可见范围。 DDCD域内训练与其他zero-shot行不是同监督条件对照，分区差异不构成单模块因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: aurora-kitti-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-teacher-shift
+    name: 教师选择的合成/真实差异
+    kind: design-choice
+    assessment: reported
+    contribution_ids:
+    - contribution-clean-prior
+    result:
+      text: 教师 V3 在 AURORA 的 RMSE 为1711.78 mm，对照教师为1801.93；DENSE 上为3950.11与2761.97 mm，排序反转（Table9，p.17）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: aurora-kitti-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 更强合成成绩不保证真实跨域更好；数据、教师与条件应保留，不能推出普适教师优劣。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: aurora-kitti-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 阅读依据为 arXiv:2603.14701v2 主文 PDF 20 页；文中引用 Appendix A/B/C，但本轮取得的文件不含这些附录，不能补造完整划分与复现协议。PDF Sec.4（p.12）与作者模型卡的裁剪口径存在差异，见初读限制章节；未在本轮通过实现消除。合成配对
+      AURORA 与真实 DENSE 条件分别记录，DENSE 不含雪天且没有区域配对指标。深度恢复不是逐点雪身份分类，原文未验证下游检测或跨传感器普适性。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: aurora-kitti-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
