@@ -605,11 +605,14 @@ nodes:
   novelty_class: 1
   confidence: provisional
   first_work_status: not-assessed
-  description: 无序三维点集（XYZ，可附颜色/法向量）；分类使用形状采样或场景预分割物体，分割使用单物体或场景子区域。 训练/测试：以物体类别、部件或场景逐点标签进行任务监督；ModelNet40
-    归一化 1024 点，训练竖轴旋转与位置扰动；场景分割按块采样训练、测试覆盖全部点。 → 分类输出 k 类分数；分割输出每点 m 类分数（n×m）。 本节点为限定集合的原生任务分类，不声明首创或领域覆盖完整。
+  description: 既有 PointNet / PointNet++ 设定：无序三维点集（XYZ，可附颜色/法向量）；分类使用形状采样或场景预分割物体，分割使用单物体或场景子区域。
+    训练/测试：以物体类别、部件或场景逐点标签进行任务监督；ModelNet40 归一化 1024 点，训练竖轴旋转与位置扰动；场景分割按块采样训练、测试覆盖全部点。 → 分类输出
+    k 类分数；分割输出每点 m 类分数（n×m）。 本节点为限定集合的原生任务分类，不声明首创或领域覆盖完整。 新增 RMT-Seg 路线为整帧天气 LiDAR 经 range-view
+    网络输出逐点语义，在 SemanticSTF 完整目标域标签监督下评测；不与形状分类或无监督去雪混同。
   source_papers:
   - pointnet-2017
   - pointnet-plus-plus-2017
+  - rmt-seg-2026
   evidence:
   - paper: pointnet-2017
     stage: first-pass
@@ -632,6 +635,12 @@ nodes:
   - paper: pointnet-plus-plus-2017
     stage: first-pass
     anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: rmt-seg-2026
+    stage: first-pass
+    anchor: section-02
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
@@ -1912,6 +1921,59 @@ nodes:
   - paper: flore-2026
     stage: first-pass
     anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-reliability-selective-segmentation
+  kind: pipeline
+  name: 双评估分配全局/局部计算
+  parent: task-pointset-understanding
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 将输入点云投影为保留 XYZ、径向距离及反射强度的 range view。共享评估网络预测可靠性 R 与难度 D；R 在 Mamba 之前混合原始特征与轻量变换
+    ψ(F0)，并非硬删点或直接修改状态转移。D 对 P×P 窗口累加排序，仅取 top-K 的全局特征做局部 Transformer，再 scatter 回原位置，未选区置零；门控融合全局/局部特征并补入
+    R、D 的辅助特征，输出逐点语义（Secs.2.1–2.3，Eqs.1–4，pp.3–6）。 这是限定集合的路线归纳，未独立核验首创。
+  source_papers:
+  - rmt-seg-2026
+  evidence:
+  - paper: rmt-seg-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-reliability-premodulation
+  kind: module
+  name: 可靠性特征预调制
+  parent: pipeline-reliability-selective-segmentation
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 可靠性 R 在全局 Mamba 扫描前混合 F0 与 ψ(F0)，不把低 R 点硬删除。 这是限定集合的路线归纳，未独立核验首创。
+  source_papers:
+  - rmt-seg-2026
+  evidence:
+  - paper: rmt-seg-2026
+    stage: first-pass
+    anchor: module-global
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-difficulty-window-refinement
+  kind: module
+  name: 难度选窗与门控精炼
+  parent: pipeline-reliability-selective-segmentation
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: D 按窗口累计排序选 top-K，局部 Transformer 只处理选中窗口；scatter 后与全局特征门控融合。 这是限定集合的路线归纳，未独立核验首创。
+  source_papers:
+  - rmt-seg-2026
+  evidence:
+  - paper: rmt-seg-2026
+    stage: first-pass
+    anchor: module-local
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked

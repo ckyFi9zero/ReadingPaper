@@ -535,5 +535,91 @@
         "reviewedAt": "2026-10-31"
       }
     }
+  },
+{
+  "slug": "rmt-seg-2026",
+  "category": "in-field",
+  "name": "RMT-Seg",
+  "title": "Mamba-Transformer: A LiDAR Semantic Segmentation Algorithm for Adverse Weather",
+  "year": 2026,
+  "venue": "CMC",
+  "readDate": "2026-11-01",
+  "url": "https://doi.org/10.32604/cmc.2026.086285",
+  "doi": "10.32604/cmc.2026.086285",
+  "tags": [
+    "雪",
+    "雨",
+    "雾",
+    "LiDAR",
+    "语义分割",
+    "可靠性评估",
+    "伪标签",
+    "Mamba",
+    "局部注意力"
+  ],
+  "summary": "用可靠性图调制全局特征、难度图选择局部Transformer窗口，在SemanticSTF完整目标域监督下评估分割精度与计算取舍；伪监督不等于少标注，边缘计时只含网络前向。",
+  "stages": {
+    "first-pass": "first-pass.html"
+  },
+  "reviews": {
+    "first-pass": {
+      "status": "source-checked",
+      "noteStatus": "organized",
+      "checkedAt": "2026-11-01",
+      "evidence": [
+        "正式出版PDF16页全文、Figures1–4及Tables1–4已核对；无PDF附录，出版页无独立补充链接。",
+        "Secs.2.2–2.4区分R预调制、D选窗、训练期辅助伪监督及推理期预测。",
+        "Tables1–4与Sec.3.4核对目标域全监督、累积消融、三种子范围及网络前向计时边界。"
+      ]
+    }
+  },
+  "readingQuality": {
+    "version": 1,
+    "classification": {
+      "confirmedCategory": "in-field",
+      "rationale": "直接研究真实雪/雨/雾下LiDAR语义分割、退化区域建模与分距离/天气评测，属于用户恶劣天气感知主线，不以是否直接提出雪点删除算法作为分类边界。",
+      "source": "用户领域相关性范围；论文Secs.1、3.1–3.4，PDFpp.1–3、7–11。",
+      "reviewedAt": "2026-11-01"
+    },
+    "graphics": {
+      "status": "included",
+      "items": [
+        {
+          "figureId": "table-1",
+          "kind": "paper-crop",
+          "label": "Table 1",
+          "pdfPage": 9,
+          "sourceUrl": "https://cdn.techscience.cn/files/cmc/2026/TSP_CMC-89-3/TSP_CMC_86285/TSP_CMC_86285.pdf#page=9",
+          "analysisId": "analysis-table-1"
+        },
+        {
+          "figureId": "fig-4",
+          "kind": "paper-crop",
+          "label": "Figure 4",
+          "pdfPage": 11,
+          "sourceUrl": "https://cdn.techscience.cn/files/cmc/2026/TSP_CMC-89-3/TSP_CMC_86285/TSP_CMC_86285.pdf#page=11",
+          "analysisId": "analysis-fig-4"
+        },
+        {
+          "figureId": "table-3",
+          "kind": "paper-crop",
+          "label": "Table 3",
+          "pdfPage": 12,
+          "sourceUrl": "https://cdn.techscience.cn/files/cmc/2026/TSP_CMC-89-3/TSP_CMC_86285/TSP_CMC_86285.pdf#page=12",
+          "analysisId": "analysis-table-3"
+        }
+      ]
+    },
+    "rightsReview": {
+      "basis": "正式PDFp.1及出版页面明确CC BY4.0；仅选Table1整体评测、Figure4区域分配、Table3累积消融三项必要证据，保留完整图表及caption，裁去无关页面内容并逐图作者/许可/页码/源链接归因，无整页或全文PDF。",
+      "reviewedAt": "2026-11-01"
+    },
+    "visualReview": {
+      "desktop": true,
+      "mobile": true,
+      "zoom": true,
+      "reviewedAt": "2026-11-01"
+    }
   }
+}
 ]

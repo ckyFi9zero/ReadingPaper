@@ -1,0 +1,389 @@
+version: 1
+paper: rmt-seg-2026
+scope: in-field
+source_basis: original-pdf-and-reading-note
+source_sha256: 6a3faeaabacf35abb0797dd6049edede704da243cbcbcde909ab26bac5fff1fb
+checked_at: '2026-11-01'
+source_version: Tech Science Press published article, 2026-10-22
+source_url: https://doi.org/10.32604/cmc.2026.086285
+read_scope: 出版社 PDF 全部16页（正文pp.1–13、参考文献pp.14–16），Figures1–4、Tables1–4（Table4跨pp.12–13）；仅Stage1，未阅读实现或运行复现。
+source_review:
+  scope: 本轮核对出版社正式全文与全部图表；事实层由初读定位到原文。新增卡片的机制提炼为阅读者归纳，不因作者称强性能而判定通用 SOTA。原文报告实现公开，但本轮没有通过代码补全未报告细节。
+  checked_at: '2026-11-01'
+tags:
+- 恶劣天气
+- 雪
+- 雾
+- 雨
+- LiDAR语义分割
+- 可靠性评估
+- 辅助伪标签
+- 选择性计算
+- Mamba
+- Transformer
+task:
+  name: 恶劣天气 LiDAR 逐点语义分割
+  input: 当前帧 LiDAR 点云的 XYZ、径向距离及反射强度，经球面投影进入 range-view 网络
+  output: 逐点语义类别，不是雪/环境二分类或滤波后的清洁点云
+  conditions: SemanticSTF 真实雪/轻雾/浓雾/雨；所有对比方法均在官方划分下使用完整目标域训练集及语义标签，UniMix 行为 CENet-based 实现。
+  evidence:
+  - paper: rmt-seg-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: rmt-seg-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 作者认为天气退化空间分布不均：噪声区进入统一全局建模会污染上下文，而对所有位置使用局部注意力代价高；全局模型又不足以辨别边界与小物体的局部细节（Introduction，pp.2–3）。
+  evidence:
+  - paper: rmt-seg-2026
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: rmt-seg-2026
+    stage: first-pass
+    anchor: section-04
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-reliability-selective-segmentation
+  name: 双评估引导全局传播与选择性局部精炼
+  description: 将输入点云投影为保留 XYZ、径向距离及反射强度的 range view。共享评估网络预测可靠性 R 与难度 D；R 在 Mamba 之前混合原始特征与轻量变换 ψ(F0)，并非硬删点或直接修改状态转移。D
+    对 P×P 窗口累加排序，仅取 top-K 的全局特征做局部 Transformer，再 scatter 回原位置，未选区置零；门控融合全局/局部特征并补入 R、D 的辅助特征，输出逐点语义（Secs.2.1–2.3，Eqs.1–4，pp.3–6）。
+  evidence:
+  - paper: rmt-seg-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-reliability-premodulation
+  name: 可靠性特征预调制
+  role: core-module
+  motivation: 在全局扫描之前调节不同区域输入贡献，不把低可靠性点直接删去。
+  evidence:
+  - paper: rmt-seg-2026
+    stage: first-pass
+    anchor: module-global
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-difficulty-window-refinement
+  name: 难度选窗与门控精炼
+  role: core-module
+  motivation: 把局部注意力预算放到高难度窗口，再与全局上下文对齐融合。
+  evidence:
+  - paper: rmt-seg-2026
+    stage: first-pass
+    anchor: module-local
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: rmt-seg-2026
+    stage: first-pass
+    anchor: module-fusion
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 登记已有 range-view/状态空间/注意力路线中的双评估调度方案；未独立核验首创，不将作者报告的领先分数升级为通用 SOTA。
+limitations:
+- text: 仅报告 SemanticSTF 官方划分、完整训练集的目标域全监督实验；不证明少标注、无监督去雪、跨传感器或未见天气泛化。range view 不保持精确三维邻域。Table3 是逐步累加模块/损失，不是所有因素独立消融；Fig.4
+    是定性示例，无数值色标，不能证明置信度校准或物理噪声真值。Jetson Orin Nano 的 46.7±1.2 ms 仅含 TensorRT 引擎执行，排除投影、预处理、后处理及反投影，不是整链路实时性（Secs.2.2、2.4、3.3–3.5，pp.4–12）。
+  evidence:
+  - paper: rmt-seg-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: rmt-seg-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+analysis:
+  updated_at: '2026-11-01'
+  previous_methods:
+    text: 按本文作者叙述，已有天气工作偏重数据处理；CNN 局部感受野、全尺度注意力成本和纯状态空间模型局部几何细节各有约束。该归纳不是对所有前作的独立复核。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: rmt-seg-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 本文将区域信息是否可靠与区域分割是否困难分别建模；二者驱动不同计算路径。可靠性来自学习并受先验约束，不能与真实噪声标签或预测正确概率画等号。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: rmt-seg-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 先分开评估“哪些输入应少影响全局上下文”和“哪些局部需要更多计算”，再分配全局传播与局部精炼的预算。该机制与单纯换用 Mamba 或增加 Transformer 不同，但其独立因果仍受消融配置限制。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: rmt-seg-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-reliability
+    name: 可靠性引导的全局建模
+    module_ids:
+    - module-reliability-premodulation
+    motivation:
+      text: 天气噪声与可靠结构被同等纳入全局建模时，作者担心上下文传播被污染。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rmt-seg-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: R 参与 F0r=R⊙F0+(1−R)⊙ψ(F0)，随后进入水平/竖直正反向扫描 Mamba；原文明确给出的是输入预调制（Sec.2.2，Eq.2）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rmt-seg-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 评估信号决定后续特征处理方式；可靠性与数据质量相关的作者解释不等于已证实校准。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rmt-seg-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 在本文配置中协调全局与局部计算；实际收益与代价按整体比较和累计对照分别记录，不视为无成本或普适优势。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rmt-seg-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: contribution-selective-local
+    name: 难度选窗与局部门控精炼
+    module_ids:
+    - module-difficulty-window-refinement
+    motivation:
+      text: 对局部边界与不完整小物体精炼，同时避免全图局部自注意力开销。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rmt-seg-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 按窗口内 D 累计响应选 top-K；裁剪 Fg 交局部 Transformer、scatter 回原位置、未选区域填零，再以 G 与全局特征加权融合并加入 φaux(R,D)（Sec.2.3，Eqs.3–4）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rmt-seg-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 评估信号决定后续特征处理方式；局部预算按窗口排序分配，选择后的精炼收益仍依赖原任务及配置。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rmt-seg-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 在本文配置中协调全局与局部计算；实际收益与代价按整体比较和累计对照分别记录，不视为无成本或普适优势。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rmt-seg-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-overall
+    name: 同目标域监督下的整体性能
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-reliability
+    - contribution-selective-local
+    result:
+      text: Table1：RMT-Seg mIoU 54.8%、40m外41.2%；Transformer 53.4/39.6，Pure-Mamba 51.6/36.6。RMT为10.1M参数、45.8G FLOPs、24.7
+        FPS；Pure-Mamba为8.9M/39.6G/29.4 FPS，故并非相对所有对比都更快。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rmt-seg-2026
+        stage: first-pass
+        anchor: result-overall
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 目标域完整监督，UniMix 为 CENet-based 实现；不是原始域泛化设定的跨论文排行榜，也不能由整体分数隔离 R 或 D 的作用。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rmt-seg-2026
+        stage: first-pass
+        anchor: result-overall
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-weather
+    name: 四种天气子集
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-reliability
+    - contribution-selective-local
+    result:
+      text: Table2：RMT-Seg 的雪/轻雾/浓雾/雨 mIoU 为55.4/55.0/53.8/50.9%；所列方法中各列最高，但雨仍是其最低一列。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rmt-seg-2026
+        stage: first-pass
+        anchor: result-weather
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 只能描述本表、当前训练/测试条件的天气子集表现，不代表未见天气或跨传感器泛化。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rmt-seg-2026
+        stage: first-pass
+        anchor: result-weather
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-progressive
+    name: 逐步组件和辅助损失
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-reliability
+    - contribution-selective-local
+    result:
+      text: Table3：基础编码器48.7→双头49.8→Rel-Mamba51.9→局部精炼53.5→门控54.4±0.14→Lrel54.6±0.11→Lref完整54.8±0.10% mIoU。仅末三配置报告3种子均值±标准差；局部精炼使
+        FLOPs 从39.6G到44.1G。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rmt-seg-2026
+        stage: first-pass
+        anchor: result-ablation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 这是逐步累加对照，不证明任意组合的独立贡献。Rel-Mamba 同时增加骨干与可靠性调制，不能据其增量单独验证物理先验机制；Table3基线48.7不是Table1 Pure-Mamba51.6。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rmt-seg-2026
+        stage: first-pass
+        anchor: result-ablation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-runtime
+    name: 边缘平台网络执行
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-selective-local
+    result:
+      text: Sec.3.4：Orin Nano 15W，TensorRT8.5/CUDA11.4，64×2048、batch1、FP16；100预热后1000次计时，46.7±1.2ms（21.4FPS）、约1.6GB峰值内存。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rmt-seg-2026
+        stage: first-pass
+        anchor: result-runtime
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 计时只覆盖引擎执行，排除投影和输入/输出处理及反投影；不是完整机器人感知链实时性验证。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rmt-seg-2026
+        stage: first-pass
+        anchor: result-runtime
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 仅报告 SemanticSTF 官方划分、完整训练集的目标域全监督实验；不证明少标注、无监督去雪、跨传感器或未见天气泛化。range view 不保持精确三维邻域。Table3 是逐步累加模块/损失，不是所有因素独立消融；Fig.4
+      是定性示例，无数值色标，不能证明置信度校准或物理噪声真值。Jetson Orin Nano 的 46.7±1.2 ms 仅含 TensorRT 引擎执行，排除投影、预处理、后处理及反投影，不是整链路实时性（Secs.2.2、2.4、3.3–3.5，pp.4–12）。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: rmt-seg-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: rmt-seg-2026
+      stage: first-pass
+      anchor: section-07
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
