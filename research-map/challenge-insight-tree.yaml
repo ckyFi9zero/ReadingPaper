@@ -2499,6 +2499,202 @@ challenges:
       basis: not-assessed
       status: unverified
       evidence: []
+  - id: insight-paired-sensitivity-curriculum
+    name: 用同场景扰动差异安排训练顺序
+    status: inferred
+    source_papers:
+    - robust-efficient-lidar-2026
+    techniques:
+    - 配对清洁受损
+    - 扰动敏感度
+    - 全样本课程
+    - 固定排序
+    - 离线ensemble
+    principle:
+      text: 同一场景受损前后的预测变化可用来安排训练进程，避免把场景本身的难度与扰动造成的变化完全混为一谈；这是作者设计思想，不等于分数已被验证为校准的难度概率。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: robust-efficient-lidar-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    transfer_boundary: 只覆盖两数据集、PointRCNN/SECOND、一个扰动强度和 RTX 4090D；真实恶劣天气、其他架构与车载平台未测。原文未量化七检测器推断、评分及密度统计的离线总成本；基线未统一资源预算。净收益依配置而变，不能以总体平均证明每类对象都改善或保证下游安全。
+    evidence:
+    - paper: robust-efficient-lidar-2026
+      stage: first-pass
+      anchor: module-score
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: robust-efficient-lidar-2026
+      stage: first-pass
+      anchor: module-order
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 已能构造保持任务标签的受损样本，想改变训练进程但不删样本、不更改损失权重，且能承担离线参考检测成本时。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: section-02
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: 七个固定预训练检测器分别融合清洁/受损预测；按类别以BEV IoU≥0.5贪心一对一匹配，把置信度绝对差、1−BEV IoU均值与0.5倍未匹配比例相加。分数同时赋给该清洁帧及其受损副本，将完整2N列表按低到高排序；每轮禁用shuffle，所有样本与损失权重不变（Sec.3.2，Eqs.2–6，PDF
+          pp.3–4）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: module-score
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: module-order
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 同一缓存受损副本用于评分和训练；两帧共享分数，保留全部样本。匹配按类别、BEV IoU≥0.5且一框最多一次；无匹配时score/box项置零，未匹配项补记；每epoch保持同一排序，不shuffle、不改损失权重。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: module-score
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: module-order
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 需要有框标注的清洁训练集、可生成且保留标签的受损副本与七个固定参考检测器。只将参考推断用于离线分数，不生成伪标签或蒸馏监督；作者未量化总离线开销。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: module-score
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: module-order
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 只覆盖两数据集、PointRCNN/SECOND、一个扰动强度和 RTX 4090D；真实恶劣天气、其他架构与车载平台未测。原文未量化七检测器推断、评分及密度统计的离线总成本；基线未统一资源预算。净收益依配置而变，不能以总体平均证明每类对象都改善或保证下游安全。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: result-overall
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: Table4全尺寸PointRCNN的KITTI Car受损Moderate AP：random64.86、confidence66.58、sensitivity67.12；对应清洁79.59/80.66/82.12。Table5紧凑模型去prioritization时Car/Pedestrian/Cyclist受损AP比完整少1.15/7.04/2.84点。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: result-order
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: result-ablation
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: 训练顺序对照支持该数据/架构下的策略选择；全尺寸Table4与紧凑Table5不能混用。七模型ensemble的精度差异不证明分数校准，也不是跨帧时序一致性；无独立各score项消融。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: result-order
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: result-ablation
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: robust-efficient-lidar-2026
+      location: Secs.2.2、3.2，Eqs.2–6，PDF pp.2–4；Fig.2 p.4；Tables4–5、Sec.4.4 p.8；Sec.5 pp.8–9
+      evidence:
+      - paper: robust-efficient-lidar-2026
+        stage: first-pass
+        anchor: module-score
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: robust-efficient-lidar-2026
+        stage: first-pass
+        anchor: module-order
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: robust-efficient-lidar-2026
+        stage: first-pass
+        anchor: result-order
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: robust-efficient-lidar-2026
+        stage: first-pass
+        anchor: result-ablation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 分数各项、匹配阈值、ensemble规模与不同严重度/真实天气的独立作用尚未被本篇实验分别确认；不将这些材料缺口称为领域空白。
+      basis: not-assessed
+      status: unverified
+      evidence: []
   why_hard:
     text: 天气、传感器和数据采集域共同改变观测；统一训练、条件化与跨域泛化不是同一个命题。
     basis: analyst-inference
@@ -4182,6 +4378,172 @@ challenges:
         original_pdf_review_status: source-checked
     open_questions:
       text: 不同 K/P 预算、各先验分量与 R 输入调制的独立作用、跨传感器强度偏移及全链路延迟在本轮原文材料中未取得对应独立验证；不将缺口改写为已确认领域空白。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-offline-density-budget
+    name: 先测训练分布冗余，再固定削减执行预算
+    status: inferred
+    source_papers:
+    - robust-efficient-lidar-2026
+    techniques:
+    - 离线密度统计
+    - 固定点预算
+    - 邻域预算下限
+    - 通道缩减
+    - 体素预算
+    principle:
+      text: 把输入统计用于部署前的结构配置：削减实际执行的通道和空间处理量，同时用预算下限限制过度缩减；该路线不同于逐帧选择难点的在线条件计算。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: robust-efficient-lidar-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    transfer_boundary: 只覆盖两数据集、PointRCNN/SECOND、一个扰动强度和 RTX 4090D；真实恶劣天气、其他架构与车载平台未测。原文未量化七检测器推断、评分及密度统计的离线总成本；基线未统一资源预算。净收益依配置而变，不能以总体平均证明每类对象都改善或保证下游安全。
+    evidence:
+    - paper: robust-efficient-lidar-2026
+      stage: first-pass
+      anchor: module-budget
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 需要预先构建固定检测器，并能用训练分布估计点/邻域工作量冗余，同时接受清洁AP与受损AP的配置依赖权衡时。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: section-02
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: 训练前将PointRCNN的MLP/全连接宽度按0.7缩放并取实现兼容值；用训练集输入范围内有效点数中位数与各半径平均邻点数，计算带上下限和最小邻点数的固定点/邻居预算。SECOND缩减BEV/上采样通道并以离线点数统计设置体素预算。结构和预算训练、推理均不变，不按当前天气或每帧密度在线调节（Sec.3.3，Eqs.7–9，pp.4–5）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: module-budget
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 邻域冗余R=max(平均邻点数/原预算,1)，保留率按R的−1/2次幂并夹在上/下限，冗余越高允许越多削减，邻点数还受Smin保护；点预算保留率为sqrt(有效点数中位数/参考输入点数)再夹在上/下限，因此该比率越低允许越多削减。PointRCNN点头/ROI头[256,256]→[176,176]；全点聚合阶段保留原设置。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: module-budget
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 离线统计需训练集与输入范围、分组半径等配置；紧凑模型从头训练。SECOND只给体素预算的定性描述，不能把PointRCNN公式直接套给它；总离线成本未报告。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: module-budget
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 只覆盖两数据集、PointRCNN/SECOND、一个扰动强度和 RTX 4090D；真实恶劣天气、其他架构与车载平台未测。原文未量化七检测器推断、评分及密度统计的离线总成本；基线未统一资源预算。净收益依配置而变，不能以总体平均证明每类对象都改善或保证下游安全。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: result-overall
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: Table3完整方案在清洁KITTI PointRCNN上47.96→38.46ms、408.1→188.2MB；Table5去density-guided sampling的Car/Pedestrian/Cyclist受损Moderate
+          AP为62.88/40.97/48.14，完整为64.35/46.26/52.81。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: result-efficiency
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: result-ablation
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: Table3资源收益来自缩通道和预算等完整配置，不能归因于密度规则单项。Table5支持报告变体下的AP差异，但未明确No-density变体的替代预算，且没有单项资源节省或等预算对照；当前统计固定在训练前，不证明跨传感器自适应。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: result-efficiency
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: robust-efficient-lidar-2026
+          stage: first-pass
+          anchor: result-ablation
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: robust-efficient-lidar-2026
+      location: Sec.3.3，Eqs.7–9，PDF pp.4–5；Table3 p.7；Table5 p.8；Secs.4.3–5 pp.6–9
+      evidence:
+      - paper: robust-efficient-lidar-2026
+        stage: first-pass
+        anchor: module-budget
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: robust-efficient-lidar-2026
+        stage: first-pass
+        anchor: result-efficiency
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: robust-efficient-lidar-2026
+        stage: first-pass
+        anchor: result-ablation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 各预算上下界和SECOND体素预算的完整配置、替代density变体的等预算设计、单项资源贡献及真实车载全链路成本尚缺可单独核验的原文证据。
       basis: not-assessed
       status: unverified
       evidence: []

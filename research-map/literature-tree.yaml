@@ -1977,3 +1977,64 @@ nodes:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+- id: pipeline-offline-robust-provisioning
+  kind: pipeline
+  name: 离线抗扰排序与固定资源配置
+  parent: task-3d-object-detection
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  source_papers:
+  - robust-efficient-lidar-2026
+  description: 七个固定预训练检测器分别融合清洁/受损预测；按类别以BEV IoU≥0.5贪心一对一匹配，把置信度绝对差、1−BEV IoU均值与0.5倍未匹配比例相加。分数同时赋给该清洁帧及其受损副本，将完整2N列表按低到高排序；每轮禁用shuffle，所有样本与损失权重不变（Sec.3.2，Eqs.2–6，PDF
+    pp.3–4）。 训练前将PointRCNN的MLP/全连接宽度按0.7缩放并取实现兼容值；用训练集输入范围内有效点数中位数与各半径平均邻点数，计算带上下限和最小邻点数的固定点/邻居预算。SECOND缩减BEV/上采样通道并以离线点数统计设置体素预算。结构和预算训练、推理均不变，不按当前天气或每帧密度在线调节（Sec.3.3，Eqs.7–9，pp.4–5）。
+    本节点为限定集合的路线归纳，未独立核验首创。
+  evidence:
+  - paper: robust-efficient-lidar-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-paired-sensitivity-order
+  kind: module
+  name: 同场景扰动差异排序
+  parent: pipeline-offline-robust-provisioning
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  source_papers:
+  - robust-efficient-lidar-2026
+  description: 七个固定预训练检测器分别融合清洁/受损预测；按类别以BEV IoU≥0.5贪心一对一匹配，把置信度绝对差、1−BEV IoU均值与0.5倍未匹配比例相加。分数同时赋给该清洁帧及其受损副本，将完整2N列表按低到高排序；每轮禁用shuffle，所有样本与损失权重不变（Sec.3.2，Eqs.2–6，PDF
+    pp.3–4）。 本节点为限定集合的路线归纳，未独立核验首创。
+  evidence:
+  - paper: robust-efficient-lidar-2026
+    stage: first-pass
+    anchor: module-score
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: robust-efficient-lidar-2026
+    stage: first-pass
+    anchor: module-order
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-offline-density-budget
+  kind: module
+  name: 离线密度固定预算
+  parent: pipeline-offline-robust-provisioning
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  source_papers:
+  - robust-efficient-lidar-2026
+  description: 训练前将PointRCNN的MLP/全连接宽度按0.7缩放并取实现兼容值；用训练集输入范围内有效点数中位数与各半径平均邻点数，计算带上下限和最小邻点数的固定点/邻居预算。SECOND缩减BEV/上采样通道并以离线点数统计设置体素预算。结构和预算训练、推理均不变，不按当前天气或每帧密度在线调节（Sec.3.3，Eqs.7–9，pp.4–5）。
+    本节点为限定集合的路线归纳，未独立核验首创。
+  evidence:
+  - paper: robust-efficient-lidar-2026
+    stage: first-pass
+    anchor: module-budget
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
