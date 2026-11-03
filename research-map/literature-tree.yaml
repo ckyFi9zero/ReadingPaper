@@ -2038,3 +2038,166 @@ nodes:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+- id: task-fog-detection-range
+  kind: task
+  name: 雾天逐帧有效量程估计
+  parent: null
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 输出消光系数、物理映射量程与另行拟合的检测首见距离，保持这三种量的区别。 本节点是限定集合内的路线整理，未独立核验首创。
+  source_papers:
+  - reading-fog-2026
+  evidence:
+  - paper: reading-fog-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-fog-return-range
+  kind: pipeline
+  name: 保留雾回波，估计量程并单独校准首检
+  parent: task-fog-detection-range
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 上游雾/非雾分割后保留雾点子集，在 r∈[0.5,3] m 的近车窗口对 log I(r) 与 r 做普通最小二乘直线拟合，以负半斜率估计消光系数，再按原文 3.912/β 映射为量程。原文另用居中的
+    ±5 帧中位数平滑，并可用 β、该映射值、log 点数和拟合 R² 四特征线性回归首检距离；后者有拟合参数，不能与物理核混同（Secs.3.1–3.4、4.4，PDF pp.6–8、10–11）。 本节点是限定集合内的路线整理，未独立核验首创。
+  source_papers:
+  - reading-fog-2026
+  evidence:
+  - paper: reading-fog-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: reading-fog-2026
+    stage: first-pass
+    anchor: result-regression
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-fog-extinction-range
+  kind: module
+  name: 近车雾回波斜率与量程映射
+  parent: pipeline-fog-return-range
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 近车 [0.5,3] m 雾点拟合 log 强度斜率，负半斜率为 β；映射系数按原文记录但保留阈值不一致，平滑延迟不自动计入处理时长。 本节点是限定集合内的路线整理，未独立核验首创。
+  source_papers:
+  - reading-fog-2026
+  evidence:
+  - paper: reading-fog-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: reading-fog-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-fog-detection-calibration
+  kind: module
+  name: 记录留一的四特征首检回归
+  parent: pipeline-fog-return-range
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 物理 β、映射量程、log 点数、拟合 R² 另接线性回归；14 记录留一验证 488 帧，1.99 m MAE 属此模型而非无参数核。 本节点是限定集合内的路线整理，未独立核验首创。
+  source_papers:
+  - reading-fog-2026
+  evidence:
+  - paper: reading-fog-2026
+    stage: first-pass
+    anchor: result-regression
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: task-vla-chunk-control
+  kind: task
+  name: 语言条件机器人动作块生成
+  parent: null
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 根据图像、语言和机器人状态预测动作块；历史信息服务原任务操作，不等同天气感知迁移。 本节点是限定集合内的路线整理，未独立核验首创。
+  source_papers:
+  - reki-2026
+  evidence:
+  - paper: reki-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-cacheable-vla-memory
+  kind: pipeline
+  name: 逐帧编码与动作专家缓存记忆
+  parent: task-vla-chunk-control
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: VLM 每帧仅编码当前图像与提示，动作专家每帧增加 32 个 register。register 读取当前 VLM context 和过去 registers，但不读取动作 token、跳过 adaptive
+    normalization，因此不依赖去噪时间或机器人状态；动作 token 可读当前/过去 register 与本块动作。常规基准训练将 K=3、间隔 1 s 的窗口一次批处理（真实 UR5 配置的间隔为 2 s，Table 11），每帧各有动作损失；推理首个 Euler 步计算当前
+    register KV，后九步复用，并跨 chunk 保留最近 K−1 帧 KV（Secs.4.1–4.2、Figs.3/9/10，pp.4–6、21–22）。 本节点是限定集合内的路线整理，未独立核验首创。
+  source_papers:
+  - reki-2026
+  evidence:
+  - paper: reki-2026
+    stage: first-pass
+    anchor: module-register-memory
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: reki-2026
+    stage: first-pass
+    anchor: module-cached-inference
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-action-independent-register
+  kind: module
+  name: 让记忆独立于动作与去噪状态
+  parent: pipeline-cacheable-vla-memory
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: register 不读动作并跳过 adaptive normalization，首步建立 KV 后跨 Euler 步/动作块复用；历史窗口滚动，但推理信息可间接延续超出窗口。 本节点是限定集合内的路线整理，未独立核验首创。
+  source_papers:
+  - reki-2026
+  evidence:
+  - paper: reki-2026
+    stage: first-pass
+    anchor: module-register-memory
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: reki-2026
+    stage: first-pass
+    anchor: module-cached-inference
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-parallel-window-loss
+  kind: module
+  name: 窗口并行、逐帧监督及多噪声抽样
+  parent: pipeline-cacheable-vla-memory
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 每帧 VLM 独立编码，专家按因果 register 支持组织注意力；每帧监督，8 份噪声/时间抽样共享昂贵 context 和 registers，不声称每个实现项已有独立因果消融。 本节点是限定集合内的路线整理，未独立核验首创。
+  source_papers:
+  - reki-2026
+  evidence:
+  - paper: reki-2026
+    stage: first-pass
+    anchor: module-window-training
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked

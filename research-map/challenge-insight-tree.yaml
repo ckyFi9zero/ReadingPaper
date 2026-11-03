@@ -3634,6 +3634,191 @@ challenges:
       basis: not-assessed
       status: unverified
       evidence: []
+  - id: insight-nuisance-as-range-observable
+    name: 保留雾点，单独估计可感知范围
+    status: inferred
+    source_papers:
+    - reading-fog-2026
+    techniques:
+    - 雾回波
+    - 消光系数
+    - 近车强度斜率
+    - 四特征回归
+    - 检测量程
+    - 标签语义
+    principle:
+      text: 去噪的“废弃子集”可能含有传感器退化的信息。先保留它形成独立的环境观测，再把物理量与具体检测器的任务范围分开验证。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    transfer_boundary: 证据限于重雾：双车顶 VLP-32C、两条长参考记录，以及六场景的 14 条接近记录共 488 帧。轻雾、雨雪尘与更多交通场景未刻画；上游错分会减小样本或偏置斜率。STF 外部结果不证明所有厂商/波长通用。原文
+      3.912 与 5% 对比阈值的等式不一致；居中 ±5 帧与在线等待时间、固定几何窗口与留出记录敏感性选择、正文/附录阶段计时亦未统一说明，不能静默消除。量程或回归区间不是已验证的检测可靠性/闭环安全保证（Sec.5.5，pp.15–16；Sec.3.3
+      p.7；Tables 2/A1）。
+    evidence:
+    - paper: reading-fog-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 已有雾/非雾分割，但清洁云无法表达当前感知距离，需要额外的逐帧状态读出时；限于原文重雾与强度模型条件。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: reading-fog-2026
+          stage: first-pass
+          anchor: section-02
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: reading-fog-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: 上游雾/非雾分割后保留雾点子集，在 r∈[0.5,3] m 的近车窗口对 log I(r) 与 r 做普通最小二乘直线拟合，以负半斜率估计消光系数，再按原文 3.912/β 映射为量程。原文另用居中的
+          ±5 帧中位数平滑，并可用 β、该映射值、log 点数和拟合 R² 四特征线性回归首检距离；后者有拟合参数，不能与物理核混同（Secs.3.1–3.4、4.4，PDF pp.6–8、10–11）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: reading-fog-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: reading-fog-2026
+          stage: first-pass
+          anchor: result-regression
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 窗口下界排除车体，上界限制场景物体污染；记录拟合点数和 R² 作为质量辅助量。平滑为原文居中 11 帧中位数，非学习时序模型。首检标签固定检测器与置信阈值 0.5，并用 GNSS 范围而非检测框测距；记录留一避免同一
+          traversal 的帧混入训练和测试。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: reading-fog-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: reading-fog-2026
+          stage: first-pass
+          anchor: result-regression
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 依赖预训练分割、距离/强度可用性和近车雾样本。物理核无学习参数，四特征回归则需标签和拟合；RTX 2070 全链报告 60–70 ms，附录拟合/映射与中位数分别约 0.17/0.07 ms，不是额外计算为零。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: reading-fog-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: reading-fog-2026
+          stage: first-pass
+          anchor: result-runtime
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 证据限于重雾：双车顶 VLP-32C、两条长参考记录，以及六场景的 14 条接近记录共 488 帧。轻雾、雨雪尘与更多交通场景未刻画；上游错分会减小样本或偏置斜率。STF 外部结果不证明所有厂商/波长通用。原文
+          3.912 与 5% 对比阈值的等式不一致；居中 ±5 帧与在线等待时间、固定几何窗口与留出记录敏感性选择、正文/附录阶段计时亦未统一说明，不能静默消除。量程或回归区间不是已验证的检测可靠性/闭环安全保证（Sec.5.5，pp.15–16；Sec.3.3
+          p.7；Tables 2/A1）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: reading-fog-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: 两参考记录 β 中位数 0.211/0.224 m⁻¹，物理映射量程 18.5/17.4 m；另一个场景语料的四特征回归 MAE 1.99 m，对照常数 4.51 m；STF 352 帧量程 RMSE
+          4.5 m。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: reading-fog-2026
+          stage: first-pass
+          anchor: result-physics
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: reading-fog-2026
+          stage: first-pass
+          anchor: result-regression
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: reading-fog-2026
+          stage: first-pass
+          anchor: result-external
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: 各结果对应不同目标与数据：两记录光学一致性、14 记录经验首检回归、STF 参照及合成恢复不能相互替代。自身公式复算不是独立验证；人工标签扰动 oracle 不是物理误差下界。尚未验证闭环安全收益或检测可靠概率。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: reading-fog-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: reading-fog-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: reading-fog-2026
+      location: Secs.3.1–3.5，PDF pp.6–8；Secs.4.1–4.6 pp.10–13；Table A1 p.17；Secs.5.5–6 pp.15–16
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 居中平滑的实际在线延迟、对比阈值/系数不一致的作者澄清、不同分割质量与传感器配置的校准、以及闭环控制收益仍缺充分证据；不将这些缺口称为已确认研究空白。
+      basis: not-assessed
+      status: unverified
+      evidence: []
   why_hard:
     text: 逐点指标不刻画所有任务关键结构；误删、生成伪影和下游训练配置都可能改变任务收益。 AWCR 补证：物体点未变不保证前融合表示不变，修复收益须与原有正确检测的保留同时核对；这是特定控制设置下的补充，不与其他论文的误删机制混同。
     basis: analyst-inference
@@ -4544,6 +4729,200 @@ challenges:
         original_pdf_review_status: source-checked
     open_questions:
       text: 各预算上下界和SECOND体素预算的完整配置、替代density变体的等预算设计、单项资源贡献及真实车载全链路成本尚缺可单独核验的原文证据。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-action-independent-memory-cache
+    name: 让历史记忆独立于变化动作，再跨步复用
+    status: inferred
+    source_papers:
+    - reki-2026
+    techniques:
+    - VLA
+    - register tokens
+    - KV cache
+    - flow matching
+    - 动作振荡
+    - 并行窗口
+    - CUDA graphs
+    principle:
+      text: 需要历史上下文时，先区分哪些量随动作生成步骤变化。把历史写入不读取动作、也不受去噪时间调制的 token，才能在动作专家中复用它，而无需重复编码过去图像。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    transfer_boundary: 原任务为语言条件机器人操作，未验证天气 LiDAR 迁移。主要采用 K=3 的短历史；长期事件依赖仍未测。训练窗口独立，而推理缓存可含窗口之前信息，二者不完全同构。整体基准的预训练数据、预算和架构不同，不把排行差异全部归因于记忆。RoboTwin
+      同分布结果并非最好，真实机器人每任务只有 10 次测试且含部分任务积分；缓存不能挽救所有振荡失败。主文 Fig.6 的 21.8 ms 与附录 A.1 的 K=3 为 22.8 ms 属不同计时报告，不合并为同一运行（Secs.6–8、App.A.1/D.4/E）。
+    evidence:
+    - paper: reki-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 语言条件操作存在相似当前观测却需不同后续动作的情况，同时无法反复承担历史图像编码成本时；此卡只归纳 REKI 的原任务条件。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: reki-2026
+          stage: first-pass
+          anchor: challenge-memory-cost
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: reki-2026
+          stage: first-pass
+          anchor: insight-cacheable-memory
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: VLM 每帧仅编码当前图像与提示，动作专家每帧增加 32 个 register。register 读取当前 VLM context 和过去 registers，但不读取动作 token、跳过 adaptive
+          normalization，因此不依赖去噪时间或机器人状态；动作 token 可读当前/过去 register 与本块动作。常规基准训练将 K=3、间隔 1 s 的窗口一次批处理（真实 UR5 配置的间隔为 2 s，Table 11），每帧各有动作损失；推理首个 Euler
+          步计算当前 register KV，后九步复用，并跨 chunk 保留最近 K−1 帧 KV（Secs.4.1–4.2、Figs.3/9/10，pp.4–6、21–22）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: reki-2026
+          stage: first-pass
+          anchor: module-register-memory
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: reki-2026
+          stage: first-pass
+          anchor: module-window-training
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: reki-2026
+          stage: first-pass
+          anchor: module-cached-inference
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: register 不读 action token 且跳过 adaptive normalization；首个 Euler 步建立当前 KV，后九步复用，跨 chunk 仅保留滚动历史 KV。cu_seqlens
+          保持 VLM 逐帧边界；每帧 8 组 flow time/噪声共享 context/register；编译 VLM prefill 和专家为 CUDA graphs。训练窗口首帧无更早历史，推理缓存则可能携带更早信息，应保留此差别。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: reki-2026
+          stage: first-pass
+          anchor: module-window-training
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: reki-2026
+          stage: first-pass
+          anchor: module-cached-inference
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 默认 K=3、每帧 32 registers；App.A.1 的 H100 测量中缓存每历史帧约 2 MiB、K=3 约 4 MiB。两幅 256×256 图、10 动作块长度、10 Euler 步、bf16
+          与 CUDA graphs 下 K=1/3 为 22.6/22.8 ms；这些不是普适平台开销。训练仍需数据和算力，200k 预训练步使用 32 H100。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: reki-2026
+          stage: first-pass
+          anchor: result-latency
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: reki-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 原任务为语言条件机器人操作，未验证天气 LiDAR 迁移。主要采用 K=3 的短历史；长期事件依赖仍未测。训练窗口独立，而推理缓存可含窗口之前信息，二者不完全同构。整体基准的预训练数据、预算和架构不同，不把排行差异全部归因于记忆。RoboTwin
+          同分布结果并非最好，真实机器人每任务只有 10 次测试且含部分任务积分；缓存不能挽救所有振荡失败。主文 Fig.6 的 21.8 ms 与附录 A.1 的 K=3 为 22.8 ms 属不同计时报告，不合并为同一运行（Secs.6–8、App.A.1/D.4/E）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: reki-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: RoboTwin Clean 50 任务×20 匹配种子中，同权重 3→3/3→1 振荡 episode 为 4.1%/14.8%，3→2 为 4.6%；另训练无记忆为 18.6%。LIBERO-Plus/RoboTwin
+          Clean/RoboCasa365 的 3→3 相比 1→1 为 90.4/73.4/38.4% 对 88.9/67.9/33.0%。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: reki-2026
+          stage: first-pass
+          anchor: result-oscillation
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: reki-2026
+          stage: first-pass
+          anchor: result-memory-ablation
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: 推理时移除历史的同权重对照支持读取历史的作用；它不单独验证 32-token 数量、8-draw、全部数据处理或编译项的精度贡献。3→2 在部分基准略高于 3→3，不是窗口越大越好。公开模型总体排行受预训练数据/预算差异影响；真实机器人
+          task score 含部分积分，不能改写为全成功率。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: reki-2026
+          stage: first-pass
+          anchor: result-memory-ablation
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: reki-2026
+          stage: first-pass
+          anchor: result-oscillation
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: reki-2026
+          stage: first-pass
+          anchor: result-real-robot
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: reki-2026
+      location: Secs.4.1–4.2，PDF pp.4–6；Fig.5/Sec.6.2 p.9；Secs.6.3–8 pp.10–12；App.A.1/Figs.9–10 pp.21–22；App.D.4/E
+        pp.29–32
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: reki-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: reki-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 短窗口是否足以保存长期任务事件、不同控制频率/硬件的开销、各工程项独立作用仍未充分验证；向天气去噪的任何迁移也未验证。
       basis: not-assessed
       status: unverified
       evidence: []

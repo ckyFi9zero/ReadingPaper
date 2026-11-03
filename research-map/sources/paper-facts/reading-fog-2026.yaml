@@ -1,0 +1,377 @@
+version: 1
+paper: reading-fog-2026
+scope: in-field
+source_basis: original-pdf-and-reading-note
+source_sha256: b5b410af760509e37dd89083532b20b290185d34980eadfd28f20bc9eab30111
+checked_at: '2026-11-03'
+source_version: Sensors 2026, 26(20), 6623；2026-10-19 正式发表；本轮出版社 PDF
+source_url: https://doi.org/10.3390/s26206623
+read_scope: 地图核对原 PDF 正文 pp.1–16、附录 A p.17、相关引用入口；实际查看 Fig.1、Figs.5–7 和 Table A1。阅读页的十二项由原文核对，未运行模型或安全控制。
+source_review:
+  scope: 地图核对原 PDF 正文 pp.1–16、附录 A p.17、相关引用入口；实际查看 Fig.1、Figs.5–7 和 Table A1。阅读页的十二项由原文核对，未运行模型或安全控制。 原文报告与作者解释不等于复现实测；机制整理保留阅读者身份，未提升历史来源的核验等级。
+  checked_at: '2026-11-03'
+task:
+  name: 雾天逐帧 LiDAR 有效量程估计
+  input: 带距离与强度的点云及既有雾/非雾分割结果；经验回归另需逐记录首检距离标签
+  output: 物理核的消光系数与映射量程；可选四特征线性回归的目标首检距离
+  conditions: 双车顶 905 nm、32 线 Velodyne VLP-32C 的重雾数据。标签以 PointPillars 置信阈值 0.5 首次检测到前车的帧为准，用同步 GNSS/车辆日志取距离；回归标签为记录基准距离加
+    U(−0.5,+0.5) m 人工扰动（seed 42）。按 14 条记录留一，不能称逐帧随机划分或独立 488 次雾况实验。
+  evidence:
+  - paper: reading-fog-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: reading-fog-2026
+    stage: first-pass
+    anchor: result-regression
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 作者认为去雾后的点云本身不能告诉规划器当前还能看到多远，且重雾下检测器可能漏检或把雾团检为目标；本文把原来丢弃的雾点作为量程观测，未以新的点级去噪网络为目标（Secs.1–2、5.3）。
+  evidence:
+  - paper: reading-fog-2026
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-fog-return-range
+  name: 保留雾回波—估计光学量—区分物理量程与经验首检回归
+  description: 上游雾/非雾分割后保留雾点子集，在 r∈[0.5,3] m 的近车窗口对 log I(r) 与 r 做普通最小二乘直线拟合，以负半斜率估计消光系数，再按原文 3.912/β 映射为量程。原文另用居中的
+    ±5 帧中位数平滑，并可用 β、该映射值、log 点数和拟合 R² 四特征线性回归首检距离；后者有拟合参数，不能与物理核混同（Secs.3.1–3.4、4.4，PDF pp.6–8、10–11）。
+  evidence:
+  - paper: reading-fog-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-fog-extinction-range
+  name: 近车雾回波斜率与量程映射
+  role: core-module
+  motivation: 把被过滤的雾回波保留为额外的可观测量，而不是把干净点云等同于可感知距离。
+  evidence:
+  - paper: reading-fog-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-fog-detection-calibration
+  name: 四特征首检距离回归与记录留一验证
+  role: method-or-evaluation
+  motivation: 区别原始光学映射和具体检测器定义的首检距离，使用对应标签评估经验预测。
+  evidence:
+  - paper: reading-fog-2026
+    stage: first-pass
+    anchor: result-regression
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-downstream
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 记录原任务中的具体方法与评测变化，不独立宣称首创、通用 SOTA 或未经测量的迁移能力。
+limitations:
+- text: 证据限于重雾：双车顶 VLP-32C、两条长参考记录，以及六场景的 14 条接近记录共 488 帧。轻雾、雨雪尘与更多交通场景未刻画；上游错分会减小样本或偏置斜率。STF 外部结果不证明所有厂商/波长通用。原文
+    3.912 与 5% 对比阈值的等式不一致；居中 ±5 帧与在线等待时间、固定几何窗口与留出记录敏感性选择、正文/附录阶段计时亦未统一说明，不能静默消除。量程或回归区间不是已验证的检测可靠性/闭环安全保证（Sec.5.5，pp.15–16；Sec.3.3
+    p.7；Tables 2/A1）。
+  evidence:
+  - paper: reading-fog-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+tags:
+- 雾
+- 传感器退化
+- 有效量程
+- 强度
+- 经验校准
+- 评测协议
+analysis:
+  updated_at: '2026-11-03'
+  previous_methods:
+    text: 按本文作者叙述，既有去噪/恢复主要保留清洁点云或任务输出，未提供其要求的逐帧有效量程标量；该领域判断未在本轮独立穷尽检索。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: reading-fog-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 清洁点云、气象光学量、指定检测器的首检距离与可靠检测概率是不同对象；不能把其中一种输出替代另一种。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: reading-fog-2026
+      stage: first-pass
+      anchor: section-02
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: reading-fog-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 同一次分割可服务两个目的：非雾点交给原任务，雾点保留为环境衰减观测。对首检距离的拟合另设监督与验证，不把拟合指标算给无参数物理核。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: reading-fog-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: reading-fog-2026
+      stage: first-pass
+      anchor: result-regression
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-fog-observable
+    name: 雾点作为量程观测
+    module_ids:
+    - module-fog-extinction-range
+    motivation:
+      text: 作者把被丢弃的近车雾回波视为环境光学状态的直接输入。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 上游雾/非雾分割后保留雾点子集，在 r∈[0.5,3] m 的近车窗口对 log I(r) 与 r 做普通最小二乘直线拟合，以负半斜率估计消光系数，再按原文 3.912/β 映射为量程。原文另用居中的
+        ±5 帧中位数平滑，并可用 β、该映射值、log 点数和拟合 R² 四特征线性回归首检距离；后者有拟合参数，不能与物理核混同（Secs.3.1–3.4、4.4，PDF pp.6–8、10–11）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 双路输出保留了清洁云之外的信息；但该链路依赖上游分割和雾散射模型，预测值不等于可靠检测概率。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 原任务提供可解释的逐帧量程读出，支持程度应按物理稳定性、经验回归和外部参照分开阅读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: contribution-fog-calibration
+    name: 首检标签与经验验证
+    module_ids:
+    - module-fog-detection-calibration
+    motivation:
+      text: 作者希望把量程读出与可追踪的前车首检距离核对。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 按记录做留一交叉验证，以 β、3.912/β、log npts、log-linear fit R² 四特征拟合首检距离；每折仅在其他 13 条记录拟合，最终池化 488 帧误差（Sec.4.2/4.4、Table
+        A1c）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: result-regression
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 隔离同一记录的帧能避免记录内训练测试混用，但并不自动建立全新天气、目标或传感器的泛化证据。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: result-regression
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 报告协议下四特征比常数和单特征回归误差低，不代表物理核单独达到该精度。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-physics
+    name: 两条重雾参考记录的物理估计
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-fog-observable
+    result:
+      text: Table A1a：每条采样 60 帧，≥50 个近车点的有效帧为 60/46；β 中位数 0.211/0.224 m⁻¹，映射量程中位数 18.5/17.4 m，逐帧 log-linear R² 中位数
+        0.091/0.090。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: result-physics
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 这是两记录稳定性/一致性，不是首检距离回归 MAE，也不证明所有点都服从高拟合度模型或传感器普适。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: result-physics
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-regression
+    name: 记录留一的四特征经验回归
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-fog-calibration
+    result:
+      text: Sec.4.2 与 Table A1c：14 记录、六场景、488 帧；四特征 MAE/RMSE 为 1.99/2.52 m、R²=0.741，常数基线 4.51/5.26 m，单 β 为 3.55/4.25
+        m，单映射量程为 3.75/4.46 m。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: result-regression
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 这些是有参数回归的池化指标。标签带人工 ±0.5 m 均匀扰动；0.25 m oracle MAE 是该扰动的参考，不是实际 GNSS 误差下界。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: result-regression
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-external
+    name: 外部参照与自一致性分别记录
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-fog-observable
+    - contribution-fog-calibration
+    result:
+      text: Table 1：STF 352 帧量程对照 r=0.72、RMSE 4.5 m，β 对照 r=0.78、RMSE 0.020 m⁻¹；Hahner 模拟 200 帧、四档 α，恢复斜率 0.886、R²=0.972；自身映射差≤0.1
+        m。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: result-external
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: STF 量程对照使用 SNU 拟合系数；自身公式一致性不是独立外部验证。模拟欠恢复与重雾窗口相关是作者解释，不能升级为所有天气/波长验证。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: result-external
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-runtime
+    name: 处理计时与部署边界
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-fog-observable
+    result:
+      text: 正文报告 RTX 2070 全链 60–70 ms；Table A1b 拟合/映射 0.17±0.06 ms，中位数与输出 0.07±0.03 ms，分割 42.6±3.2 ms。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: result-runtime
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 非零计算耗时与作者“无额外 inference cost”措辞应区分；居中 ±5 帧的等待延迟未单列，不能把处理时长直接当成因果在线输出时延。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reading-fog-2026
+        stage: first-pass
+        anchor: result-runtime
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 证据限于重雾：双车顶 VLP-32C、两条长参考记录，以及六场景的 14 条接近记录共 488 帧。轻雾、雨雪尘与更多交通场景未刻画；上游错分会减小样本或偏置斜率。STF 外部结果不证明所有厂商/波长通用。原文
+      3.912 与 5% 对比阈值的等式不一致；居中 ±5 帧与在线等待时间、固定几何窗口与留出记录敏感性选择、正文/附录阶段计时亦未统一说明，不能静默消除。量程或回归区间不是已验证的检测可靠性/闭环安全保证（Sec.5.5，pp.15–16；Sec.3.3
+      p.7；Tables 2/A1）。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: reading-fog-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

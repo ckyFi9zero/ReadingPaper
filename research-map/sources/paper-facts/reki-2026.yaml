@@ -1,0 +1,383 @@
+version: 1
+paper: reki-2026
+scope: out-of-field
+source_basis: original-pdf-and-reading-note
+source_sha256: 420c77128afc473790c64829e9d506fcd1bcb6d4fb484a14fb9b00997426b470
+checked_at: '2026-11-03'
+source_version: arXiv:2610.22178v1，2026-10-15 预印本
+source_url: https://arxiv.org/abs/2610.22178v1
+read_scope: 地图核对原 PDF 正文 pp.1–12、附录 A pp.21–22、训练表与评测附录 C–E pp.25–32；实际查看 Figs.3、5、9–10，并核对原图数值。不是代码运行或复现。
+source_review:
+  scope: 地图核对原 PDF 正文 pp.1–12、附录 A pp.21–22、训练表与评测附录 C–E pp.25–32；实际查看 Figs.3、5、9–10，并核对原图数值。不是代码运行或复现。 原文报告与作者解释不等于复现实测；机制整理保留阅读者身份，未提升历史来源的核验等级。
+  checked_at: '2026-11-03'
+task:
+  name: 带短历史的语言条件机器人动作块生成
+  input: 当前相机图像、语言/控制约定提示和机器人状态，加上历史帧的动作专家 register KV
+  output: flow-matching 动作块，按当前 embodiment 的原生控制约定执行
+  conditions: 2.4B REKI 使用公共机器人、第一视角人类与视觉语言数据预训练，然后按各基准/真实任务微调。默认 K=3、32 register/帧、10 个 Euler 步；真实 UR5+WSG50 五任务，50
+    条训练示范/任务、10 次测试/任务，15 Hz 控制，Table 11 的记忆帧间隔为 2 s。
+  evidence:
+  - paper: reki-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: reki-2026
+    stage: first-pass
+    anchor: result-real-robot
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 作者指出多数 VLA 只据当前观测预测动作；直接堆历史图像增加 VLM 工作量，循环状态增加顺序训练约束。无记忆策略还可能在相似姿态之间跨动作块来回切换（Secs.1–2、6.2）。
+  evidence:
+  - paper: reki-2026
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-cacheable-vla-memory
+  name: 逐帧 VLM 编码—动作专家 register 历史—缓存复用
+  description: VLM 每帧仅编码当前图像与提示，动作专家每帧增加 32 个 register。register 读取当前 VLM context 和过去 registers，但不读取动作 token、跳过 adaptive
+    normalization，因此不依赖去噪时间或机器人状态；动作 token 可读当前/过去 register 与本块动作。常规基准训练将 K=3、间隔 1 s 的窗口一次批处理（真实 UR5 配置的间隔为 2 s，Table 11），每帧各有动作损失；推理首个 Euler 步计算当前
+    register KV，后九步复用，并跨 chunk 保留最近 K−1 帧 KV（Secs.4.1–4.2、Figs.3/9/10，pp.4–6、21–22）。
+  evidence:
+  - paper: reki-2026
+    stage: first-pass
+    anchor: module-register-memory
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: reki-2026
+    stage: first-pass
+    anchor: module-cached-inference
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-action-independent-register
+  name: 与动作/去噪状态解耦的 register KV
+  role: core-module
+  motivation: 保留短历史而不重复编码过去图像，并使记忆可跨 Euler 步及动作块复用。
+  evidence:
+  - paper: reki-2026
+    stage: first-pass
+    anchor: module-register-memory
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: reki-2026
+    stage: first-pass
+    anchor: module-cached-inference
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-parallel-window-loss
+  name: 窗口并行编码与逐帧动作监督
+  role: core-module
+  motivation: 每个窗口中的每帧都有监督，避免为了历史记忆进行逐时刻循环展开。
+  evidence:
+  - paper: reki-2026
+    stage: first-pass
+    anchor: module-window-training
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 记录原任务中的具体方法与评测变化，不独立宣称首创、通用 SOTA 或未经测量的迁移能力。
+limitations:
+- text: 原任务为语言条件机器人操作，未验证天气 LiDAR 迁移。主要采用 K=3 的短历史；长期事件依赖仍未测。训练窗口独立，而推理缓存可含窗口之前信息，二者不完全同构。整体基准的预训练数据、预算和架构不同，不把排行差异全部归因于记忆。RoboTwin
+    同分布结果并非最好，真实机器人每任务只有 10 次测试且含部分任务积分；缓存不能挽救所有振荡失败。主文 Fig.6 的 21.8 ms 与附录 A.1 的 K=3 为 22.8 ms 属不同计时报告，不合并为同一运行（Secs.6–8、App.A.1/D.4/E）。
+  evidence:
+  - paper: reki-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+tags:
+- 拓展阅读
+- VLA
+- 具身操作
+- 短历史记忆
+- register
+- KV cache
+- 动作振荡
+- 效率
+analysis:
+  updated_at: '2026-11-03'
+  previous_methods:
+    text: 本文将历史帧输入 VLM、循环状态和独立记忆模块列为已有路线，并指出各自计算/顺序训练成本；这些比较来自本文叙述，不冒充本轮独立逐篇验证。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: reki-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 如果被缓存的表示依赖每次变化的动作或去噪时间，它就不能直接跨 Euler 步复用；将记忆更新与这些变量解耦，是本篇低增量成本的具体条件。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: reki-2026
+      stage: first-pass
+      anchor: module-register-memory
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: reki-2026
+      stage: first-pass
+      anchor: module-cached-inference
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 把历史压缩写入动作专家已有注意力中的少量、可缓存 token，让每帧编码一次，并通过当前和过去的观测区分相似姿态。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: reki-2026
+      stage: first-pass
+      anchor: insight-cacheable-memory
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-register-cache
+    name: 可缓存的动作专家历史
+    module_ids:
+    - module-action-independent-register
+    motivation:
+      text: 在保留短历史的同时避免将过去图像重复交给 VLM。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: VLM 每帧仅编码当前图像与提示，动作专家每帧增加 32 个 register。register 读取当前 VLM context 和过去 registers，但不读取动作 token、跳过 adaptive
+        normalization，因此不依赖去噪时间或机器人状态；动作 token 可读当前/过去 register 与本块动作。常规基准训练将 K=3、间隔 1 s 的窗口一次批处理（真实 UR5 配置的间隔为 2 s，Table 11），每帧各有动作损失；推理首个 Euler
+        步计算当前 register KV，后九步复用，并跨 chunk 保留最近 K−1 帧 KV（Secs.4.1–4.2、Figs.3/9/10，pp.4–6、21–22）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: module-register-memory
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 不读取动作和跳过状态/flow-time 调制是缓存独立性的设计条件；整体性能收益仍需匹配对照，不由模型总榜证明。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: module-register-memory
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 同权重的有/无历史对照降低振荡比例，并在报告 H100 条件下增加较少时间/显存；不是所有平台上零成本。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: contribution-window-training
+    name: 并行窗口与逐帧监督
+    module_ids:
+    - module-parallel-window-loss
+    motivation:
+      text: 避免历史状态必须逐帧顺序展开，并保留窗口内每帧的监督。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 窗口帧在 backbone 用 cu_seqlens 保持独立，动作专家按因果历史 register 支持组织可变长注意力；每帧平均动作损失，8 组 flow time/噪声共享 context/register。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: module-window-training
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 训练允许后帧损失向前帧 register 传播，但当前原文未用独立实验逐项分离逐帧监督、8-draw 或 attention packing 的性能收益。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: module-window-training
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 可在一次批处理内训练窗口；不把此结构说明升级成任意训练预算下的等成本结论。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-memory
+    name: 窗口大小匹配对照
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-register-cache
+    result:
+      text: Fig.5a：训练/评测 3→3 在 LIBERO-Plus、RoboTwin Clean、RoboCasa365 为 90.4/73.4/38.4%；3→1 为 88.9/67.2/34.9%；单独训练
+        1→1 为 88.9/67.9/33.0%。3→2 为 90.1/73.6/39.3%。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: result-memory-ablation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 同权重 3→3 与 3→1 更直接对应推理历史作用；3→2 在两项略高于 3→3，不能说历史越长必然越好。该 RoboTwin Clean 不是主榜 Clean+Rand 联合微调配置。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: result-memory-ablation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-oscillation
+    name: 同权重移除历史后的振荡
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-register-cache
+    result:
+      text: Fig.5b：RoboTwin Clean 50 任务×20 匹配种子，连续至少三动作块反向运动的 episode 比例，3→3 为 4.1%、3→1 为 14.8%、3→2 为 4.6%；另训练无记忆
+        1→1 为 18.6%。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: result-oscillation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 振荡准则在 16 任务设定、其余 34 任务确认；作者以感知混叠解释循环，不能把该解释视作全部失败的唯一原因。无记忆振荡的种子中，有记忆仅 45% 成功。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: result-oscillation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-memory-cost
+    name: 缓存的条件化开销
+    kind: design-choice
+    assessment: reported
+    contribution_ids:
+    - contribution-register-cache
+    result:
+      text: Appendix A.1：单 H100、两幅 256×256 图、10 动作/块、10 Euler 步、bf16、CUDA graphs，K=1/3 为 22.6/22.8 ms，K=3 缓存约 4
+        MiB、每历史帧约 2 MiB；Fig.5d 标注相对 K=1 增量约 0.1 ms。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: result-latency
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 主文 Fig.6 的端到端 21.8 ms 与附录测量协议/报告分开记录；不将小增量说成零算力，不用不同平台的时长直接排序。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: result-latency
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-real
+    name: 真实 UR5 任务积分
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-register-cache
+    result:
+      text: Fig.8：五任务 task score 平均 REKI/无记忆/π0.5 为 63.5/54.6/39.1%；三项长程任务相对无记忆提高 12/15/17.5 个百分点，两个短程任务同分。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: result-real-robot
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: task score 包含子任务部分积分，不是全成功率；每任务 10 次测试。与 π0.5 的动作块长度等条件不同，不能把差异全部归因于记忆。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: reki-2026
+        stage: first-pass
+        anchor: result-real-robot
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 原任务为语言条件机器人操作，未验证天气 LiDAR 迁移。主要采用 K=3 的短历史；长期事件依赖仍未测。训练窗口独立，而推理缓存可含窗口之前信息，二者不完全同构。整体基准的预训练数据、预算和架构不同，不把排行差异全部归因于记忆。RoboTwin
+      同分布结果并非最好，真实机器人每任务只有 10 次测试且含部分任务积分；缓存不能挽救所有振荡失败。主文 Fig.6 的 21.8 ms 与附录 A.1 的 K=3 为 22.8 ms 属不同计时报告，不合并为同一运行（Secs.6–8、App.A.1/D.4/E）。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: reki-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

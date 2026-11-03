@@ -707,5 +707,170 @@
       "reviewedAt": "2026-11-02"
     }
   }
+},
+{
+  "slug": "reading-fog-2026",
+  "category": "in-field",
+  "name": "Reading the Fog",
+  "title": "Reading the Fog: Real-Time LiDAR-Based Detection Range Estimation for Autonomous Vehicles in Adverse Weather",
+  "year": 2026,
+  "venue": "Sensors",
+  "readDate": "2026-11-03",
+  "url": "https://www.mdpi.com/1424-8220/26/20/6623",
+  "doi": "10.3390/s26206623",
+  "tags": [
+    "LiDAR",
+    "雾",
+    "测量退化",
+    "可用范围",
+    "光学建模",
+    "跨传感器评估"
+  ],
+  "summary": "复用分割出的雾点估计消光与逐帧可见范围；区分无学习参数的光学映射和记录级留一拟合的四特征回归，保留浓雾装置边界、标签构造及原文口径不一致。",
+  "stages": {
+    "first-pass": "first-pass.html"
+  },
+  "reviews": {
+    "first-pass": {
+      "status": "source-checked",
+      "noteStatus": "organized",
+      "checkedAt": "2026-11-03",
+      "evidence": [
+        "出版社当前正式 PDF（sensors-26-06623-v2.pdf）19 页全文、Figures 1–7、Tables 1–2、Table A1(a–c)、附录与参考文献读取并查看；日期 2026-10-19。",
+        "Secs. 3–4 区分无学习参数核心与四特征回归；六场景、14记录、488帧、记录级留一与标签均匀扰动核对。",
+        "保留原文常数/阈值、58%算术、居中窗口在线延迟和计时表口径不一致；不将安全定位写成认证或闭环验证。"
+      ]
+    }
+  },
+  "readingQuality": {
+    "version": 1,
+    "classification": {
+      "confirmedCategory": "in-field",
+      "rationale": "直接研究浓雾下机器人 LiDAR 测量退化及检测可用范围，包含跨来源评估，符合恶劣天气感知与天气退化分析主线。",
+      "source": "用户领域范围；论文摘要、Secs. 1、3、4、5.5，PDF pp. 1–3、5–17。",
+      "reviewedAt": "2026-11-03"
+    },
+    "graphics": {
+      "status": "included",
+      "items": [
+        {
+          "figureId": "fig-1",
+          "kind": "paper-crop",
+          "label": "Figure 1",
+          "pdfPage": 6,
+          "sourceUrl": "https://www.mdpi.com/1424-8220/26/20/6623/pdf#page=6",
+          "analysisId": "analysis-fig-1"
+        },
+        {
+          "figureId": "fig-7",
+          "kind": "paper-crop",
+          "label": "Figure 7",
+          "pdfPage": 13,
+          "sourceUrl": "https://www.mdpi.com/1424-8220/26/20/6623/pdf#page=13",
+          "analysisId": "analysis-fig-7"
+        },
+        {
+          "figureId": "table-a1",
+          "kind": "paper-crop",
+          "label": "Table A1(c)",
+          "pdfPage": 17,
+          "sourceUrl": "https://www.mdpi.com/1424-8220/26/20/6623/pdf#page=17",
+          "analysisId": "analysis-table-a1"
+        }
+      ]
+    },
+    "rightsReview": {
+      "basis": "PDF 首页确认作者 CC BY 4.0；仅使用 Figure 1、Figure 7、Table A1(c) 三项必要局部原图证据，逐图作者归因、来源、PDF页码与裁剪身份，邻近原创分析；不公开完整PDF或整页图集。",
+      "reviewedAt": "2026-11-03"
+    },
+    "visualReview": {
+      "desktop": true,
+      "mobile": true,
+      "zoom": true,
+      "reviewedAt": "2026-11-03"
+    }
+  }
+},
+{
+  "slug": "reki-2026",
+  "category": "out-of-field",
+  "name": "REKI",
+  "title": "REKI: Registering Knowledge in VLAs",
+  "year": 2026,
+  "venue": "arXiv",
+  "readDate": "2026-11-03",
+  "doi": "10.48550/arXiv.2610.22178",
+  "url": "https://arxiv.org/abs/2610.22178v1",
+  "tags": [
+    "拓展阅读",
+    "VLA",
+    "具身智能",
+    "时序记忆",
+    "动作生成",
+    "公开数据"
+  ],
+  "summary": "以公开数据训练2.4B VLA，将动作专家register K/V跨帧缓存；核对短历史消融、动作振荡、推理成本与实机部分评分，保留长上下文和跨方法算力比较边界。",
+  "stages": {
+    "first-pass": "first-pass.html"
+  },
+  "reviews": {
+    "first-pass": {
+      "status": "source-checked",
+      "noteStatus": "organized",
+      "checkedAt": "2026-11-03",
+      "evidence": [
+        "核对arXiv:2610.22178v1全文32页、Figures 1–12、Tables 1–11和Appendices A–E；内嵌Figure 3、5、8三项CC BY 4.0必要局部裁剪。",
+        "区分同权重历史移除与另训无记忆模型、实机task score与完整成功率；保留主文/附录计时差异和不同预训练预算边界。"
+      ]
+    }
+  },
+  "readingQuality": {
+    "version": 1,
+    "classification": {
+      "confirmedCategory": "out-of-field",
+      "rationale": "研究语言条件机器人操作与动作专家记忆，输入相机/语言/状态、输出动作块；无恶劣天气LiDAR感知实验，按VLA/具身拓展收录。",
+      "source": "用户授权VLA/具身拓展范围；Sec. 3任务定义、Secs. 6–7与Appendix E评测。",
+      "reviewedAt": "2026-11-03"
+    },
+    "graphics": {
+      "status": "included",
+      "items": [
+        {
+          "figureId": "figure-3",
+          "kind": "paper-crop",
+          "label": "Figure 3",
+          "pdfPage": 5,
+          "sourceUrl": "https://arxiv.org/pdf/2610.22178v1#page=5",
+          "analysisId": "analysis-figure-3"
+        },
+        {
+          "figureId": "figure-5",
+          "kind": "paper-crop",
+          "label": "Figure 5",
+          "pdfPage": 9,
+          "sourceUrl": "https://arxiv.org/pdf/2610.22178v1#page=9",
+          "analysisId": "analysis-figure-5"
+        },
+        {
+          "figureId": "figure-8",
+          "kind": "paper-crop",
+          "label": "Figure 8",
+          "pdfPage": 11,
+          "sourceUrl": "https://arxiv.org/pdf/2610.22178v1#page=11",
+          "analysisId": "analysis-figure-8"
+        }
+      ]
+    },
+    "rightsReview": {
+      "basis": "arXiv v1登记CC BY 4.0，已核对许可入口；仅公开Figure 3、5、8三个与实质分析对应的独立原图页面局部，保留图内内容与图注并逐图列作者、版本、页码、许可及裁剪身份，不公开PDF或整页图集。",
+      "reviewedAt": "2026-11-03"
+    },
+    "visualReview": {
+      "desktop": true,
+      "mobile": true,
+      "zoom": true,
+      "reviewedAt": "2026-11-03"
+    }
+  }
 }
 ]
