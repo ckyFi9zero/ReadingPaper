@@ -2201,3 +2201,78 @@ nodes:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+- id: task-image-semantic-segmentation
+  kind: task
+  name: 相机平面的稠密语义分割
+  parent: null
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: RGB与几何辅助信息输入，输出二维像素标签；不与3D点分割混用。 本节点为限定集合路线整理，未独立核验首创。
+  source_papers:
+  - rahf-net-2026
+  evidence:
+  - paper: rahf-net-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-range-routed-2d-fusion
+  kind: pipeline
+  name: 先投影三维特征，再按距离融合
+  parent: task-image-semantic-segmentation
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 先由预训练柱坐标编码器提取体素特征，投影非空体素中心到图像平面，同像素特征max pooling、空处零填充；原始点深度另以min pooling保留最近表面。深度归一化经sigmoid形成M，近场用LiDAR注意力重标定RGB并残差注入几何，远场用全局池化视觉上下文，最终M·Fnear+(1−M)·Ffar（Secs.3.3–3.5、Algorithm1，pp.4–6）。
+    本节点为限定集合路线整理，未独立核验首创。
+  source_papers:
+  - rahf-net-2026
+  evidence:
+  - paper: rahf-net-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-rahf-c2p
+  kind: module
+  name: 柱坐标语义特征投影
+  parent: pipeline-range-routed-2d-fusion
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 非空体素中心投影，碰撞特征max pooling，零填充后通道对齐。 本节点为限定集合路线整理，未独立核验首创。
+  source_papers:
+  - rahf-net-2026
+  evidence:
+  - paper: rahf-net-2026
+    stage: first-pass
+    anchor: module-c2p
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-rahf-range-routing
+  kind: module
+  name: 近场几何与远场视觉软路由
+  parent: pipeline-range-routed-2d-fusion
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 原点深度min pooling，归一化深度生成M，连续组合两种分支；不是逐点不确定度预测。 本节点为限定集合路线整理，未独立核验首创。
+  source_papers:
+  - rahf-net-2026
+  evidence:
+  - paper: rahf-net-2026
+    stage: first-pass
+    anchor: module-range-mask
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: rahf-net-2026
+    stage: first-pass
+    anchor: module-range-fusion
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked

@@ -872,5 +872,88 @@
       "reviewedAt": "2026-11-03"
     }
   }
+},
+{
+  "slug": "rahf-net-2026",
+  "category": "in-field",
+  "name": "RAHF-Net",
+  "title": "RAHF-Net: Range-Aware Heterogeneous Fusion for LiDAR-Assisted RGB Semantic Segmentation",
+  "year": 2026,
+  "venue": "arXiv",
+  "readDate": "2026-11-04",
+  "doi": "10.48550/arXiv.2610.25400",
+  "url": "https://arxiv.org/abs/2610.25400v2",
+  "tags": [
+    "LiDAR",
+    "传感器融合",
+    "雾",
+    "雨",
+    "二维语义分割",
+    "距离路由",
+    "退化评测"
+  ],
+  "summary": "以柱坐标三维特征辅助二维图像分割，用深度软掩码分配近场几何与远场视觉责任；区分KITTI-360融合消融和DELIVER单基线压力测试，保留欠曝光、配置与跨传感器边界。",
+  "stages": {
+    "first-pass": "first-pass.html"
+  },
+  "reviews": {
+    "first-pass": {
+      "status": "source-checked",
+      "noteStatus": "organized",
+      "checkedAt": "2026-11-04",
+      "evidence": [
+        "完整读取arXiv:2610.25400v2十页全文与参考文献，实际查看Figures1–3、Tables1–6及Algorithm1；无附录。",
+        "核对2D输出任务、C2P/掩码两种池化、Tables3–5设计消融与Table6单基线压力测试；未读代码或复现。"
+      ]
+    }
+  },
+  "readingQuality": {
+    "version": 1,
+    "classification": {
+      "confirmedCategory": "in-field",
+      "rationale": "直接研究LiDAR辅助二维感知，并在DELIVER的雾、雨和LiDAR jitter等退化条件评估，符合恶劣天气感知与分割评测范围；不是点级去噪，方法类型由标签区分。",
+      "source": "用户确认的相关性范围；arXiv v2 Abstract、Sec.4.4、Table6，PDF pp.1、8。",
+      "reviewedAt": "2026-11-04"
+    },
+    "graphics": {
+      "status": "included",
+      "items": [
+        {
+          "figureId": "table-2",
+          "kind": "paper-crop",
+          "label": "Table 2",
+          "pdfPage": 7,
+          "sourceUrl": "https://arxiv.org/pdf/2610.25400v2#page=7",
+          "analysisId": "analysis-table-2"
+        },
+        {
+          "figureId": "table-5",
+          "kind": "paper-crop",
+          "label": "Table 5",
+          "pdfPage": 8,
+          "sourceUrl": "https://arxiv.org/pdf/2610.25400v2#page=8",
+          "analysisId": "analysis-table-5"
+        },
+        {
+          "figureId": "table-6",
+          "kind": "paper-crop",
+          "label": "Table 6",
+          "pdfPage": 8,
+          "sourceUrl": "https://arxiv.org/pdf/2610.25400v2#page=8",
+          "analysisId": "analysis-table-6"
+        }
+      ]
+    },
+    "rightsReview": {
+      "basis": "已核对arXiv页面为nonexclusive distribution（不是CC）；仅为具体原创比较/消融/天气压力测试分析摘引Tables2、5、6三个必要局部，保留表注、作者、版本、PDF页码与源链接，不上传整篇PDF，不以教育目的声称获得全面许可或作法律保证。",
+      "reviewedAt": "2026-11-04"
+    },
+    "visualReview": {
+      "desktop": true,
+      "mobile": true,
+      "zoom": true,
+      "reviewedAt": "2026-11-04"
+    }
+  }
 }
 ]

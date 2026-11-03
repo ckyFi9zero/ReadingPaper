@@ -1,0 +1,362 @@
+version: 1
+paper: rahf-net-2026
+scope: in-field
+source_basis: original-pdf-and-reading-note
+source_sha256: 7f859e20c5a03c5f1894394e0bd5257ec420c78a0cc2d00ba73196db6ef8d885
+checked_at: '2026-11-04'
+source_version: arXiv:2610.25400v2，2026-10-20修订，预印本；v1为2026-10-18
+source_url: https://arxiv.org/abs/2610.25400v2
+read_scope: 本轮完整读取10页PDF正文及References，实际查看Figures1–3、Tables1–6、Algorithm1；PDF无附录。未阅读代码或复现实验。
+source_review:
+  scope: 本轮原文核验：10页v2全文、所有3图6表与Algorithm1。公开阅读页保留原文定位和三个必要表格裁剪；事实/机制由原文及笔记归纳，不提升历史来源等级，不声称运行验证。
+  checked_at: '2026-11-04'
+task:
+  name: LiDAR辅助的二维图像语义分割
+  input: 同步RGB图像、LiDAR点云、相机内参与LiDAR到相机外参
+  output: 相机图像平面的稠密语义标签，不是三维点标签或检测框
+  conditions: KITTI-360主实验；DELIVER困难天气、光照和LiDAR jitter补充压力测试。SegFormer-B2与预训练Cylinder3D，四张RTX3090、每卡batch4；具体数据划分与预训练数据未明确。
+  evidence:
+  - paper: rahf-net-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: rahf-net-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 作者认为浅层深度投影丢失三维语义几何，统一融合规则不能同时适配近场密集和远场稀疏/易扰动的LiDAR特征（Introduction，pp.1–2）。
+  evidence:
+  - paper: rahf-net-2026
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-range-routed-2d-fusion
+  name: 三维特征投影与距离分配的异质融合
+  description: 先由预训练柱坐标编码器提取体素特征，投影非空体素中心到图像平面，同像素特征max pooling、空处零填充；原始点深度另以min pooling保留最近表面。深度归一化经sigmoid形成M，近场用LiDAR注意力重标定RGB并残差注入几何，远场用全局池化视觉上下文，最终M·Fnear+(1−M)·Ffar（Secs.3.3–3.5、Algorithm1，pp.4–6）。
+  evidence:
+  - paper: rahf-net-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-rahf-c2p
+  name: 柱坐标特征到图像的投影
+  role: core-module
+  motivation: 避免只把LiDAR压成浅层深度值，先保留三维编码再跨视角传输。
+  evidence:
+  - paper: rahf-net-2026
+    stage: first-pass
+    anchor: module-c2p
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-rahf-range-routing
+  name: 软距离先验分配两种融合路径
+  role: core-module
+  motivation: 近处强调几何、远处强调视觉上下文；不是直接预测不确定度。
+  evidence:
+  - paper: rahf-net-2026
+    stage: first-pass
+    anchor: module-range-mask
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: rahf-net-2026
+    stage: first-pass
+    anchor: module-range-fusion
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-range
+- challenge-cross-view-alignment
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 记录已有预训练编码与融合路线中的具体设计变化，未独立核验首创或通用SOTA。
+limitations:
+- text: 原任务为LiDAR辅助的二维图像语义分割，不是点级去雪。DELIVER仅有一个总体外部基线，未报告逐条件baseline；无雪尘、跨LiDAR硬件或时序验证。欠曝光37.22 mIoU；没有端到端速度/显存测量。预训练数据、具体划分与缺失深度的掩码处理未明确（Sec.3.4、4.1–4.4，pp.5–8）。
+  evidence:
+  - paper: rahf-net-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+tags:
+- LiDAR
+- 雾
+- 雨
+- 二维语义分割
+- 距离路由
+- 退化评测
+analysis:
+  updated_at: '2026-11-04'
+  previous_methods:
+    text: 按作者叙述，浅层投影后全图共享融合忽视了3D表征与距离可靠性差异；未独立检索验证所有既有方法。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: rahf-net-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 按作者叙述重建原因链：近密远疏与远场标定/量化噪声敏感性，使全图均匀几何依赖可能不合适；Fig.1只是动机示例，并非独立可靠性统计。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: rahf-net-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 相同模态在不同距离的作用不必相同：把近场几何补偿与远场视觉上下文分为两条路径，以连续距离先验路由；限定于本文二维任务。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: rahf-net-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-rahf-projection
+    name: 先编码后投影三维语义
+    module_ids:
+    - module-rahf-c2p
+    motivation:
+      text: 回应浅层深度图丢失三维结构的限制。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: section-03
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 先由预训练柱坐标编码器提取体素特征，投影非空体素中心到图像平面，同像素特征max pooling、空处零填充；原始点深度另以min pooling保留最近表面。深度归一化经sigmoid形成M，近场用LiDAR注意力重标定RGB并残差注入几何，远场用全局池化视觉上下文，最终M·Fnear+(1−M)·Ffar（Secs.3.3–3.5、Algorithm1，pp.4–6）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: module-c2p
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 高层3D特征在投影前编码局部结构，作用不等同只给一个深度值；其优势依赖所用预训练编码和投影配置。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: module-c2p
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: Table3中预训练柱坐标配置65.76，高于2D range63.12与Cartesian63.42 mIoU；不单独隔离预训练和表示选择。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: result-representation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: contribution-rahf-routing
+    name: 距离先验下的异质融合
+    module_ids:
+    - module-rahf-range-routing
+    motivation:
+      text: 作者用近密远疏解释为何不全图均匀依赖几何。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 先由预训练柱坐标编码器提取体素特征，投影非空体素中心到图像平面，同像素特征max pooling、空处零填充；原始点深度另以min pooling保留最近表面。深度归一化经sigmoid形成M，近场用LiDAR注意力重标定RGB并残差注入几何，远场用全局池化视觉上下文，最终M·Fnear+(1−M)·Ffar（Secs.3.3–3.5、Algorithm1，pp.4–6）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 显式分配近场几何与远场视觉责任，而不是以模块名替代机制；掩码是先验，不是经过校准的不确定度。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: module-range-fusion
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: Table5门控65.76高于近远均用3D的63.15，支持所测配置；不能据总分证明每个工程细节必要。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: result-fusion
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-rahf-overall
+    name: KITTI-360任务匹配比较
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-rahf-projection
+    - contribution-rahf-routing
+    result:
+      text: Table2：RAHF-Net65.76，CMX64.31，Mask2Former56.37 mIoU；四诊断类别另列。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: result-overall
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 整体比较不独立识别两个模块的因果贡献；不同输出空间不直接排名。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: result-overall
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-rahf-representation
+    name: 三维表示与参数网格
+    kind: design-choice
+    assessment: reported
+    contribution_ids:
+    - contribution-rahf-projection
+    result:
+      text: Table3：无3D62.18、range63.12、Cartesian63.42、柱坐标65.76。Table4九格中α10、β5为65.76最高。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: result-representation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 预训练/表示配置同时变化，不把结果归于单一体素坐标；网格最佳不表示跨传感器通用最优。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: result-representation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-rahf-fusion
+    name: 融合策略对照
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-rahf-routing
+    result:
+      text: Table5：2D only62.18，近场only63.61，远场only62.39，近远3D63.15，异质门控65.76。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: result-fusion
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 是所测融合配置对照，不证明每个1×1卷积或深度池化分别必要；部分单支配置行人IoU低于2D only。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: result-fusion
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-rahf-weather
+    name: DELIVER困难条件压力测试
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-rahf-projection
+    - contribution-rahf-routing
+    result:
+      text: Table6：整体58.05，对唯一总体baseline52.97提升5.08；雾58.78、雨60.11、LiDAR jitter58.49、欠曝光37.22。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: result-weather
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 没有逐条件baseline和逐条件路径消融，不把总体增益赋给每种天气；没有雪尘或跨传感器迁移证据。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: result-weather
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 原任务为LiDAR辅助的二维图像语义分割，不是点级去雪。DELIVER仅有一个总体外部基线，未报告逐条件baseline；无雪尘、跨LiDAR硬件或时序验证。欠曝光37.22 mIoU；没有端到端速度/显存测量。预训练数据、具体划分与缺失深度的掩码处理未明确（Sec.3.4、4.1–4.4，pp.5–8）。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: rahf-net-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

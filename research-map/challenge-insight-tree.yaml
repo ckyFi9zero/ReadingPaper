@@ -385,11 +385,12 @@ challenges:
       original_pdf_review_status: source-checked
 - id: challenge-range
   name: 远近距离采样不均
-  description: 近密远疏会影响半径与强度判别
+  description: 近密远疏会影响半径与强度判别，也影响二维跨模态融合的几何依赖
   status: inferred
   observable_failures:
   - 远处环境点被误删
   - 固定强度阈值不适配距离
+  - 在二维融合中，远场稀疏投影可能扰乱视觉语义（RAHF-Net作者解释，非可靠性统计；Introduction，PDF pp.1–2）。
   evidence:
   - &id005
     paper: dror-2018
@@ -416,6 +417,12 @@ challenges:
     paper: dcor-2024
     stage: first-pass
     anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: rahf-net-2026
+    stage: first-pass
+    anchor: section-04
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
@@ -717,6 +724,153 @@ challenges:
         original_pdf_review_status: source-checked
     open_questions:
       text: DSOR 正文与算法判定方向冲突仍待原文/代码进一步核对；参数跨传感器可移植性不能由距离补偿公式保证。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-range-modal-routing
+    name: 按距离切换模态责任
+    techniques:
+    - C2P
+    - 软距离掩码
+    - 近场几何
+    - 远场视觉上下文
+    - 特征max与深度min池化
+    status: inferred
+    transfer_boundary: 原任务为LiDAR辅助的二维图像语义分割，不是点级去雪。DELIVER仅有一个总体外部基线，未报告逐条件baseline；无雪尘、跨LiDAR硬件或时序验证。欠曝光37.22 mIoU；没有端到端速度/显存测量。预训练数据、具体划分与缺失深度的掩码处理未明确（Sec.3.4、4.1–4.4，pp.5–8）。
+    source_papers:
+    - rahf-net-2026
+    evidence:
+    - paper: rahf-net-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: rahf-net-2026
+      stage: first-pass
+      anchor: module-range-fusion
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: rahf-net-2026
+      stage: first-pass
+      anchor: result-fusion
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    principle:
+      text: 距离不仅可调整离群阈值，也可在二维融合任务中作为模态责任的路由先验：近场借几何纠正视觉，远场减少稀疏几何支配并补全局视觉上下文。此卡记录原任务机制，不宣称已迁移为天气点级去噪。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 已装备并标定RGB与LiDAR、需要稠密二维语义图，且希望区别近场完整几何和远场稀疏投影时。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: rahf-net-2026
+          stage: first-pass
+          anchor: section-02
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: 先由预训练柱坐标编码器提取体素特征，投影非空体素中心到图像平面，同像素特征max pooling、空处零填充；原始点深度另以min pooling保留最近表面。深度归一化经sigmoid形成M，近场用LiDAR注意力重标定RGB并残差注入几何，远场用全局池化视觉上下文，最终M·Fnear+(1−M)·Ffar（Secs.3.3–3.5、Algorithm1，pp.4–6）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: rahf-net-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: C2P同像素体素特征max pooling保留响应；原始深度min pooling选最近可见表面。软掩码避免硬分界，1×1卷积对齐通道，加权交叉熵+λ·Lovasz（λ=1）。上述工程项无各自独立必要性实验（Secs.3.3–3.6，pp.5–6）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: rahf-net-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 依赖同步、标定与预训练3D编码，深度作为路由先验；原文未明示缺失深度的掩码处理、预训练数据或冻结策略。轻量融合操作不等于全系统实时，编码器成本未给端到端测量。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: rahf-net-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 原任务为LiDAR辅助的二维图像语义分割，不是点级去雪。DELIVER仅有一个总体外部基线，未报告逐条件baseline；无雪尘、跨LiDAR硬件或时序验证。欠曝光37.22 mIoU；没有端到端速度/显存测量。预训练数据、具体划分与缺失深度的掩码处理未明确（Sec.3.4、4.1–4.4，pp.5–8）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: rahf-net-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: KITTI-360 Table5：门控65.76，近远均3D63.15，2D only62.18 mIoU；Table6 DELIVER整体58.05对唯一baseline52.97，但欠曝光37.22。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: rahf-net-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: Table5支持所测融合配置差异；Table6是完整系统压力测试，没有各条件baseline或模块消融，不能把5.08增益分配给雾/雨，也不证明深度等于可靠性或每个实现补丁必要。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: rahf-net-2026
+          stage: first-pass
+          anchor: result-weather
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: rahf-net-2026
+      location: arXiv:2610.25400v2 Introduction/Fig.1（pp.1–2）、Secs.3.3–3.6/Algorithm1（pp.4–6）、Tables3–6（pp.7–8）。
+      evidence:
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: rahf-net-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 跨硬件/雪尘适用性、缺失深度处理及端到端代价在本轮已读原文中无完整证据；不得升级成已验证迁移或领域空白。
       basis: not-assessed
       status: unverified
       evidence: []
