@@ -1,0 +1,371 @@
+version: 1
+paper: dtf-filter-2026
+scope: in-field
+source_basis: original-pdf-and-reading-note
+source_sha256: 67ebf8067d074e30654f411122b593a0c736c48b1e9108b95c76d777dbf1f91f
+checked_at: '2026-11-05'
+source_version: ETRI Journal，2026-10-14在线发表，DOI:10.4218/etrij.2025-0518
+source_url: https://doi.org/10.4218/etrij.2025-0518
+read_scope: 地图原文核对Secs.3.2–3.4、4.1–4.6、Discussion（PDF pp.4–16），实际查看p.6公式与Table8/Figure7（p.15）。完整初读另见阅读页；未运行代码或复现。
+source_review:
+  scope: 本轮关键地图事实回到正式PDF核对；保留原文配置、公式和统计口径缺口。历史来源等级不变。
+  checked_at: '2026-11-05'
+task:
+  name: 机场机坪低速/静止目标点云过滤与行人检测
+  input: 16线JT16的连续LiDAR帧，坐标、强度与跨帧对应信息
+  output: 过滤点及置信权重，后接地面/聚类和行人分类
+  conditions: 仁川机场15000帧主集为晴/雾/雨，另10000帧雪辅助集使用相同传感器/安装和采集设置且不再微调。规则超参数网格搜索；检测分类器受监督训练。
+  evidence:
+  - paper: dtf-filter-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: dtf-filter-2026
+    stage: first-pass
+    anchor: result-weather
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 作者指出空间稀疏性和反射异常使固定阈值难兼顾保真与去噪，短暂天气/反射点可与稳定低速行人混淆；硬删点还影响边界结构（Secs.3.2–3.3）。
+  evidence:
+  - paper: dtf-filter-2026
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: dtf-filter-2026
+    stage: first-pass
+    anchor: module-temporal
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: dtf-filter-2026
+    stage: first-pass
+    anchor: module-confidence
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-statistical
+  name: 统计规则过滤并传递连续置信度
+  description: 空间分支计算近邻距离MAD robust-z、曲率、局部密度及原始强度异常，阈值随密度调整；时间分支把当前点映射到历史坐标，以M=5帧、0.1m近邻容差估计持续性。融合异常分数得到软权重，并传给加权地面拟合和聚类；最后由需训练的SVM/PointNet-lite等分类（Secs.3.2–3.4，pp.4–8）。
+  evidence:
+  - paper: dtf-filter-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: dtf-filter-2026
+    stage: first-pass
+    anchor: module-temporal
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: dtf-filter-2026
+    stage: first-pass
+    anchor: module-confidence
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-dtf-temporal
+  name: 密度感知空间分数与短窗持续性
+  role: core-module
+  motivation: 在稀疏真实结构和瞬态天气/反射异常之间增加跨帧证据。
+  evidence:
+  - paper: dtf-filter-2026
+    stage: first-pass
+    anchor: module-temporal
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: dtf-filter-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-dtf-confidence
+  name: 置信权重传递到地面与聚类
+  role: core-module
+  motivation: 减轻硬删点在边界和稀疏区破坏结构的风险。
+  evidence:
+  - paper: dtf-filter-2026
+    stage: first-pass
+    anchor: module-confidence
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-density
+- challenge-temporal
+- challenge-downstream
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 按已有规则过滤路线记录密度、持续性与下游置信传递组合；未核验首创。
+limitations:
+- text: 训练自由只适用于过滤与几何阶段，混合分类器仍需标签训练，规则参数亦用验证集网格搜索。作者将0.1m/10Hz工作范围限定为v≤1m/s，不覆盖典型更快步行；单机场16线JT16，雪为同传感器另采10000帧辅助集，不是跨硬件泛化。正文k=16与Table4最优30、验证集2000与2250、Eq.10排版和时间分数/EMA细节不完整；这些缺口未靠推测补齐。
+  evidence:
+  - paper: dtf-filter-2026
+    stage: first-pass
+    anchor: source-boundaries
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: dtf-filter-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+tags:
+- LiDAR
+- 雾
+- 雨
+- 雪辅助评测
+- 规则滤波
+- 时序一致性
+- 下游检测
+analysis:
+  updated_at: '2026-11-05'
+  previous_methods:
+    text: 作者将单帧固定阈值与纯学习方案分别描述为缺少持续性或依赖训练/硬件；这些是本论文叙事，不是对所有既有工作的独立复核。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: dtf-filter-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 同一帧中的低密度既可能是真结构也可能是异常；多帧匹配增加身份线索，但会把运动速度与对应误差带入判据。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: dtf-filter-2026
+      stage: first-pass
+      anchor: module-temporal
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: dtf-filter-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 用有明确速度条件的持续性补足空间统计，并将不确定程度继续传到几何处理和检测；不把一条阈值当全场景真值。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: dtf-filter-2026
+      stage: first-pass
+      anchor: module-temporal
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: dtf-filter-2026
+      stage: first-pass
+      anchor: module-confidence
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-dtf-confidence
+    name: 空间/时序异常分数与下游置信传递
+    module_ids:
+    - module-dtf-temporal
+    - module-dtf-confidence
+    motivation:
+      text: 作者希望抑制机坪瞬态噪声，同时保留低速行人及稀疏边界结构。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: section-03
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 空间分支计算近邻距离MAD robust-z、曲率、局部密度及原始强度异常，阈值随密度调整；时间分支把当前点映射到历史坐标，以M=5帧、0.1m近邻容差估计持续性。融合异常分数得到软权重，并传给加权地面拟合和聚类；最后由需训练的SVM/PointNet-lite等分类（Secs.3.2–3.4，pp.4–8）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: module-temporal
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: module-confidence
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 按原文设计归纳：空间证据识别局部异常，短窗持续性加入时间条件，连续权重让后续拟合/聚类弱化可疑点；作者解释不等于每个环节已有独立因果消融。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: module-temporal
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: module-confidence
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 可以将过滤可靠性传给后续任务而非仅输出硬删点结果，但收益依赖低速范围、配准/对应、数据和分类器配置。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: module-confidence
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-dtf-denoising
+    name: 点云残差与几何质量
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-dtf-confidence
+    result:
+      text: Table7（p.13，2250frames）：原始ROR4.68±0.42%、RMSE0.142±0.018m；DTF为1.03±0.12%、0.091±0.010m，ΔSNR1.78±0.16dB，表内时长11.1ms。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: result-denoising
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 这些不是点级雪标签precision/recall；主集不含雪。保留表内11.1ms与正文/其他表11.0ms的差别，不造统一精度。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: result-denoising
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: result-runtime
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-dtf-downstream
+    name: 检测器前处理与完整混合系统
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-dtf-confidence
+    result:
+      text: Table8（p.15，1647行人，IoU0.5）：CenterPoint F1 .871，加DTF后.928；PointPillars .860→.919；完整混合系统.952。完整系统相对.871差.081，不是正文所谓9.3%绝对增益。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: result-detection
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 前处理对照支持在这些检测配置下的下游收益，不分离密度、时序和软权重；完整系统与外部检测器差异不能全归于过滤。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: result-detection
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-dtf-weather
+    name: 主天气与独立雪参考
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-dtf-confidence
+    result:
+      text: Figure7（p.15）分别给晴/雾/雨及辅助雪集的检测F1曲线；Sec.4.1说明雪集同JT16和采集设置、无额外微调。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: result-weather
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 雪证据仅是同传感器新天气的初步参考，不能视为主机坪雪场景充分验证或跨传感器迁移；曲线不替代缺失的逐点雪标签性能。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: result-weather
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 训练自由只适用于过滤与几何阶段，混合分类器仍需标签训练，规则参数亦用验证集网格搜索。作者将0.1m/10Hz工作范围限定为v≤1m/s，不覆盖典型更快步行；单机场16线JT16，雪为同传感器另采10000帧辅助集，不是跨硬件泛化。正文k=16与Table4最优30、验证集2000与2250、Eq.10排版和时间分数/EMA细节不完整；这些缺口未靠推测补齐。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: dtf-filter-2026
+      stage: first-pass
+      anchor: source-boundaries
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: dtf-filter-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

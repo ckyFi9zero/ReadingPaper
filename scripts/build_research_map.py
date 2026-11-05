@@ -301,6 +301,12 @@ def validate(data, root, papers, rendered=None):
         for ins in c['insights']:
             require(ins.get('status') in STATUSES, f'Invalid insight status: {ins["id"]}')
             strings(ins.get('techniques'), ins['id']); sources(ins)
+            # A native-task card can share a broad challenge without inheriting
+            # symptoms specific to another source's task. Evidence remains in
+            # the card's validated source links and original source locations.
+            if 'observable_failures' in ins:
+                strings(ins['observable_failures'], f'{ins["id"]}/observable failures')
+                require(ins['observable_failures'], f'Empty insight observable failures: {ins["id"]}')
             if 'principle' in ins:
                 claim(ins['principle'], ins['id'])
                 require({ev['paper'] for ev in ins['principle']['evidence']} <= set(ins['source_papers']),
@@ -426,6 +432,8 @@ def _node_detail(node, facts, catalogue, *, challenge=None, insight=None):
                        'why_hard': _claim_detail(challenge['why_hard'], catalogue),
                        'observable_failures': challenge.get('observable_failures', [])})
     if insight:
+        if 'observable_failures' in insight:
+            detail['observable_failures'] = insight['observable_failures']
         detail.update({'description': insight.get('transfer_boundary', ''),
                        'techniques': insight.get('techniques', []),
                        'principle': _claim_detail(insight['principle'], catalogue) if 'principle' in insight else None,

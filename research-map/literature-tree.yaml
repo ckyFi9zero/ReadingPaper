@@ -2276,3 +2276,103 @@ nodes:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+- id: pipeline-asynchronous-vla
+  kind: pipeline
+  name: 慢语义与实时视觉动作双环
+  parent: task-vla-chunk-control
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 慢环从VLM多层KV经LayerNorm和线性映射得到固定宽度语义记忆；快环有当前图像和机器人状态输入，每层cross-attention读取最近完成的记忆，不把VLM前向放进快环。训练在同一示范轨迹中配对当前图像和历史语义，并把记忆年龄与执行延迟作为条件（Secs.3.1–3.4，pp.3–5）。
+    本节点是限定集合内的路线整理，未独立核验首创。
+  source_papers:
+  - arp-2026
+  evidence:
+  - paper: arp-2026
+    stage: first-pass
+    anchor: module-semantic-memory
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: arp-2026
+    stage: first-pass
+    anchor: module-fresh-vision
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: arp-2026
+    stage: first-pass
+    anchor: module-stale-training
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-arp-multirate
+  kind: module
+  name: 固定语义接口，独立当前视觉
+  parent: pipeline-asynchronous-vla
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 语义KV映射为固定宽度记忆；动作专家读取当前图像与最新已完成记忆，不等待VLM。 本节点是限定集合内的路线整理，未独立核验首创。
+  source_papers:
+  - arp-2026
+  evidence:
+  - paper: arp-2026
+    stage: first-pass
+    anchor: module-semantic-memory
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: arp-2026
+    stage: first-pass
+    anchor: module-fresh-vision
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-arp-stale-training
+  kind: module
+  name: 同轨迹错时与延迟条件化
+  parent: pipeline-asynchronous-vla
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 训练配对当前观测与过去语义，显式条件化记忆年龄/执行延迟；前缀动作保持无噪。 本节点是限定集合内的路线整理，未独立核验首创。
+  source_papers:
+  - arp-2026
+  evidence:
+  - paper: arp-2026
+    stage: first-pass
+    anchor: module-stale-training
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: arp-2026
+    stage: first-pass
+    anchor: module-prefix
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-dtf-spatiotemporal-confidence
+  kind: module
+  name: 密度/持续性评分与下游置信传递
+  parent: pipeline-statistical
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 空间分支计算近邻距离MAD robust-z、曲率、局部密度及原始强度异常，阈值随密度调整；时间分支把当前点映射到历史坐标，以M=5帧、0.1m近邻容差估计持续性。融合异常分数得到软权重，并传给加权地面拟合和聚类；最后由需训练的SVM/PointNet-lite等分类（Secs.3.2–3.4，pp.4–8）。
+    此为限定集合内路线整理，未核验首创；公式/配置缺口见初读。
+  source_papers:
+  - dtf-filter-2026
+  evidence:
+  - paper: dtf-filter-2026
+    stage: first-pass
+    anchor: module-temporal
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: dtf-filter-2026
+    stage: first-pass
+    anchor: module-confidence
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked

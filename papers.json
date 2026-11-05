@@ -955,5 +955,221 @@
       "reviewedAt": "2026-11-04"
     }
   }
-}
+},
+  {
+    "slug": "arp-2026",
+    "category": "out-of-field",
+    "name": "ARP",
+    "title": "Asynchronous Robot Policies",
+    "authors": [
+      "Sombit Dey",
+      "Luc Van Gool",
+      "Danda Pani Paudel"
+    ],
+    "year": 2026,
+    "venue": "arXiv",
+    "readDate": "2026-11-05",
+    "doi": "10.48550/arXiv.2611.05155",
+    "url": "https://arxiv.org/abs/2611.05155v1",
+    "tags": [
+      "拓展阅读",
+      "VLA",
+      "具身智能",
+      "异步控制",
+      "时序错位",
+      "动作生成"
+    ],
+    "summary": "将慢语义更新与直接读取新视觉的快动作环拆开，核对错时训练、前缀部署与动态扰动证据；区分实机进度分、全RoboLab与覆盖子集，并保留固定v1和作者网页差异。",
+    "stages": {
+      "first-pass": "first-pass.html"
+    },
+    "reviews": {
+      "first-pass": {
+        "status": "source-checked",
+        "noteStatus": "organized",
+        "checkedAt": "2026-11-05",
+        "evidence": [
+          "核对arXiv:2611.05155v1全文17页、Figures1–7、Tables1–6及AppendicesA–D；内嵌Figure3、Table4、Table6必要原图表局部。",
+          "固定v1数据不与作者网站补充数值混合；实机部分完成progress不改写为成功率；无全面SOTA或天气迁移主张。"
+        ]
+      }
+    },
+    "readingQuality": {
+      "version": 1,
+      "classification": {
+        "confirmedCategory": "out-of-field",
+        "rationale": "机器人VLA操作拓展阅读：实时相机/语言/本体状态生成动作，在LIBERO、动态物体扰动、DROID/RoboLab与Franka评测；无恶劣天气LiDAR/雪尘去噪实验。",
+        "source": "User expansion scope; Secs.3–4, Apps.B–D; PDF pp.3–9,15–17",
+        "reviewedAt": "2026-11-05"
+      },
+      "graphics": {
+        "status": "included",
+        "items": [
+          {
+            "figureId": "figure-3",
+            "kind": "paper-crop",
+            "label": "Figure 3",
+            "pdfPage": 7,
+            "sourceUrl": "https://arxiv.org/pdf/2611.05155v1#page=7",
+            "analysisId": "analysis-figure-3",
+            "cropPdfPoints": [
+              305,
+              330,
+              506,
+              496
+            ],
+            "renderScale": 3
+          },
+          {
+            "figureId": "table-4",
+            "kind": "paper-crop",
+            "label": "Table 4",
+            "pdfPage": 8,
+            "sourceUrl": "https://arxiv.org/pdf/2611.05155v1#page=8",
+            "analysisId": "analysis-table-4",
+            "cropPdfPoints": [
+              264,
+              603,
+              506,
+              718
+            ],
+            "renderScale": 3
+          },
+          {
+            "figureId": "table-6",
+            "kind": "paper-crop",
+            "label": "Table 6",
+            "pdfPage": 16,
+            "sourceUrl": "https://arxiv.org/pdf/2611.05155v1#page=16",
+            "analysisId": "analysis-table-6",
+            "cropPdfPoints": [
+              105,
+              507,
+              518,
+              613
+            ],
+            "renderScale": 3
+          }
+        ]
+      },
+      "rightsReview": {
+        "basis": "arXiv record uses nonexclusive distribution license, not CC. Original Chinese scholarly commentary quotes only three necessary local Table/Figure crops: Figure3 clarifies actual real-robot progress scoring; Table4 exposes controlled staleness-training ablation; Table6 preserves full-benchmark negative boundary. All three individually attributed with version/page/source, unchanged data, no full page/full PDF; no general redistribution rights or legal guarantee asserted.",
+        "reviewedAt": "2026-11-05"
+      },
+      "visualReview": {
+        "desktop": true,
+        "mobile": true,
+        "zoom": true,
+        "reviewedAt": "2026-11-05"
+      }
+    }
+  },
+  {
+    "slug": "dtf-filter-2026",
+    "category": "in-field",
+    "name": "DTF-Filter",
+    "title": "Spatiotemporal training-free LiDAR denoising and hybrid pedestrian detection on airport aprons: Focus on low-speed and stationary targets",
+    "authors": [
+      "Ihnsik Weon",
+      "Yoosoo Jang",
+      "Beomchan Park"
+    ],
+    "year": 2026,
+    "venue": "ETRI Journal",
+    "readDate": "2026-11-05",
+    "doi": "10.4218/etrij.2025-0518",
+    "url": "https://doi.org/10.4218/etrij.2025-0518",
+    "tags": [
+      "领域内",
+      "LiDAR去噪",
+      "时序一致性",
+      "密度自适应",
+      "软置信度",
+      "天气检测评测"
+    ],
+    "summary": "以密度自适应、跨帧持续性与软权重连接机坪去噪和低速行人检测；区分免训练滤波、有监督分类、辅助同传感器雪况及具体计时范围，保留原文配置与百分比差异。",
+    "stages": {
+      "first-pass": "first-pass.html"
+    },
+    "reviews": {
+      "first-pass": {
+        "status": "source-checked",
+        "noteStatus": "organized",
+        "checkedAt": "2026-11-05",
+        "evidence": [
+          "核对ETRI Journal正式Early View18页全文及Figures1–8、Tables1–8；三项必要完整图表局部为Figure3、Table7、Figure7。",
+          "区分过滤免训练/分类监督、同传感器辅助雪集/硬件泛化；记录验证帧数、k配置与F1百分比原文差异，不把整体效果写成单模块因果。"
+        ]
+      }
+    },
+    "readingQuality": {
+      "version": 1,
+      "classification": {
+        "confirmedCategory": "in-field",
+        "rationale": "研究LiDAR时空去噪并评估机坪雾雨及辅助雪况行人检测，属于恶劣天气感知、去噪和下游任务评测；不因机场低速任务或非伪标签网络排除。",
+        "source": "Secs.3.2,4.1,4.4–4.6; Figures3,7; Tables7–8; PDF pp.4–6,8,12–15",
+        "reviewedAt": "2026-11-05"
+      },
+      "graphics": {
+        "status": "included",
+        "items": [
+          {
+            "figureId": "figure-3",
+            "kind": "paper-crop",
+            "label": "Figure 3",
+            "pdfPage": 5,
+            "sourceUrl": "https://onlinelibrary.wiley.com/doi/pdf/10.4218/etrij.2025-0518#page=5",
+            "analysisId": "analysis-figure-3",
+            "cropPdfPoints": [
+              44,
+              435,
+              552,
+              717
+            ],
+            "renderScale": 3
+          },
+          {
+            "figureId": "table-7",
+            "kind": "paper-crop",
+            "label": "Table 7",
+            "pdfPage": 13,
+            "sourceUrl": "https://onlinelibrary.wiley.com/doi/pdf/10.4218/etrij.2025-0518#page=13",
+            "analysisId": "analysis-table-7",
+            "cropPdfPoints": [
+              42,
+              40,
+              555,
+              170
+            ],
+            "renderScale": 3
+          },
+          {
+            "figureId": "figure-7",
+            "kind": "paper-crop",
+            "label": "Figure 7",
+            "pdfPage": 15,
+            "sourceUrl": "https://onlinelibrary.wiley.com/doi/pdf/10.4218/etrij.2025-0518#page=15",
+            "analysisId": "analysis-figure-7",
+            "cropPdfPoints": [
+              42,
+              443,
+              555,
+              638
+            ],
+            "renderScale": 3
+          }
+        ]
+      },
+      "rightsReview": {
+        "basis": "PDF p1 and ETRI Journal official Open Statement specify KOGL Type4 attribution/noncommercial/no modification, not CC BY. Noncommercial original Chinese commentary uses three necessary complete Figure/Table units, cropping only surrounding page text, preserving internal content, original captions and legends. Separate analysis with authors/DOI/page/source and KOGL link; no full PDF/pages, no translated figure content, no implied endorsement or universal legal guarantee.",
+        "reviewedAt": "2026-11-05"
+      },
+      "visualReview": {
+        "desktop": true,
+        "mobile": true,
+        "zoom": true,
+        "reviewedAt": "2026-11-05"
+      }
+    }
+  }
 ]

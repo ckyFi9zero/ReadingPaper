@@ -19,6 +19,34 @@ class ResearchMapTests(unittest.TestCase):
         cls.papers = json.loads((ROOT / 'papers.json').read_text(encoding='utf-8'))
         cls.data = research_map.load(ROOT)
 
+    def test_insight_symptoms_override_and_legacy_fallback(self):
+        challenge = next(c for c in self.data['challenges']['challenges']
+                         if c['id'] == 'challenge-efficiency')
+        catalogue = {p['slug']: p for p in self.papers}
+        original = copy.deepcopy(challenge)
+        arp = next(i for i in challenge['insights']
+                   if i['id'] == 'insight-staleness-trained-fast-loop')
+        detail = research_map._node_detail(arp, self.data['facts'], catalogue,
+                                           challenge=challenge, insight=arp)
+        self.assertEqual(detail['observable_failures'], arp['observable_failures'])
+        self.assertNotEqual(detail['observable_failures'], challenge['observable_failures'])
+        legacy = next(i for i in challenge['insights'] if 'observable_failures' not in i)
+        fallback = research_map._node_detail(legacy, self.data['facts'], catalogue,
+                                             challenge=challenge, insight=legacy)
+        self.assertEqual(fallback['observable_failures'], challenge['observable_failures'])
+        self.assertEqual(challenge, original)
+
+    def test_insight_symptom_override_rejects_invalid_values(self):
+        for invalid in ([], '', ['']):
+            bad = copy.deepcopy(self.data)
+            challenge = next(c for c in bad['challenges']['challenges']
+                             if c['id'] == 'challenge-efficiency')
+            insight = next(i for i in challenge['insights']
+                           if i['id'] == 'insight-staleness-trained-fast-loop')
+            insight['observable_failures'] = invalid
+            with self.subTest(value=invalid), self.assertRaises(ValueError):
+                research_map.validate(bad, ROOT, self.papers)
+
     def test_sources_cover_in_field_library_or_explicit_pending(self):
         research_map.validate(self.data, ROOT, self.papers)
         in_field = {p['slug'] for p in self.papers if p.get('category') == 'in-field'}

@@ -1,0 +1,351 @@
+version: 1
+paper: arp-2026
+scope: out-of-field
+source_basis: original-pdf-and-reading-note
+source_sha256: 2c55ea38eaec3dd0371ff02c5d385b400c9492ce47b1fca110148f02b51a87b4
+checked_at: '2026-11-05'
+source_version: arXiv:2611.05155v1，2026-11-03预印本
+source_url: https://arxiv.org/abs/2611.05155v1
+read_scope: 地图原文核对Secs.3–5（pp.3–9）、Appendix A–D（pp.14–17），实际查看Table4、6及相关页面；完整初读见阅读页。不是代码运行或复现。
+source_review:
+  scope: 本轮地图关键结论回到固定v1原PDF核对，阅读页是链接索引。历史来源核验等级不变；不将作者网页更新数据静默混入v1。
+  checked_at: '2026-11-05'
+task:
+  name: 多速率语言条件机器人动作块生成
+  input: 当前相机图像、机器人状态、语言指令、最近完成的语义记忆及其年龄/执行延迟
+  output: flow-matching多步动作块
+  conditions: LIBERO受控模拟；DROID训练后RoboLab与Franka三任务；不同组使用不同VLM/视觉编码器与数据预算。Table4每格500episodes；不能用作者网页400口径替换。
+  evidence:
+  - paper: arp-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: arp-2026
+    stage: first-pass
+    anchor: result-staleness
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: arp-2026
+    stage: first-pass
+    anchor: result-robolab
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 作者指出顺序VLM—动作专家执行把快环延迟绑定到VLM规模；异步拆分又引入语义陈旧与动作到达时执行已推进的问题（Secs.1/3）。
+  evidence:
+  - paper: arp-2026
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: arp-2026
+    stage: first-pass
+    anchor: insight-multirate
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-asynchronous-vla
+  name: 慢语义更新与实时视觉动作双环
+  description: 慢环从VLM多层KV经LayerNorm和线性映射得到固定宽度语义记忆；快环有当前图像和机器人状态输入，每层cross-attention读取最近完成的记忆，不把VLM前向放进快环。训练在同一示范轨迹中配对当前图像和历史语义，并把记忆年龄与执行延迟作为条件（Secs.3.1–3.4，pp.3–5）。
+  evidence:
+  - paper: arp-2026
+    stage: first-pass
+    anchor: module-semantic-memory
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: arp-2026
+    stage: first-pass
+    anchor: module-fresh-vision
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: arp-2026
+    stage: first-pass
+    anchor: module-stale-training
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-arp-multirate
+  name: 独立实时视觉与慢语义接口
+  role: core-module
+  motivation: 避免高容量VLM前向阻塞当前感知到动作的路径。
+  evidence:
+  - paper: arp-2026
+    stage: first-pass
+    anchor: module-semantic-memory
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: arp-2026
+    stage: first-pass
+    anchor: module-fresh-vision
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-arp-stale-training
+  name: 错时语义与执行延迟训练
+  role: core-module
+  motivation: 让动作专家在语义记忆落后于当前图像时仍可生成动作。
+  evidence:
+  - paper: arp-2026
+    stage: first-pass
+    anchor: module-stale-training
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-efficiency
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 记录VLA路线的双环接口与训练变化；作者首创声明未独立检索核验。
+limitations:
+- text: 固定arXiv:2611.05155v1；机器人操作原任务，无天气LiDAR实验。动态整体对比同时改变视觉路径和执行方式，不能把全部收益单独归因于异步。Table4支持同架构下记忆年龄训练的作用，不证明作者假设的anticipatory
+    representation。Table6全120任务ARP-3B 20.0%低于π0.5 37.9%，预训练数据不同；Fig.3实机为部分任务完成分而非完整成功率。作者网页的样本量/数值与v1有差异，不混用。
+  evidence:
+  - paper: arp-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: arp-2026
+    stage: first-pass
+    anchor: result-staleness
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: arp-2026
+    stage: first-pass
+    anchor: result-robolab
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+tags:
+- 拓展阅读
+- VLA
+- 异步控制
+- 陈旧语义
+- 动作生成
+analysis:
+  updated_at: '2026-11-05'
+  previous_methods:
+    text: 按作者描述，顺序VLA把VLM和动作专家前向时间相加；本文未独立核验全部既有异步方法。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: arp-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 将慢语义与当前动作共享同一调度周期，使高容量语义计算的时长进入反应路径；拆开后语义年龄成为新的输入失配。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: arp-2026
+      stage: first-pass
+      anchor: insight-multirate
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 保留实时感知的快路径，同时让慢语义以带时间身份的记忆接口进入，并在训练中覆盖这种错时。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: arp-2026
+      stage: first-pass
+      anchor: insight-multirate
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: arp-2026
+      stage: first-pass
+      anchor: module-stale-training
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-arp-multirate
+    name: 将语义更新移出快环，并训练陈旧条件下的动作专家
+    module_ids:
+    - module-arp-multirate
+    - module-arp-stale-training
+    motivation:
+      text: 按作者动机，规模与实时反应的冲突来自控制链上的顺序依赖，拆环后必须处理时间错位。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: arp-2026
+        stage: first-pass
+        anchor: section-03
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 慢环从VLM多层KV经LayerNorm和线性映射得到固定宽度语义记忆；快环有当前图像和机器人状态输入，每层cross-attention读取最近完成的记忆，不把VLM前向放进快环。训练在同一示范轨迹中配对当前图像和历史语义，并把记忆年龄与执行延迟作为条件（Secs.3.1–3.4，pp.3–5）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: arp-2026
+        stage: first-pass
+        anchor: module-semantic-memory
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: arp-2026
+        stage: first-pass
+        anchor: module-fresh-vision
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: arp-2026
+        stage: first-pass
+        anchor: module-stale-training
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 从原文操作归纳：快环独立观察可补充陈旧语义，错时训练使训练输入覆盖部分部署时的年龄变化；这不是语义预测未来机制的独立证明。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: arp-2026
+        stage: first-pass
+        anchor: module-fresh-vision
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: arp-2026
+        stage: first-pass
+        anchor: module-stale-training
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 在本文接口和计算条件下，可调慢语义更新频率而不要求快环每次等待；仍需最新视觉编码和动作专家算力。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: arp-2026
+        stage: first-pass
+        anchor: module-fresh-vision
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-arp-stale
+    name: 同架构记忆年龄分布对照
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-arp-multirate
+    result:
+      text: Table4（p.8），1B、500episodes/格：dt=0训练在Sync/0.5Hz为81.8%/2.0%；默认U{1,…,40}行为85.2%/81.8%；U{1,…,80}为81.0%/86.5%。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: arp-2026
+        stage: first-pass
+        anchor: result-staleness
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持所测结构在慢刷新下需要匹配的训练年龄分布；不能据此证明任意低频鲁棒，或将作者关于anticipatory features的解释升级成因果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: arp-2026
+        stage: first-pass
+        anchor: result-staleness
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-arp-dynamic
+    name: 两种动态扰动整体对比
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-arp-multirate
+    result:
+      text: Tables2–3（p.7）：LIBERO-Perturb ARP-1B/π0-1B为51.5%/9.5%；Dyn-Bump p=1为44.7%/12.7%，p=.5为46.7%/20.0%。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: arp-2026
+        stage: first-pass
+        anchor: result-dynamic
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 原表对比包含独立视觉路径、训练与部署组合，不拆解每项独立贡献；不引用网页额外同步对照冒充v1证据。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: arp-2026
+        stage: first-pass
+        anchor: result-dynamic
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-arp-general
+    name: 完整RoboLab基准的边界
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-arp-multirate
+    result:
+      text: Table6（p.16），120任务共960episodes/model，平均成功率ARP-3B20.0%、LAP-3B18.4%、π0.5 37.9%。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: arp-2026
+        stage: first-pass
+        anchor: result-robolab
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 预训练数据预算不同，完整基准不支持通用SOTA。DROID覆盖子集与全部任务不能混成同一结果。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: arp-2026
+        stage: first-pass
+        anchor: result-robolab
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 固定arXiv:2611.05155v1；机器人操作原任务，无天气LiDAR实验。动态整体对比同时改变视觉路径和执行方式，不能把全部收益单独归因于异步。Table4支持同架构下记忆年龄训练的作用，不证明作者假设的anticipatory
+      representation。Table6全120任务ARP-3B 20.0%低于π0.5 37.9%，预训练数据不同；Fig.3实机为部分任务完成分而非完整成功率。作者网页的样本量/数值与v1有差异，不混用。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: arp-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: arp-2026
+      stage: first-pass
+      anchor: result-robolab
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

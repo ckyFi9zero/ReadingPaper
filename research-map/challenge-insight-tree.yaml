@@ -60,11 +60,18 @@ challenges:
     - pmdf-2026
     - rpsnownet-2026
     - desnow-gnn-2026
+    - dtf-filter-2026
     evidence:
     - *id001
     - *id002
     - *id003
     - *id004
+    - paper: dtf-filter-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
     principle:
       text: 相同距离并不意味着相同采样密度。判据应随当前区域或雪强调整，而不是把所有稀疏点都当噪声。
       basis: analyst-inference
@@ -97,6 +104,7 @@ challenges:
     playbook:
       use_when:
         text: 固定半径在部分区域误删、换区域又漏噪时，先检查局部密度和雪强是否改变了正常点间距。
+          DTF补充场景是同一机场内近设备密集、开阔区稀疏的规则过滤，不扩展为任意运动目标。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -124,9 +132,16 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       mechanism:
         text: SDOR 用扇区密度与距离共同调节半径；PMDF 从粗滤雪样本拟合距离/高度分布并更新参数；RPS 的 DMROR 用估计 noise
           ratio 调节非线性半径。DeSnow-GNN 的图表示提供局部上下文，不能据此说它实现了前三者的显式密度校准。
+          DTF以k近邻距离估密度，并以密度幂次调节阈值；距离MAD、曲率与原始强度共同组成空间异常分数。
         basis: note-summary
         status: source-checked
         evidence:
@@ -149,6 +164,12 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
         - paper: desnow-gnn-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
           stage: first-pass
           anchor: section-05
           status: source-checked
@@ -157,6 +178,7 @@ challenges:
       engineering_tricks:
         text: SDOR 的 blending 抑制纯局部密度导致的极端半径；boundary band 补偿扇区邻居截断。PMDF 在拟合前做 target
           recovery。它们是已记录的实现措施，各补丁的独立必要性不能由整体表格推出。
+          DTF将分数变成软置信并传给地面拟合和聚类；正文k=16但Table4网格搜索最优30，不能静默选择一个作复现默认值。
         basis: note-summary
         status: source-checked
         evidence:
@@ -184,8 +206,15 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
+          stage: first-pass
+          anchor: source-boundaries
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       assumptions_cost:
         text: 需要足够可靠的局部统计或初始雪样本；SDOR 分区/线程有管理开销，PMDF 有 cold start，图构造也有成本。
+          DTF不训练滤波网络，但规则超参数仍使用验证集网格搜索；训练自由不等于免调参。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -213,8 +242,15 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
+          stage: first-pass
+          anchor: source-boundaries
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       failure_boundary:
         text: SDOR 扇区边界仍较差；PMDF 体素化可能损伤近处低密度结构且主表排除 cold start；RPS 的物理先验和 DeSnow 的图映射各有适用条件。
+          DTF仅单机场16线JT16；强度未完成距离校正，反射/安全服饱和与换传感器需再校验。
         basis: note-summary
         status: source-checked
         evidence:
@@ -237,6 +273,12 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
         - paper: desnow-gnn-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
           stage: first-pass
           anchor: section-08
           status: source-checked
@@ -245,6 +287,7 @@ challenges:
       evidence_scope:
         text: SDOR 有分区、线程和边界对照，但不是所有补丁的独立因果消融；PMDF 笔记未记录独立模块消融；RPS 的组件表是累计配置；DeSnow
           有移除时空组件对照。四者不是同一种干预。
+          DTF论文将密度适配作为原因解释，但Table8是整段DTF前处理或完整系统比较，不证明该项独立必要。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -269,6 +312,12 @@ challenges:
         - paper: desnow-gnn-2026
           stage: first-pass
           anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
+          stage: first-pass
+          anchor: result-detection
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
@@ -278,6 +327,7 @@ challenges:
           90%；下游检测分别报告正常天气训练与过滤数据训练的设置（Tables I–V）。；rpsnownet-2026：WADS 上 DMROR mIoU
           88.06%、897 ms；RPSnowNet 88.92%、15 ms。CADC 逐点去雪为定性，检测另有 box 定量（Table III）。；desnow-gnn-2026：WADS
           上报告 Precision 97.4%、F1 95.3%；雨雾适配在当前笔记中为定性可视化（Table 2；Fig. 7）。
+          DTF Table7的ROR1.03%/RMSE0.091m为组合配置，不是密度阈值独立消融。
         basis: note-summary
         status: source-checked
         evidence:
@@ -302,6 +352,12 @@ challenges:
         - paper: desnow-gnn-2026
           stage: first-pass
           anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
+          stage: first-pass
+          anchor: result-denoising
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
@@ -338,6 +394,15 @@ challenges:
       location: Sec. 3.1–3.3，Fig. 3，PDF pp. 3–5
       evidence:
       - paper: desnow-gnn-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    - paper: dtf-filter-2026
+      location: Secs.3.2.1–3.2.3 pp.4–6；Table4 p.10；Tables7–8 pp.13/15。 本轮正式PDF与初读核对；未复现，不提升既有来源等级。
+      evidence:
+      - paper: dtf-filter-2026
         stage: first-pass
         anchor: section-05
         status: source-checked
@@ -1566,11 +1631,18 @@ challenges:
     - desnow-gnn-2026
     - crfor-2023
     - removert-2020
+    - dtf-filter-2026
     evidence:
     - *id014
     - *id015
     - *id016
     - *id017
+    - paper: dtf-filter-2026
+      stage: first-pass
+      anchor: module-temporal
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
     principle:
       text: 单帧中难区分的点，可能在运动、配准后邻域或多视角可见性中呈现不同规律；先明确跨帧关系，再聚合证据。
       basis: analyst-inference
@@ -1603,6 +1675,7 @@ challenges:
     playbook:
       use_when:
         text: 连续帧可用，且时序关系能被可靠建模时；不是简单把更多帧堆在一起。
+          DTF补充静止/低速机坪目标，使用相邻扫描的短窗持续性，工作范围由0.1m容差与10Hz限定。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -1627,12 +1700,19 @@ challenges:
         - paper: removert-2020
           stage: first-pass
           anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
+          stage: first-pass
+          anchor: module-temporal
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
       mechanism:
         text: 4DenoiseNet 用当前点到前帧近邻差向量编码运动并以 MGA 融合；DeSnow-GNN 用注册后的时序差分；CRFOR-t 并入配准历史点；Removert
           用 scan-to-map visibility remove/revert 静态地图。
+          DTF把当前点映到历史帧坐标，用M=5帧、0.1m最近邻匹配估计持续性，再与空间分数加权组合；不把未明确的时间分数或EMA写成已知实现。
         basis: note-summary
         status: source-checked
         evidence:
@@ -1657,12 +1737,19 @@ challenges:
         - paper: removert-2020
           stage: first-pass
           anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
+          stage: first-pass
+          anchor: module-temporal
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
       engineering_tricks:
         text: DeSnow 保存顶点供下一帧；Removert 逐轮降低 range-image 分辨率扩大关联窗口以容忍位姿误差。Removert
           的动态物体处理与天气点不是同一标签定义。
+          DTF连续置信权重继续进入加权地面拟合和聚类；这与仅堆历史帧或直接二值移除不同。
         basis: note-summary
         status: source-checked
         evidence:
@@ -1690,8 +1777,15 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
+          stage: first-pass
+          anchor: module-confidence
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       assumptions_cost:
         text: 需要连续数据、时间同步和适用的运动/配准假设；图构造、历史存储与配准增加成本。
+          DTF需连续扫描及可靠对应；作者给v≤1m/s，不建议简单扩大容差，高速运动补偿留作后续。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -1714,6 +1808,12 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
         - paper: removert-2020
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
           stage: first-pass
           anchor: section-08
           status: source-checked
@@ -1722,6 +1822,7 @@ challenges:
       failure_boundary:
         text: 4DenoiseNet 跨传感器 intensity 有偏置，CADC 无逐点 GT；DeSnow 雨雾主要定性；CRFOR 仍误删稀疏真实点；Removert
           天气迁移未验证。
+          DTF不能作为典型约1.4m/s步行及更高速行人的独立探测器；辅助雪集仍为同传感器单地点。
         basis: note-summary
         status: source-checked
         evidence:
@@ -1749,9 +1850,16 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       evidence_scope:
         text: 4DenoiseNet 和 DeSnow 有去掉时序分支对照；CRFOR 有单帧/时序结果。Removert remove/revert
           迭代变化不等于独立控制所有组件的消融。
+          DTF对时间持续性的机制解释是作者论述；当前结果未独立分离时序、密度和软权重，不以整体天气曲线证明各组件因果。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -1776,6 +1884,12 @@ challenges:
         - paper: removert-2020
           stage: first-pass
           anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
+          stage: first-pass
+          anchor: result-weather
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
@@ -1785,6 +1899,7 @@ challenges:
           2；Fig. 7）。；crfor-2023：WADS 比较中 CRFOR 的 F1 高于所比规则基线，CRFOR-t 进一步提高；下游 SECOND
           仅展示定性案例（Tables II–III；Fig. 5）。；removert-2020：KITTI、MulRan 提供地图可视化，另报告 remove/revert
           迭代的 TP、FP、FN 变化（Figs. 6–9）。
+          DTF Figure7给晴雾雨与辅助雪的整体检测F1；Table8显示加入DTF的CenterPoint为.928（原.871），不等于时序模块单独涨分。
         basis: note-summary
         status: source-checked
         evidence:
@@ -1809,6 +1924,12 @@ challenges:
         - paper: removert-2020
           stage: first-pass
           anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
+          stage: first-pass
+          anchor: result-detection
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
@@ -1846,6 +1967,15 @@ challenges:
       - paper: removert-2020
         stage: first-pass
         anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    - paper: dtf-filter-2026
+      location: Sec.3.2.2 pp.5–6，Eq.8–9；Table4 p.10；Secs.4.6/5 pp.14–16。 本轮正式PDF与初读核对；未复现，不提升既有来源等级。
+      evidence:
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: module-temporal
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
@@ -2957,6 +3087,7 @@ challenges:
     - awcr-2026
     - snowremovalnet-2026
     - beyondsnowflakes-2026
+    - dtf-filter-2026
     evidence:
     - paper: ltdnet-2026
       stage: first-pass
@@ -3006,6 +3137,12 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+    - paper: dtf-filter-2026
+      stage: first-pass
+      anchor: result-detection
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
     principle:
       text: 逐点去噪指标与任务需要的信息不同。只有把保留/恢复的结构交给具体任务，并检查类别代价，才能判断它是否有用。 对协同检测还需追踪同一目标的恢复与保留：目标点数不变、总
         AP 上升分别不等于表示不变、既有帮助无损。
@@ -3052,6 +3189,7 @@ challenges:
       use_when:
         text: 去噪指标变好但检测/分割收益不明，或生成结构是否可靠尚不清楚时。 AWCR 补充适用情形：协同总体分数掩盖先前正确目标丢失，需区分接收端本可识别却受协同损害，与接收端一直未识别而丢失协同帮助。
           SnowRemovalNet 展示点级去雪后还需按原任务统计收益与误删代价；其下游为语义分割和里程计，不能替代其他论文的检测评测。
+          DTF补充同一机坪里需要从点云过滤走到低速行人检测的场景，点级与检测级指标分别报告。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3097,10 +3235,17 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
+          stage: first-pass
+          anchor: section-02
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       mechanism:
         text: LTDNet 走 degraded-to-clean 恢复，SET-Det 走 RoI 补全加特征融合；3D-UnOutDet、RPSnowNet、TripleMixer
           则主要过滤后输入下游模型。技术动作不同，下游评估是共同验证环节。 AWCR 的模拟分支先过滤新增天气点；真实分支保持检测器固定，构造有界修正候选并以双源当前量测重评分。其控制诊断保留标注物体内部点、只改外部，再用原输入前融合特征做区域替换；诊断替换并非在线模块。
           SnowRemovalNet 将原扫描/去雪扫描送同一个WADS分割网络，误删点仍计入原类别错误；Boreas原扫描/去雪扫描使用相同VGICP设置（Sec.5.4，pp.15–16）。
+          DTF把点置信传入加权RANSAC、DBSCAN及簇级特征；最终混合分类器仍需训练，不称整套检测免标签。
         basis: note-summary
         status: source-checked
         evidence:
@@ -3143,6 +3288,12 @@ challenges:
         - paper: snowremovalnet-2026
           stage: first-pass
           anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
+          stage: first-pass
+          anchor: module-confidence
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
@@ -3152,6 +3303,7 @@ challenges:
           correction 最后层零初始化、残差有界并使用保留损失（Secs.4.3–5.1）。 SnowRemovalNet：分割训练先按标签移除falling
           snow，网络不设该类；沿LiSnowNet划分并排除与测试重复的训练序列。Boreas用WADS模型无重训，按KITTI协议RPE及94个重叠子段的rigid-aligned
           ATE分别记录（Sec.5.4）。
+          DTF按簇而非全帧送分类器，正文通常5–15候选簇/帧；低置信点的加权距离降低其形成伪簇的连通性。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3197,9 +3349,16 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
+          stage: first-pass
+          anchor: module-confidence
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       assumptions_cost:
         text: 需要对应任务标签和一致的评测设置；重训模型、预处理和生成分支各有额外成本。 AWCR 真实实现需要标注训练观察、已有晴天及构造损失变体、双源当前点的集中统计；自然行还共享固定背景图
           support filter。无自然配对记录不等于无监督；不据此声称满足通信或延时预算。 SnowRemovalNet：需要语义标注或GNSS/INS参考；Boreas结果限13,624帧、7.9km单路线和VGICP。94个4323帧子段每100帧起始，非独立94路线；模型迁移同时改变传感器与场景。
+          DTF晴天约8万点时滤波9.5–10.2ms，后段0.8–1.3ms，完整流水线约11ms；不同表的11.1/11.0口径分开。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3245,12 +3404,19 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
+          stage: first-pass
+          anchor: result-runtime
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       failure_boundary:
         text: 3D-UnOutDet 平均 mIoU 提升时 road/fence 仍可能下降；LTDNet 真实几何无配对验证；SET-Det 的天气迁移未证实。
           原文 Sec. 5.1–5.4（PDF pp. 6–7）：真实输入来自 CoInfra 两个固定路侧节点对，结果是 development 数据；自然天气行共用双源点与固定背景图
           support filter，控制行不使用该过滤。控制干预是晴天真实输入上的构造 exterior loss，不是自然配对雪天观测；特征恢复需原输入特征，属于诊断而非部署模块。真实修复只改变
           Car 输出且集中计算双源点统计；未验证跨传感器泛化或所有真实天气因果机制。 SnowRemovalNet 分割mIoU上升同时building
           IoU77.82→74.21、accumulated snow57.08→51.59；Boreas定性仍删部分树点，旋转RPE仅.151→.150°/100m（Sec.5.3–5.4；Tables4–5）。
+          DTF完整系统限低速/静止目标；同JT16的雪辅助集不等于跨传感器或主数据雪验证。
         basis: note-summary
         status: source-checked
         evidence:
@@ -3291,6 +3457,12 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
         - paper: snowremovalnet-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
           stage: first-pass
           anchor: section-08
           status: source-checked
@@ -3302,6 +3474,7 @@ challenges:
           个损失。自然天气候选追踪另显示 9 个 gained 目标由不足阈值的原几何经修正获得准确框；不能混同两种恢复机制。 SnowRemovalNet：支持论文指定分割/里程计设置下的平均收益，同时保留受损类别与结构反例；不是所有任务收益保证，也不证明哪一个去雪模块独立造成下游改善。
           Beyond the Snowflakes 的 WADS-3D 使用 KITTI 预训练模型直接推理，CADC 则以 50:50 划分并在过滤训练数据上微调，64线/32线传感器亦不同；两者不能构成只改变雪或传感器的控制实验，也不支持所有去雪方法普遍有用/无用。
           SnowRemovalNet 点级主表仅对应指定测试样本：CADC 47,132 个标注点，WADS Table 3 为一个测试帧；不是全数据集均值（Secs.5.1、5.6）。
+          DTF前处理对照与完整混合系统是不同干预；不把整体F1当逐点雪标签质量，也不把总增益逐项归给时序/密度/软权重。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3359,6 +3532,12 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
+          stage: first-pass
+          anchor: result-detection
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       reported_effect:
         text: ltdnet-2026：IQA3D 使用合成配对测质量、真实序列测检测；LTDNet 的 NR-F1 并非所有天气组合最高（Tables
           1–2）。；3d-unoutdet-2025：WADS 上 3D-UnOutDet mIoU 89.04%，SSR 81.76%，监督 3D-OutDet
@@ -3372,6 +3551,7 @@ challenges:
           .645→.614%，平均ATE3.70→3.60m，94子段中83下降（Tables4–5，pp.15–16）。 Beyond the Snowflakes：DSOR→LIOR
           过滤在 WADS-3D 上作者报告平均 6.72% AP improvement，CADC 增益可忽略；保留原文百分比表述，不改写为百分点（Sec.IV-A3
           / Fig.4，PDF p.4）。
+          DTF Table8在IoU0.5/1647行人上，CenterPoint .871→.928，PointPillars .860→.919；完整混合系统F1 .952。后者比.871绝对差.081，不能照抄9.3%绝对增益。
         basis: note-summary
         status: source-checked
         evidence:
@@ -3420,6 +3600,12 @@ challenges:
         - paper: beyondsnowflakes-2026
           stage: first-pass
           anchor: result-filter
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dtf-filter-2026
+          stage: first-pass
+          anchor: result-detection
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
@@ -3519,6 +3705,15 @@ challenges:
       - paper: beyondsnowflakes-2026
         stage: first-pass
         anchor: result-filter
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    - paper: dtf-filter-2026
+      location: Secs.3.3–3.4 pp.6–8；Secs.4.4–4.6；Table7 p.13，Table8/Figure7 p.15。 本轮正式PDF与初读核对；未复现，不提升既有来源等级。
+      evidence:
+      - paper: dtf-filter-2026
+        stage: first-pass
+        anchor: result-detection
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
@@ -5077,6 +5272,238 @@ challenges:
         original_pdf_review_status: source-checked
     open_questions:
       text: 短窗口是否足以保存长期任务事件、不同控制频率/硬件的开销、各工程项独立作用仍未充分验证；向天气去噪的任何迁移也未验证。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-staleness-trained-fast-loop
+    name: 慢语义异步更新，快动作保留实时视觉
+    observable_failures:
+    - 顺序执行使新视觉到动作的路径包含VLM前向延迟（ARP Secs.1、3.1–3.3，PDF pp.2–4）。
+    - 仅同步记忆训练的1B模型在0.5Hz语义刷新下成功率降至2.0%（ARP Table4，PDF p.8）。
+    techniques:
+    - 多速率双环
+    - 固定宽度KV接口
+    - 当前视觉旁路
+    - 记忆年龄采样
+    - 延迟条件化
+    - 无噪动作前缀
+    status: inferred
+    transfer_boundary: 固定arXiv:2611.05155v1；机器人操作原任务，无天气LiDAR实验。动态整体对比同时改变视觉路径和执行方式，不能把全部收益单独归因于异步。Table4支持同架构下记忆年龄训练的作用，不证明作者假设的anticipatory
+      representation。Table6全120任务ARP-3B 20.0%低于π0.5 37.9%，预训练数据不同；Fig.3实机为部分任务完成分而非完整成功率。作者网页的样本量/数值与v1有差异，不混用。
+    source_papers:
+    - arp-2026
+    evidence:
+    - paper: arp-2026
+      stage: first-pass
+      anchor: module-semantic-memory
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: arp-2026
+      stage: first-pass
+      anchor: module-fresh-vision
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: arp-2026
+      stage: first-pass
+      anchor: module-stale-training
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: arp-2026
+      stage: first-pass
+      anchor: result-staleness
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    principle:
+      text: 慢信息不必阻塞快动作，但快环要有当前观测，并学会如何使用不同年龄的语义；异步接口与训练分布共同构成原任务方案。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: arp-2026
+        stage: first-pass
+        anchor: insight-multirate
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: arp-2026
+        stage: first-pass
+        anchor: result-staleness
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 原任务为VLA动作块控制，语义模型计算慢、动作需要新图像反馈，并且可在同一示范轨迹中抽取错时对时。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: arp-2026
+          stage: first-pass
+          anchor: section-02
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: arp-2026
+          stage: first-pass
+          anchor: module-stale-training
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: 慢环从VLM多层KV经LayerNorm和线性映射得到固定宽度语义记忆；快环有当前图像和机器人状态输入，每层cross-attention读取最近完成的记忆，不把VLM前向放进快环。训练在同一示范轨迹中配对当前图像和历史语义，并把记忆年龄与执行延迟作为条件（Secs.3.1–3.4，pp.3–5）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: arp-2026
+          stage: first-pass
+          anchor: module-semantic-memory
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: arp-2026
+          stage: first-pass
+          anchor: module-fresh-vision
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: arp-2026
+          stage: first-pass
+          anchor: module-stale-training
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 记忆年龄以正弦嵌入进入适配器，年龄和执行延迟进入AdaRMS；训练抽样含零时差质量点与非零均匀年龄。Appendix A.1的动作前缀保持无噪且不计损失；Table5同时改变异步部署和前缀，不证明每个补丁独立必要。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: arp-2026
+          stage: first-pass
+          anchor: module-stale-training
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: arp-2026
+          stage: first-pass
+          anchor: module-prefix
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 需要当前图像快路径、语义/动作两套计算与轨迹时间信息；Appendix A.1 p.14在A6000报告VLM1B至8B约64–125ms、视觉动作专家55ms。不是端到端能耗测量，也不与作者网页的另一计时口径混合。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: arp-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: arp-2026
+          stage: first-pass
+          anchor: module-fresh-vision
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 固定arXiv:2611.05155v1；机器人操作原任务，无天气LiDAR实验。动态整体对比同时改变视觉路径和执行方式，不能把全部收益单独归因于异步。Table4支持同架构下记忆年龄训练的作用，不证明作者假设的anticipatory
+          representation。Table6全120任务ARP-3B 20.0%低于π0.5 37.9%，预训练数据不同；Fig.3实机为部分任务完成分而非完整成功率。作者网页的样本量/数值与v1有差异，不混用。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: arp-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: arp-2026
+          stage: first-pass
+          anchor: result-robolab
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: Table4每格500episodes：仅同步训练在0.5Hz为2.0%，默认训练年龄1…40为81.8%。Table2/3整体动态收益与Table6完整RoboLab20.0%应分别解释，不称所有机器人任务更强。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: arp-2026
+          stage: first-pass
+          anchor: result-staleness
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: arp-2026
+          stage: first-pass
+          anchor: result-dynamic
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: arp-2026
+          stage: first-pass
+          anchor: result-robolab
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: 记忆年龄训练有同架构干预；独立视觉、异步调度、前缀和不同预训练的效果不能由一张整体分数表逐项归因。本卡关注慢语义与快动作接口，不把其缓存等同长期记忆；这里只按原任务收录，天气迁移未验证。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: arp-2026
+          stage: first-pass
+          anchor: result-staleness
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: arp-2026
+          stage: first-pass
+          anchor: result-dynamic
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: arp-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: arp-2026
+      location: arXiv:2611.05155v1 Secs.3.1–3.4 pp.3–5；Table4 p.8及Sec.4.5 p.9；Appendix A.1 p.14；Tables2–3 p.7、Table6
+        p.16。固定v1与作者网页不同数值分开。
+      evidence:
+      - paper: arp-2026
+        stage: first-pass
+        anchor: module-semantic-memory
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: arp-2026
+        stage: first-pass
+        anchor: module-stale-training
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: arp-2026
+        stage: first-pass
+        anchor: result-staleness
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: arp-2026
+        stage: first-pass
+        anchor: result-robolab
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 语义极低刷新下的失效阈值、通信开销、持久长程记忆，以及向天气LiDAR的迁移均未验证；作者网页与v1差异尚未由新论文版本统一。
       basis: not-assessed
       status: unverified
       evidence: []
