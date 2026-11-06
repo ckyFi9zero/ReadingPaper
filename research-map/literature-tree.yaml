@@ -2376,3 +2376,118 @@ nodes:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+- id: task-weather-lidar-generation
+  kind: task
+  name: 天气条件LiDAR扫描生成
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 从噪声与目标天气条件生成包含结构/强度的新扫描；与输入受损点云的过滤/恢复分开。当前库新增任务分类，不表示该论文首次提出此任务。
+  source_papers:
+  - sid-2026
+  evidence:
+  - paper: sid-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sid-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-weather-factorized-diffusion
+  kind: pipeline
+  name: 真实统计增强与范围图条件扩散
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: RPWS把随机清晰/恶劣天气扫描的几何与强度统计用于训练增强；SiD在双通道范围图的每个反向扩散步先估计几何，再用其embedding调制强度分支。推理从天气bank取条件，由噪声生成新扫描（Fig.2、Secs.3.2–3.3，PDF
+    pp.3–6）。 本节点是限定集合路线整理，未核验首创。
+  source_papers:
+  - sid-2026
+  evidence:
+  - paper: sid-2026
+    stage: first-pass
+    anchor: module-rpws
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sid-2026
+    stage: first-pass
+    anchor: module-sid
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-weather-lidar-generation
+- id: module-sid-rpws
+  kind: module
+  name: RPWS · 点保留率与强度统计移植
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 用真实天气扫描的距离相关点保留率、空间可见性与强度分布变换清晰扫描；无新增可学习参数，不是无真实天气先验的仿真。
+  source_papers:
+  - sid-2026
+  evidence:
+  - paper: sid-2026
+    stage: first-pass
+    anchor: module-rpws
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sid-2026
+    stage: first-pass
+    anchor: result-ablation
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-weather-factorized-diffusion
+- id: module-sid-factorization
+  kind: module
+  name: SiD · 每步结构引导强度扩散
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 每个扩散步以预测目标天气几何引导强度分支；天气bank提供条件，强度损失不回传几何去噪器。条件方向雪天消融不升级为普适因果证明。
+  source_papers:
+  - sid-2026
+  evidence:
+  - paper: sid-2026
+    stage: first-pass
+    anchor: module-sid
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sid-2026
+    stage: first-pass
+    anchor: result-direction
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-weather-factorized-diffusion
+- id: module-sid-fmd
+  kind: module
+  name: FMD · 天气域生成分布评价
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 用STF上SLidR训练的Minkowski UNet特征评价扫描分布；这是评估端工具，不是生成模块或下游收益验证。
+  source_papers:
+  - sid-2026
+  evidence:
+  - paper: sid-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sid-2026
+    stage: first-pass
+    anchor: source-boundaries
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-weather-factorized-diffusion

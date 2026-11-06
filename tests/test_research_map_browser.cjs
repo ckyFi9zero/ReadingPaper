@@ -7,7 +7,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {pathToFileURL} = require('node:url');
 const endpoint = process.env.FIREFOX_BIDI_URL;
-const expectedFactCount = fs.readdirSync(path.resolve(__dirname, '../research-map/sources/paper-facts')).filter(name => name.endsWith('.yaml')).length;
+const factSlugs = new Set(fs.readdirSync(path.resolve(__dirname, '../research-map/sources/paper-facts')).filter(name => name.endsWith('.yaml')).map(name => name.slice(0, -5)));
+const expectedFactCount = factSlugs.size;
+const expectedOutOfFieldCount = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../papers.json'), 'utf8')).filter(paper => factSlugs.has(paper.slug) && paper.category === 'out-of-field').length;
 let ws, context, sequence = 0;
 const pending = new Map();
 function command(method, params = {}) {
@@ -57,7 +59,7 @@ const browserTest = (name, fn) => test(name, {skip:!endpoint, timeout:30000}, fn
 browserTest('paper hash opens the five-branch tree and expand/collapse controls work', async () => {
   await command('browsingContext.setViewport', {context, viewport:{width:1440,height:1000}, devicePixelRatio:1});
   await open('research-map.html', '#paper-dror-2018');
-  assert.deepEqual(await evaluate(`({count:document.querySelectorAll('.paper-analysis-tree').length, open:document.getElementById('paper-dror-2018').open, branches:document.querySelectorAll('#paper-dror-2018 .analysis-branch').length})`), {count:26,open:true,branches:5});
+  assert.deepEqual(await evaluate(`({count:document.querySelectorAll('.paper-analysis-tree').length, open:document.getElementById('paper-dror-2018').open, branches:document.querySelectorAll('#paper-dror-2018 .analysis-branch').length})`), {count:expectedFactCount,open:true,branches:5});
   await screenshot('paper-tree-desktop');
   assert.equal(await evaluate(`(()=>{document.querySelector('#paper-dror-2018 [data-analysis-action="expand"]').click();return document.querySelectorAll('#paper-dror-2018 .analysis-branch[open]').length})()`), 5);
   assert.equal(await evaluate(`(()=>{document.querySelector('#paper-dror-2018 [data-analysis-action="collapse"]').click();return document.querySelectorAll('#paper-dror-2018 .analysis-branch[open]').length})()`), 0);
@@ -159,7 +161,7 @@ browserTest('weapon search finds the actual operation and opens complete evidenc
 
 browserTest('scope filter separates native sources and preserves mixed cards and ancestors', async () => {
   await open('research-map.html');
-  assert.equal(await evaluate(`(()=>{const s=document.getElementById('map-scope');s.value='out-of-field';s.dispatchEvent(new Event('change'));return document.querySelectorAll('.map-fact:not([hidden])').length})()`), 21);
+  assert.equal(await evaluate(`(()=>{const s=document.getElementById('map-scope');s.value='out-of-field';s.dispatchEvent(new Event('change'));return document.querySelectorAll('.map-fact:not([hidden])').length})()`), expectedOutOfFieldCount);
   assert.equal(await evaluate(`document.getElementById('paper-dror-2018').hidden`), true);
   await open('challenge-insight-tree.html');
   await evaluate(`(()=>{const s=document.getElementById('map-scope');s.value='out-of-field';s.dispatchEvent(new Event('change'));return true})()`);
@@ -169,4 +171,14 @@ browserTest('scope filter separates native sources and preserves mixed cards and
   await evaluate(`(()=>{document.getElementById('map-reset').click();return true})()`);
   assert.equal(await evaluate(`document.getElementById('map-scope').value`), '');
   assert.equal(await evaluate(`document.getElementById('insight-adaptive').hidden`), false);
+});
+
+browserTest('SiD mechanism cards remain reachable under each evaluated weather filter', async () => {
+  await open('challenge-insight-tree.html');
+  const expected = ['insight-conditioning', 'insight-real-weather-statistics-transfer', 'insight-structure-conditioned-intensity'].sort();
+  for (const weather of ['雨', '雾', '雪']) {
+    await evaluate(`(()=>{const q=document.getElementById('map-search');q.value='RPWS';q.dispatchEvent(new Event('input'));const s=document.getElementById('map-weather');s.value=${JSON.stringify(weather)};s.dispatchEvent(new Event('change'));return true})()`);
+    assert.deepEqual(await evaluate(`[...document.querySelectorAll('.map-insight:not([hidden])')].map(n=>n.id).sort()`), expected);
+    assert.equal(await evaluate(`document.querySelector('[data-node-id="challenge-weather"]').hidden`), false);
+  }
 });

@@ -2067,6 +2067,18 @@ challenges:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+  - paper: sid-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sid-2026
+    stage: first-pass
+    anchor: section-04
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
   insights:
   - id: insight-weather
     name: 共享主干，再受控补入天气差异
@@ -2387,18 +2399,25 @@ challenges:
       status: unverified
       evidence: []
   - id: insight-conditioning
-    name: 把退化状态作为恢复条件
+    name: 把退化状态作为恢复或生成条件
     status: inferred
+    observable_failures:
+    - LTDNet：不同天气退化要求恢复模型调整映射，真实天气缺少配对clean几何。
+    - SiD：目标天气的新扫描生成需要条件控制，整体分布成绩不能解释为恢复精度。
     source_papers:
     - ltdnet-2026
+    - sid-2026
     techniques:
     - weather embedding
     - 条件化
     - 几何恢复
     - PPB
     - 累计配置
+    - 天气bank
+    - 生成条件
+    - AdaGN
     principle:
-      text: 相同空间结构在不同退化下需要不同处理；用估计的天气状态调制特征，可以把恢复映射与退化条件关联起来。
+      text: 相同空间结构在不同退化下需要不同处理；用估计的天气状态调制特征，可以把恢复映射与退化条件关联起来。 在新扫描生成中，同样可把目标天气统计编码为条件；这里复用条件化思想，不把恢复输入与从噪声生成混为同一任务。
       basis: analyst-inference
       status: inferred
       evidence:
@@ -2408,12 +2427,30 @@ challenges:
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
-    transfer_boundary: 真实天气主要以 detection AP 评估，缺少配对 clean 几何；NR-F1 不是所有天气组合都最佳，不能把恢复输出当真实几何保证。
+      - paper: sid-2026
+        stage: first-pass
+        anchor: module-sid
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    transfer_boundary: LTDNet真实天气主要以 detection AP 评估，缺少配对 clean 几何；NR-F1 不是所有天气组合都最佳，不能把恢复输出当真实几何保证。 SiD是单帧新扫描生成，未验证检测/分割或伪标签质量，且没有weather
+      bank独立消融。
     evidence:
-    - *id019
+    - paper: ltdnet-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: sid-2026
+      stage: first-pass
+      anchor: module-sid
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
     playbook:
       use_when:
-        text: 目标包括恢复缺失几何，并有 clean/degraded 配对训练条件时；先核查配对数据与真实部署差异。
+        text: 目标包括恢复缺失几何，并有 clean/degraded 配对训练条件时；先核查配对数据与真实部署差异。 另一原任务是需要按天气生成新扫描、拥有天气统计与训练数据时；SiD不要求推理时提供待恢复扫描。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -2423,20 +2460,40 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: section-02
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: module-sid
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       mechanism:
-        text: LTDNet 在 range image 上并行建模空间/频率，Weather-Aware Block 估计 weather embedding
-          调制中间特征，decoder 重建，Probabilistic Pruning Block 去伪影。
+        text: LTDNet 在 range image 上并行建模空间/频率，Weather-Aware Block 估计 weather embedding 调制中间特征，decoder 重建，Probabilistic
+          Pruning Block 去伪影。 SiD由天气编码器读取RPWS扫描得到phi_W，按天气标签存入bank；采样时抽取对应embedding，经AdaGN调制结构/强度UNet，强度另接收结构embedding（Sec.3.3.1，PDF
+          p.5）。
         basis: note-summary
         status: source-checked
         evidence:
         - paper: ltdnet-2026
           stage: first-pass
           anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: module-sid
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
       engineering_tricks:
-        text: global/local positional encoding 补偿柱面投影位置歧义；skip connections 保留多尺度信息；输出端剪枝处理生成伪影。
+        text: global/local positional encoding 补偿柱面投影位置歧义；skip connections 保留多尺度信息；输出端剪枝处理生成伪影。 SiD的bank让生成时无需运行天气仿真；两分支共享phi_W，强度条件用phi_W+phi_S。该设计没有weather
+          bank单独对照。
         basis: note-summary
         status: source-checked
         evidence:
@@ -2446,19 +2503,49 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: module-sid
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: source-boundaries
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       assumptions_cost:
-        text: 需要合成配对 clean/degraded 数据及重建计算；天气 embedding 的作用与空频块、剪枝一起处在具体累计配置中。
+        text: 需要合成配对 clean/degraded 数据及重建计算；天气 embedding 的作用与空频块、剪枝一起处在具体累计配置中。 SiD需要真实天气先验构造RPWS以及条件bank，并用STF微调；无FT不等于无真实天气信息。
         basis: analyst-inference
         status: inferred
         evidence:
         - paper: ltdnet-2026
           stage: first-pass
           anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: module-rpws
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: module-sid
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: source-boundaries
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
       failure_boundary:
-        text: 真实天气主要以 detection AP 评估，缺少配对 clean 几何；NR-F1 不是所有天气组合都最佳，不能把恢复输出当真实几何保证。
+        text: LTDNet真实天气主要以 detection AP 评估，缺少配对 clean 几何；NR-F1 不是所有天气组合都最佳，不能把恢复输出当真实几何保证。 SiD只检验单帧生成分布，作者承认扫描环纹与小/远物体平滑问题，无下游或伪标签收益验证。
         basis: note-summary
         status: source-checked
         evidence:
@@ -2468,8 +2555,20 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: source-boundaries
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       evidence_scope:
-        text: Table 3 为 PE→SFB→PPB→WAB 的累计增益；只说明这些配置差异，不能宣称 WAB 在任意后端都有同样独立增益。
+        text: Table 3 为 PE→SFB→PPB→WAB 的累计增益；只说明这些配置差异，不能宣称 WAB 在任意后端都有同样独立增益。 SiD方向消融比较S→I、I→S与Independent，并不单独检验天气embedding/bank；两篇原任务、训练与指标不同，不作跨论文分数排名。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -2479,15 +2578,32 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: result-direction
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: source-boundaries
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       reported_effect:
-        text: ltdnet-2026：IQA3D 使用合成配对测质量、真实序列测检测；LTDNet 的 NR-F1 并非所有天气组合最高（Tables
-          1–2）。
+        text: ltdnet-2026：IQA3D 使用合成配对测质量、真实序列测检测；LTDNet 的 NR-F1 并非所有天气组合最高（Tables 1–2）。 SiD正文Table1雾/雨/雪FPD为119.29/63.81/32.38，雨天JSD与WeatherGen并列0.93；这是RPWS+SiD+FT整体结果，不是天气embedding单独收益。
         basis: note-summary
         status: source-checked
         evidence:
         - paper: ltdnet-2026
           stage: first-pass
           anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: result-weather
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
@@ -2501,8 +2617,35 @@ challenges:
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    - paper: sid-2026
+      location: 正文Fig.2、Sec.3.3.1，PDF pp.4–5；Algorithm1 p.6；Tables1/4 pp.7–8；补充Sec.F pp.4–5
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: module-sid
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sid-2026
+        stage: first-pass
+        anchor: result-weather
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sid-2026
+        stage: first-pass
+        anchor: result-direction
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sid-2026
+        stage: first-pass
+        anchor: source-boundaries
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
     open_questions:
-      text: 真实天气重建几何是否对应真实缺失结构，以及 WAB 独立于累计配置的贡献，证据尚不足。
+      text: 真实天气重建几何是否对应真实缺失结构，以及 WAB 独立于累计配置的贡献，证据尚不足。 SiD天气embedding/bank的独立作用及生成数据的下游用途尚无对应验证。
       basis: not-assessed
       status: unverified
       evidence: []
@@ -2976,6 +3119,400 @@ challenges:
         original_pdf_review_status: source-checked
     open_questions:
       text: 分数各项、匹配阈值、ensemble规模与不同严重度/真实天气的独立作用尚未被本篇实验分别确认；不将这些材料缺口称为领域空白。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-real-weather-statistics-transfer
+    name: 分别移植点存活与强度统计
+    status: inferred
+    source_papers:
+    - sid-2026
+    techniques:
+    - 真实天气先验
+    - RPWS
+    - 距离bin
+    - 空间可见性
+    - Bernoulli保留
+    - optimal transport
+    - 强度直方图
+    observable_failures:
+    - 简化天气仿真的点密度与强度分布可能偏离真实扫描
+    - 只有几何或只有强度退化无法兼顾本文分布指标
+    principle:
+      text: 真实天气样本少时，可让其提供退化统计而不是仅作为完整生成训练样本：分别控制几何存活和反射强度分布，避免一个噪声模型替代两类不同变化。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sid-2026
+        stage: first-pass
+        anchor: module-rpws
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    transfer_boundary: 训练增强依赖真实恶劣天气扫描；不要求同场景配准，却不能声称是完整光传播仿真、配对天气真值或伪标签生成。
+    evidence:
+    - paper: sid-2026
+      stage: first-pass
+      anchor: module-rpws
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: sid-2026
+      stage: first-pass
+      anchor: result-ablation
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 已有大量清晰扫描与少量目标天气扫描，希望构造天气生成器的训练增强时。先区分生成分布匹配与保持语义标签的监督数据构造，本文未验证后者。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: sid-2026
+          stage: first-pass
+          anchor: section-02
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: module-rpws
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: source-boundaries
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: 每次随机取清晰/天气扫描对，在距离bin中以N_adverse/max(N_adverse,N_clear)作为保留率因子，乘从天气范围图提取的空间可见性mask，再Bernoulli保留清晰点；用经验强度直方图的optimal
+          transport映射变换强度（Eqs.2–4）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: sid-2026
+          stage: first-pass
+          anchor: module-rpws
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 清晰/天气扫描无需同场景配准；几何与强度统计从同一随机扫描对提取；RPWS不增加可学习参数。P_dec进入保留概率，不要反写成删点概率；公式主要处理衰减/遮挡，不额外宣称模拟全部散射回波。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: sid-2026
+          stage: first-pass
+          anchor: module-rpws
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: source-boundaries
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 需要能取得目标天气的真实扫描统计，因而无FT仍含真实天气先验。本文未完整说明距离bin、mask构造与OT求解细节，不能据“无学习参数”推断零成本或直接跨传感器可用。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: sid-2026
+          stage: first-pass
+          anchor: module-rpws
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: source-boundaries
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 统计增强不等于逐点物理正确或语义标注可继承。正文与补充RPWS对照未给出完全一致的数值/配置解释，分别保留；本文未报告生成数据用于下游感知或伪标签的结果。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: sid-2026
+          stage: first-pass
+          anchor: result-ablation
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: source-boundaries
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: 正文Table3（雪，无FT）：RPWS+SMG的FPD109.42，MDP+SMG为271.12，但JSD1.90比1.80差。SiD下仅几何RPWS_S的FMD8.25，仅强度RPWS_I的FPD475.11，完整两类退化为FMD3.67/FPD91.28。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: sid-2026
+          stage: first-pass
+          anchor: result-ablation
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: 支持在正文同一雪天配置中同时建模两类退化，且有更换模拟器的对照；不是所有指标单调改善，也不能把完整FT模型的全部收益归于RPWS。补充雪天Ours结果不能替换正文RPWS+SMG行。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: sid-2026
+          stage: first-pass
+          anchor: result-ablation
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: source-boundaries
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: sid-2026
+      location: 正文Sec.3.2、Eqs.2–4，PDF pp.3–4；Table3 p.8；补充Sec.D、Tables1–6 pp.3–4，Fig.4 p.4
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: module-rpws
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sid-2026
+        stage: first-pass
+        anchor: result-ablation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sid-2026
+        stage: first-pass
+        anchor: source-boundaries
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 距离bin、空间mask和强度OT求解的可复现细节、跨传感器适用性、标签保持与下游收益尚无本轮可确认的完整证据；这些是材料边界，不称领域研究空白。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-structure-conditioned-intensity
+    name: 每步先估几何，再条件生成强度
+    status: inferred
+    source_papers:
+    - sid-2026
+    techniques:
+    - S→I
+    - 非对称条件分解
+    - 双UNet
+    - 结构embedding
+    - stop-gradient
+    - 范围图扩散
+    observable_failures:
+    - 联合生成下几何与反射强度难以同时贴近真实天气分布
+    - 反向条件或独立分支在本文雪天消融中质量下降
+    principle:
+      text: 不同量的退化机制与可推断方向不必对称。对LiDAR扫描生成，可先估计几何，再让强度去噪读取该结构条件，而不要求强度反过来恢复几何。它是物理启发的归纳偏置，不是仅凭概率链式分解证明的因果律。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sid-2026
+        stage: first-pass
+        anchor: module-sid
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sid-2026
+        stage: first-pass
+        anchor: source-boundaries
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    transfer_boundary: 原任务是天气扫描分布生成；不等于从受损扫描恢复清洁几何。方向证据只来自本文雪天消融，未验证跨传感器或时序生成。
+    evidence:
+    - paper: sid-2026
+      stage: first-pass
+      anchor: module-sid
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: sid-2026
+      stage: first-pass
+      anchor: result-direction
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 需要生成具有几何和辐射属性的扫描、两类属性的退化和依赖方向不同，且能分别建模其扩散损失时；先核对目标任务，不能把生成链中的去噪直接当作天气去除。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: sid-2026
+          stage: first-pass
+          anchor: section-02
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: module-sid
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: 每个逆扩散步先由UNet_S预测结构噪声并重建S_hat_0，E_S将其编码为phi_S；UNet_I读取[I_t;S_t]并由phi_W+phi_S调制，最后分别更新S_(t-1)、I_(t-1)。这里不是先跑完整几何扩散再跑完整强度扩散（Fig.2、Algorithm1）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: sid-2026
+          stage: first-pass
+          anchor: module-sid
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: AdaGN把天气/结构条件变成归一化scale与shift；两分支使用Min-SNR加权噪声预测损失。强度损失对预测几何截断梯度，使UNet_S只由自己的损失更新。天气bank属于共用条件化，不能误当S→I方向消融的唯一变量。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: sid-2026
+          stage: first-pass
+          anchor: module-sid
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 采用几何先行的条件独立建模假设与两分支结构。正文报告38.06M参数、1.599GFLOPs，对比WeatherGen32.59M、1.398GFLOPs；计算量同级但略增，无实测采样速度支持更快结论。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: sid-2026
+          stage: first-pass
+          anchor: module-sid
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: source-boundaries
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 作者承认环纹轻微不规则、小/远物体边界平滑、只支持单帧（补充Sec.F）。FMD和t-SNE不是下游任务或伪标签验证；“clean S_hat_0”指目标天气扫描去扩散噪声，不是晴天结构。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: sid-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: module-sid
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: source-boundaries
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: 正文Table4（STF雪）：Independent的FMD/FPD为4.92/55.79，I→S为4.42/66.20，S→I为2.28/32.38；FRD依次1122.67/1177.72/1080.68。正文Table2晴天并非各项最优，FPD5.62不及4.81，MMD0.41不及0.39。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: sid-2026
+          stage: first-pass
+          anchor: result-direction
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: result-clear
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: 方向对照支持S→I在该模型与雪天设置下有效，不能证明普适物理因果律、强度完全由几何决定，或stop-gradient/AdaGN/weather bank各自具有独立增益。全文生成质量不等于感知抗扰性能。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: sid-2026
+          stage: first-pass
+          anchor: result-direction
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: sid-2026
+          stage: first-pass
+          anchor: source-boundaries
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: sid-2026
+      location: 正文Sec.3.3、Fig.2、Eqs.5–14、Algorithm1，PDF pp.4–6；Tables2/4 pp.7–8；补充Sec.A p.1与Sec.F pp.4–5
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: module-sid
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sid-2026
+        stage: first-pass
+        anchor: result-direction
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sid-2026
+        stage: first-pass
+        anchor: result-clear
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sid-2026
+        stage: first-pass
+        anchor: source-boundaries
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 梯度截断、结构embedding与AdaGN的独立作用，以及方向假设对其他传感器/天气或下游任务是否成立，本文证据没有逐项确认；不把这些缺口升级为选题结论。
       basis: not-assessed
       status: unverified
       evidence: []

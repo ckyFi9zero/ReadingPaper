@@ -1,0 +1,582 @@
+version: 1
+paper: sid-2026
+scope: in-field
+source_basis: original-pdf-supplement-and-reading-note
+source_sha256: a58e1eec704f6868ea12e0e1be3c8e005fd5f64d775b54836b3d5942d44680e5
+supplement_sha256: 4a1ec6a4c6d6c6e68e2e8a545aeb2f119823fdd4da4550deee440c1238166e02
+checked_at: '2026-11-06'
+source_version: CVPR 2026 accepted open-access paper, pp.35904–35914；官方补充材料8页
+source_url: https://openaccess.thecvf.com/content/CVPR2026/papers/Ni_Structure-to-Intensity_Diffusion_for_Adverse-Weather_LiDAR_Generation_CVPR_2026_paper.pdf
+supplement_url: https://openaccess.thecvf.com/content/CVPR2026/supplemental/Ni_Structure-to-Intensity_Diffusion_for_CVPR_2026_supplemental.pdf
+read_scope: 阅读全文正文PDF pp.1–11及补充pp.1–8，核对方法、正文Tables1–4、Figures2–4及补充Tables1–6、Figures4–8；关键图表经视觉复核。未读代码或运行模型。
+source_review:
+  scope: 本轮直接核对官方正文与补充全文，阅读页作为可点击索引。保留正文与补充RPWS对照及WeatherGen原报告/复现数值的差别，不静默合并；历史来源不因此升级为重新全文核对。
+  checked_at: '2026-11-06'
+tags:
+- 雨
+- 雾
+- 雪
+- 天气点云生成
+- 结构条件化
+- 反射强度
+- 真实统计先验
+- RPWS
+- SiD
+- FMD
+task:
+  name: 天气条件下的单帧LiDAR扫描生成
+  input: 推理时为目标天气标签、天气embedding bank与几何/强度高斯噪声；训练使用KITTI-360清晰扫描、STF天气统计及真实扫描微调。
+  output: 包含几何结构与反射强度的新LiDAR扫描；不是对某一受损输入恢复晴天点云，也不输出语义伪标签。
+  conditions: 正文Sec.4.1–4.2（PDF pp.6–7）：KITTI-360有76,715清晰扫描、64线Velodyne；STF约7,000雾/雨/雪扫描。先以RPWS增强数据训练，再用STF微调。文中写生成10,000清晰和200恶劣天气扫描，未在该句明确200是否每种天气；用分布指标评估，无下游检测/分割结果。
+  evidence:
+  - paper: sid-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sid-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sid-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 作者认为联合建模几何与强度时，更稳定的几何线索可能主导学习，强度细节易欠拟合；真实恶劣天气样本不足，简化仿真难覆盖真实退化统计（Secs.1–3，PDF pp.1–4）。这是作者的问题解释，不是跨所有生成模型的独立因果结论。
+  evidence:
+  - paper: sid-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sid-2026
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sid-2026
+    stage: first-pass
+    anchor: section-04
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-weather-factorized-diffusion
+  name: 真实统计增强—天气条件范围图扩散
+  description: RPWS把随机清晰/恶劣天气扫描的几何与强度统计用于训练增强；SiD在双通道范围图的每个反向扩散步先估计几何，再用其embedding调制强度分支。推理从天气bank取条件，由噪声生成新扫描（Fig.2、Secs.3.2–3.3，PDF
+    pp.3–6）。
+  evidence:
+  - paper: sid-2026
+    stage: first-pass
+    anchor: module-rpws
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sid-2026
+    stage: first-pass
+    anchor: module-sid
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-sid-rpws
+  name: RPWS：几何保留率与强度分布移植
+  role: training-augmentation
+  motivation: 用少量真实天气扫描的统计为清晰扫描构造更接近目标分布的训练增强，不增加可学习参数。
+  evidence:
+  - paper: sid-2026
+    stage: first-pass
+    anchor: module-rpws
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-sid-factorization
+  name: SiD：每步结构引导强度去噪
+  role: core-module
+  motivation: 将几何与强度的不同退化分开建模，同时以去噪几何估计约束强度生成。
+  evidence:
+  - paper: sid-2026
+    stage: first-pass
+    anchor: module-sid
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-sid-fmd
+  name: FMD：天气域特征分布评价
+  role: evaluation-metric
+  motivation: 作者认为晴天训练的FPD/FRD特征存在域差异，提出基于STF/SLidR特征的补充生成质量指标；不是生成网络模块。
+  evidence:
+  - paper: sid-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sid-2026
+    stage: first-pass
+    anchor: source-boundaries
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-weather
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 按天气LiDAR生成中的条件分解、增强与评价变化登记；未对作者首创性、整个领域优先权或研究空白独立检索。任务/路线新节点只是当前库缺失的原任务分类。
+limitations:
+- text: 作者明确局限（补充Sec.F，PDF pp.4–5）：同心扫描环纹偶有轻微不规则，小/远物体边界可能平滑，当前只生成静态单帧，未建模时序一致性。
+  evidence:
+  - paper: sid-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- text: 本文证据是扫描分布生成质量，不是恢复精度、检测AP、分割mIoU或伪标签质量。无FT仍使用真实恶劣天气统计构造RPWS，不能写成零真实天气数据。FMD和t-SNE不单独证明物理真实性或下游收益。
+  evidence:
+  - paper: sid-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sid-2026
+    stage: first-pass
+    anchor: source-boundaries
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- text: 正文Table3与补充Tables3/6的RPWS雪天数值不能直接对齐：正文RPWS+SMG无FT为FMD3.94/FPD109.42、有FT为2.91/47.36；补充同名模拟器对照的Ours分别为3.80/73.64与2.72/35.55。补充区分WeatherGen原报告/复现，但未充分解释这些跨表配置差别，分别保留。
+  evidence:
+  - paper: sid-2026
+    stage: first-pass
+    anchor: result-ablation
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sid-2026
+    stage: first-pass
+    anchor: source-boundaries
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- text: 几何→强度属于物理启发的建模方向。补充Sec.A给出条件独立假设，未把它们独立实验识别为普适因果律；正文Eq.10是简式，实际强度分支还接收[I_t;S_t]，且强度损失不回传到几何去噪器（正文pp.5–6）。
+  evidence:
+  - paper: sid-2026
+    stage: first-pass
+    anchor: module-sid
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: sid-2026
+    stage: first-pass
+    anchor: source-boundaries
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+analysis:
+  updated_at: '2026-11-06'
+  previous_methods:
+    text: 作者将物理天气仿真与WeatherGen的仿真/联合扩散作为主要参照，认为前者难覆盖复杂统计，后者未显式区分几何与强度退化（Secs.1–2，PDF pp.1–2）。本轮只核对本篇对既有工作的描述。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: sid-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 整理者归纳：有限真实数据下，几何与辐射信号的退化差别使单一联合生成目标较难兼顾；作者采用非对称依赖作为归纳偏置。分数改善支持这一具体设计，但不能倒推所有基线失败均由几何主导造成。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: sid-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: sid-2026
+      stage: first-pass
+      anchor: result-direction
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 让几何成为强度生成的条件，而不要求强度反过来恢复几何；再用真实统计缩小训练增强与目标天气的分布差异。几何条件分解与RPWS统计移植是两个可分开追踪的机制，天气embedding沿用已有条件化卡。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: sid-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: sid-2026
+      stage: first-pass
+      anchor: module-rpws
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: sid-2026
+      stage: first-pass
+      anchor: module-sid
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-sid-rpws
+    name: 真实天气统计驱动的训练增强
+    module_ids:
+    - module-sid-rpws
+    motivation:
+      text: 少量真实恶劣天气扫描不足以训练多样生成器，作者希望比简化物理/手工噪声更贴近真实几何与强度统计（Sec.3.2）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: module-rpws
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 随机采样清晰/天气扫描对，按距离bin计算有效回波计数比并乘空间可见性mask，Bernoulli保留清晰点；再以一维反射强度经验分布的optimal transport映射变换强度。无需同场景配准，也不增加可学习参数（Eqs.2–4，PDF
+        pp.3–4）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: module-rpws
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 用真实扫描限制退化统计，分别控制点存活结构和强度分布；其作用是改善生成器训练数据，不是生成逐点真值或伪标签。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: module-rpws
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sid-2026
+        stage: first-pass
+        anchor: result-ablation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 正文组件对照支持改善部分几何/强度分布指标；单独换RPWS并非所有指标都更好，完整配置的收益不能全部归因于它。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: result-ablation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: contribution-sid-factorization
+    name: 结构先行的双分支扩散
+    module_ids:
+    - module-sid-factorization
+    motivation:
+      text: 作者认为强度受几何及上下文影响，而由退化强度反推几何不适定，因而采用S→I方向（Sec.3.3）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: module-sid
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 每步UNet_S预测结构噪声并得到S_hat_0，经E_S形成phi_S；UNet_I输入[I_t;S_t]，由phi_W+phi_S经AdaGN调制。强度损失对S_hat_0截断梯度；天气phi_W由模拟扫描编码并存bank，采样时按标签抽取（Fig.2、Eqs.7–14、Algorithm1，PDF
+        pp.4–6）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: module-sid
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 比两个分支独立生成多一个结构约束，同时避免强度损失更新结构分支；估计的clean结构是去扩散噪声后的目标天气几何，不是恢复晴天。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: module-sid
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 雪天方向消融支持S→I在该模型/数据设置下优于Independent与I→S；不把此结果升级为普适因果定律或其他任务已验证迁移。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: result-direction
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: contribution-sid-fmd
+    name: 天气域特征的生成分布评价
+    module_ids:
+    - module-sid-fmd
+    motivation:
+      text: 作者指出FPD/FRD所用晴天预训练特征面临天气域差异，提出补充评价FMD（正文Sec.4.1、补充Sec.C）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: Minkowski UNet在STF经SLidR图像到点云蒸馏训练；每帧汇总点/体素特征的均值与标准差，再在真实/生成扫描描述子上计算Fréchet均值与协方差距离（补充pp.2–3，Eq.5）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 在天气域特征空间比较二阶分布统计，补充晴天特征指标的视角；度量本身并不保证样本物理正确或任务可用。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sid-2026
+        stage: first-pass
+        anchor: source-boundaries
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 提供同一评估流程下的补充排名；文中未报告独立人评或下游收益相关性验证，不将作者可靠性主张当作已证实标准。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: source-boundaries
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-sid-weather
+    name: 三类天气的生成分布
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-sid-rpws
+    - contribution-sid-factorization
+    result:
+      text: 正文Table1（PDF p.7）：雾/雨/雪FPD相对WeatherGen分别314.14→119.29、86.40→63.81、59.28→32.38；FMD为3.29→2.11、4.65→0.42、3.39→2.28。雨天JSD0.93与基线并列。Fig.3(a)少样本比较只展示雪天FMD的10/20/50/100%真实数据设置。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: result-weather
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 整体配置对照支持STF生成分布改善，但不分离RPWS、SiD与真实微调各自作用。MMD/JSD表头按×10^4/×10^1显示；跨指标不能相互当作精度，雨天JSD不是严格胜出。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: result-weather
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-sid-components
+    name: 模拟器、骨干与微调的组件组合
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-sid-rpws
+    - contribution-sid-factorization
+    result:
+      text: 正文Table3（PDF p.8，雪）：无FT时MDP+SMG的FPD271.12，RPWS+SMG109.42，RPWS+SiD91.28；完整FT为32.38。仅RPWS_S时FMD8.25/FPD105.53，仅RPWS_I时3.91/475.11，完整RPWS无FT时3.67/91.28。换RPWS的SMG无FT行JSD1.80→1.90变差。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: result-ablation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 几何与强度退化消融分别损伤指标，支持在当前设置保留两者；不声称每个指标都改进。正文与补充RPWS数值存在未解释差异，不能拼成统一实验或选最优行替换。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: result-ablation
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sid-2026
+        stage: first-pass
+        anchor: source-boundaries
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-sid-direction
+    name: 每步条件依赖方向
+    kind: design-choice
+    assessment: reported
+    contribution_ids:
+    - contribution-sid-factorization
+    result:
+      text: 正文Table4（PDF p.8，STF雪）：Independent为FMD4.92/FPD55.79/FRD1122.67；I→S为4.42/66.20/1177.72；S→I为2.28/32.38/1080.68。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: result-direction
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 直接支持该模型雪天设置下选择S→I；不证明几何唯一决定强度，也不单独证实AdaGN、梯度截断或weather bank各自必要。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: result-direction
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sid-2026
+        stage: first-pass
+        anchor: module-sid
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-sid-clear-cost
+    name: 清晰天气与模型复杂度
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-sid-factorization
+    result:
+      text: 正文Table2（PDF p.7）：KITTI-360的FMD1.75/FRD135.13为表中最好，JSD0.20并列；FPD5.62不及Text2LiDAR4.81，MMD0.41不及WeatherGen0.39。p.8报告38.06M/1.599GFLOPs，WeatherGen32.59M/1.398GFLOPs。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: result-clear
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sid-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 晴天结果有竞争力但不是所有指标最佳；参数与FLOPs同量级且略增，没有实测采样延迟或吞吐量支持更快的结论。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: result-clear
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: sid-2026
+        stage: first-pass
+        anchor: source-boundaries
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-sid-fmd-validation
+    name: FMD与下游用途的独立验证
+    kind: comparison
+    assessment: not-reported-in-note
+    contribution_ids: []
+    result:
+      text: 本轮核对的正文与补充未见FMD与人评/下游性能相关性实验，也未见以生成扫描训练检测、分割或伪标签模型的结果。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: source-boundaries
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: FMD是本文提出并使用的度量，不能用其更低直接证明新指标更可靠、生成数据带来感知提升或可作为有效伪标签。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: sid-2026
+        stage: first-pass
+        anchor: source-boundaries
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 作者承认环纹不规则、小/远物体边界平滑和单帧无时序限制（补充Sec.F，pp.4–5）。只验证生成分布；不等于恢复、去噪、下游检测或伪标签。无FT仍依赖真实天气统计；正文与补充RPWS配置/数值差异、WeatherGen原报告/复现口径与未完整披露的实现细节保留，不自行补齐。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: sid-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: sid-2026
+      stage: first-pass
+      anchor: source-boundaries
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

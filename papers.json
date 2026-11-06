@@ -1171,5 +1171,87 @@
         "reviewedAt": "2026-11-05"
       }
     }
+  },
+{
+  "slug": "sid-2026",
+  "category": "in-field",
+  "name": "SiD",
+  "title": "Structure-to-Intensity Diffusion for Adverse-Weather LiDAR Generation",
+  "year": 2026,
+  "venue": "CVPR",
+  "readDate": "2026-11-06",
+  "url": "https://openaccess.thecvf.com/content/CVPR2026/html/Ni_Structure-to-Intensity_Diffusion_for_Adverse-Weather_LiDAR_Generation_CVPR_2026_paper.html",
+  "tags": [
+    "雾雨雪",
+    "LiDAR生成",
+    "扩散模型",
+    "数据增强",
+    "几何-强度条件建模",
+    "STF"
+  ],
+  "summary": "以真实天气统计驱动RPWS预训练，并在每个扩散步以恢复几何条件化强度，生成雾雨雪LiDAR扫描；区分生成分布收益与尚未验证的下游、时序及跨传感器收益。",
+  "stages": {
+    "first-pass": "first-pass.html"
+  },
+  "reviews": {
+    "first-pass": {
+      "status": "source-checked",
+      "noteStatus": "organized",
+      "checkedAt": "2026-11-06",
+      "evidence": [
+        "通读CVF正文11页与补充8页并逐页查看图表；核对正文Figs.1–4/Tables1–4及补充Figs.1–8/Tables1–6。",
+        "三项必要原图表摘引：正文Figure2(p4)、Table1(p7)、Table4(p8)；原文位置与近邻分析对应。",
+        "保留雨天JSD并列、晴天非全指标最优、正文补充RPWS消融差异；仅Stage1，未运行实验。"
+      ]
+    }
+  },
+  "readingQuality": {
+    "version": 1,
+    "classification": {
+      "confirmedCategory": "in-field",
+      "rationale": "原文研究雾雨雪LiDAR几何/强度退化、数据生成与STF评测，属于直接相关天气感知数据方法，不因未提出去噪算法排除。",
+      "source": "CVF正文Abstract、Secs.3–4、Tables1–4；用户指定阅读。",
+      "reviewedAt": "2026-11-06"
+    },
+    "graphics": {
+      "status": "included",
+      "items": [
+        {
+          "figureId": "figure-2",
+          "kind": "paper-crop",
+          "label": "Figure 2",
+          "pdfPage": 4,
+          "sourceUrl": "https://openaccess.thecvf.com/content/CVPR2026/papers/Ni_Structure-to-Intensity_Diffusion_for_Adverse-Weather_LiDAR_Generation_CVPR_2026_paper.pdf#page=4",
+          "analysisId": "analysis-figure-2"
+        },
+        {
+          "figureId": "table-1",
+          "kind": "paper-crop",
+          "label": "Table 1",
+          "pdfPage": 7,
+          "sourceUrl": "https://openaccess.thecvf.com/content/CVPR2026/papers/Ni_Structure-to-Intensity_Diffusion_for_Adverse-Weather_LiDAR_Generation_CVPR_2026_paper.pdf#page=7",
+          "analysisId": "analysis-table-1"
+        },
+        {
+          "figureId": "table-4",
+          "kind": "paper-crop",
+          "label": "Table 4",
+          "pdfPage": 8,
+          "sourceUrl": "https://openaccess.thecvf.com/content/CVPR2026/papers/Ni_Structure-to-Intensity_Diffusion_for_Adverse-Weather_LiDAR_Generation_CVPR_2026_paper.pdf#page=8",
+          "analysisId": "analysis-table-4"
+        }
+      ]
+    },
+    "rightsReview": {
+      "basis": "CVF公开版保留作者/权利人版权，未声称CC；仅三项必要图表的评论性摘引，与具体分析对应，注明作者/图号/页码/原始来源及裁剪身份，不公开整篇或整页，不作法律保证。",
+      "reviewedAt": "2026-11-06"
+    },
+    "visualReview": {
+      "desktop": true,
+      "mobile": true,
+      "zoom": true,
+      "reviewedAt": "2026-11-06"
+    }
   }
+}
 ]
