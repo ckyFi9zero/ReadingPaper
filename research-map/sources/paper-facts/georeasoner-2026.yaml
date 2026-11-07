@@ -1,0 +1,469 @@
+version: 1
+paper: georeasoner-2026
+scope: out-of-field
+source_basis: original-pdf-and-reading-note
+source_sha256: 55b6ac5a64685daa41a4cfcde4ce5ecf674b5c01a544b02a0ed6939837b80ea8
+checked_at: '2026-11-07'
+source_version: arXiv:2610.41446v1，2026-10-30
+source_url: https://arxiv.org/abs/2610.41446v1
+read_scope: 完整阅读正文、图注和参考文献pp.1–10；核对3图、4表；实际视觉复核Fig.2及Tables1–4页面。无独立附录；未读代码或复现。
+source_review:
+  scope: 本轮回到固定v1全文，阅读页是可点击索引。Table1原报告GeoNav与Table3同Qwen重现分开；历史来源核验等级不变。
+  checked_at: '2026-11-07'
+tags:
+- 拓展阅读
+- 空中视觉语言导航
+- 主动取证
+- 竞争假设
+- 地理先验
+- 三态验证
+task:
+  name: 城市空中语言目标定位
+  input: 自然语言指令、每步俯视RGB-D观测、当前三维位置与pitch/yaw、地理实体名称与空间轮廓；绝对目标位置不可用。
+  output: 无人机forward、left、right、ascend、descend、stop动作及最终目标位置；距真值20m内停止算成功。
+  conditions: CityNav 32,637指令轨迹、5,850目标、Cambridge与Birmingham共4.65km²；train/val-seen/val-unseen/test-unseen为22002/2498/2826/5311。本文无任务训练，基础模型预训练与推理先验仍存在；不报告训练专用目标真值作为部署输入。
+  evidence:
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 作者指出高空小目标外观相近，沿路径被动积累的局部支持可能反复强化错误候选，即使其与全局地理关系冲突，导致过早停止（Secs.1–2，Fig.1）。
+  evidence:
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-04
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-geospatial-active-reasoning
+  name: 地理约束—主动取证—一致性验证
+  description: 先将指令拆成目标g、地标L、上下文C、目标关系Sg和地标关系Sl；地理约束形成竞争区域；区域内生成并合并对象候选；按未决关系主动补观测，更新结构化证据记忆；三角色单轮验证产生支持/不足/冲突状态，分别驱动停止、补观测、重规划或明确未验证的预算回退（Secs.3.1–3.4，Eqs.1–12）。
+  evidence:
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-06
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-georeasoner-hypotheses
+  name: 地理约束与竞争区域假设
+  role: core-module
+  motivation: 先限制搜索区域，同时保留尚未核验的上下文关系。
+  evidence:
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-06
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-georeasoner-active-evidence
+  name: 未决关系驱动主动取证
+  role: core-module
+  motivation: 按候选间歧义主动选择观测，而非只沿当前轨迹积累。
+  evidence:
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-06
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-georeasoner-verification
+  name: 三态一致性验证与预算回退
+  role: core-module
+  motivation: 不把相对领先或证据不足当成充分确认。
+  evidence:
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-06
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-aerial-goal-ambiguity
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 登记原任务中的假设组织、取证与停止机制变化；新任务根仅为库内分类，不声称首创或已独立验证作者SOTA范围。
+limitations:
+- text: 固定 arXiv:2610.41446v1，10页，无独立附录。只报告 CityNav 空中语言目标定位，无天气退化、跨传感器或真实无人机部署验证；zero-shot 指无任务专属训练，不是无预训练、无地图或无位姿。部署仍使用
+    RGB-D、位姿、地理名称/轮廓、Qwen3.8-Flash 与 SAM 3，目标真值不可用。Val-Seen 的 NE/SR/SPL 由 RingMo-Agent 领先。全文未报告 runtime、GPU/API成本、统计误差或地理先验扰动实验。
+  evidence:
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+analysis:
+  updated_at: '2026-11-07'
+  previous_methods:
+    text: 按作者描述，既有反应式导航从局部观测更新状态再选动作；GeoNav等利用地理信息决定去哪，但并非显式为竞争候选主动寻找区分证据。此为本文既有工作叙述，未逐篇复核。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: georeasoner-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 局部外观可以同时支持多个候选，继续在相似视角被动观察不一定获得能推翻错误解释的证据；地理与视觉关系需按尺度保留。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: georeasoner-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: georeasoner-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 把地理知识变为可执行的假设约束，并让尚未解决的关系决定下一次观察；停止由证据一致性而非相对分数单独决定。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: georeasoner-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: georeasoner-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-georeasoner-active
+    name: 竞争假设引导主动取证
+    module_ids:
+    - module-georeasoner-hypotheses
+    - module-georeasoner-active-evidence
+    motivation:
+      text: 作者旨在减少局部似是而非证据造成的误定位与过早停止。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-03
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 1. 拆分地理约束与待视觉核验的上下文关系，100m总览后形成最多6个区域并保存支持/未决关系。2. 结合访问效率按较低可信区域优先挑战假设；50m观察，SAM 3产生mask、MLLM按目标外观过滤、结合位姿定位、9m半径合并，初查最多9个候选而保留其余。3.
+        对照完整指令与记忆排除显式矛盾，列出区分剩余候选的未决线索。4. 为细节下降/靠近，为上下文按空间关系选观察位置；多个补充航点以TSP组织，最多4次补观测。5. 将摘要、未决线索、支持/矛盾/修订状态写回记忆，精化位置与排序（Secs.3.2–3.3，Eqs.1–9）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-06
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 先保留互相竞争的解释，再把仍欠缺的区分证据转成新的观测动作；地理先验缩小区域但不独自决定目标。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-06
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 在本文给定先验和预算下，允许对未决关系补采观测，而不要求立即接受当前领先候选；不等于具有形式化正确性保证。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-06
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: contribution-georeasoner-verification
+    name: 三态一致性驱动最终导航决策
+    module_ids:
+    - module-georeasoner-verification
+    motivation:
+      text: 作者旨在减少局部似是而非证据造成的误定位与过早停止。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-03
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-04
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 1. 对领先候选由支持者举证、反对者查矛盾与替代解释，裁决者交叉核对指令、地理、视觉与历史，单轮辩论。2. 每个候选记录证据Ei及 supported/insufficient/conflict。3.
+        有充分支持则导航至目标后stop；全部冲突则重规划；尚可获得信息则补观测；否则仅在不冲突候选中按既有评估投票回退。4. 最多额外重规划2次，预算耗尽仍全冲突则无已验证目标结束；回退停止不等于充分验证（Sec.3.4，Eqs.10–12）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-06
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 相对排名回答谁更像，三态核验回答证据是否足以停止；预算回退与已验证目标保持不同身份。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-06
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 在本文给定先验和预算下，允许对未决关系补采观测，而不要求立即接受当前领先候选；不等于具有形式化正确性保证。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-06
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-georeasoner-overall
+    name: CityNav整体比较与已见场景反例
+    kind: comparison
+    assessment: reported
+    contribution_ids: &id001
+    - contribution-georeasoner-active
+    - contribution-georeasoner-verification
+    result:
+      text: Table 1（p.7），按 NE(m)/SR(%)/OSR(%)/SPL(%)：GeoReasoner Test-Unseen 38.97/37.77/59.63/27.85，Val-Unseen
+        49.60/35.14/61.36/26.57，Val-Seen 43.07/35.27/62.77/26.93。前两划分在表列方法中四项最佳；Val-Seen 仅OSR最佳，RingMo-Agent 35.7/45.81/57.07/45.59。Table1
+        GeoNav 为原报告 Test-Unseen 73.5/25.9/41.6/16.0，不是Table3同底座重现。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持固定CityNav和表列对照范围的整体结果；不证明每个模块独立有效，不称全划分全指标SOTA。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-georeasoner-difficulty
+    name: 难度分层与同底座Hard比较
+    kind: comparison
+    assessment: reported
+    contribution_ids: *id001
+    result:
+      text: Table2 Test-Unseen Easy/Medium/Hard SR=39.40/37.84/35.45%，SPL=24.75/29.21/30.59%。Table3同Qwen3.8-Flash重现GeoNav在Test-Unseen-Hard/Val-Unseen-Hard/Val-Seen-Hard
+        SR=12.16/9.71/8.54%，本文=35.45/34.51/33.10%，差23.29/24.80/24.56个百分点；Val-Seen-Hard HETT NE=41.40m仍优于本文47.79m。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 按起终点距离分难度，不是天气鲁棒性；Table3同底座减少模型差别但仍为完整系统比较，不与Table1原报告GeoNav混用。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-georeasoner-ablation
+    name: 组件删除与辩论替换
+    kind: ablation
+    assessment: reported
+    contribution_ids: *id001
+    result:
+      text: Table 4（p.8），Test-Unseen NE/SR/OSR/SPL：Full 38.97/37.77/59.63/27.85；去假设54.21/29.49/48.31/19.51；去探索记忆47.35/33.65/53.49/22.57；去一致性验证46.13/32.91/55.70/24.36；去主动取证52.68/30.62/49.33/20.37；辩论换直接MLLM评估42.18/35.79/59.33/26.52。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 删除模块后的完整系统对照支持该配置的组件作用；去辩论是换直接MLLM评估，与移除整个一致性验证不同。不证明TSP、9m合并、低可信区域优先或预算值独立最优。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: georeasoner-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 固定 arXiv:2610.41446v1，10页，无独立附录。只报告 CityNav 空中语言目标定位，无天气退化、跨传感器或真实无人机部署验证；zero-shot 指无任务专属训练，不是无预训练、无地图或无位姿。部署仍使用
+      RGB-D、位姿、地理名称/轮廓、Qwen3.8-Flash 与 SAM 3，目标真值不可用。Val-Seen 的 NE/SR/SPL 由 RingMo-Agent 领先。全文未报告 runtime、GPU/API成本、统计误差或地理先验扰动实验。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: georeasoner-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

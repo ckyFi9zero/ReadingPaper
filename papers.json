@@ -1253,5 +1253,103 @@
       "reviewedAt": "2026-11-06"
     }
   }
+},
+{
+  "slug": "georeasoner-2026",
+  "category": "out-of-field",
+  "name": "GeoReasoner",
+  "title": "Beyond Trial-and-Error: A Geospatial-Guided Active Reasoning Framework for Robust Aerial Vision-and-Language Navigation",
+  "year": 2026,
+  "venue": "arXiv",
+  "readDate": "2026-11-07",
+  "url": "https://arxiv.org/abs/2610.41446v1",
+  "doi": "10.48550/arXiv.2610.41446",
+  "tags": [
+    "空中视觉语言导航",
+    "地理先验",
+    "主动取证",
+    "竞争假设",
+    "一致性验证"
+  ],
+  "summary": "以地理约束形成竞争区域，围绕未决关系主动补采观测，并区分证据支持、不足与冲突来决定停止或重规划；证据限于 CityNav，未验证天气迁移。",
+  "stages": {
+    "first-pass": "first-pass.html"
+  },
+  "reviews": {
+    "first-pass": {
+      "status": "source-checked",
+      "noteStatus": "organized",
+      "checkedAt": "2026-11-07",
+      "evidence": [
+        "完整阅读 arXiv:2610.41446v1 的10页正文、图注、LLM Usage Statement和References；全部3图4表实际核验，当前版本无独立附录。",
+        "五项必要局部为Figure 2(p4)、Tables 1/3/4(p7/8)、Figure 3(p8)，均有邻近分析、出处、版权与裁剪身份；未运行模型或复现实验。",
+        "Table 1原报告与Table 3同Qwen GeoNav分开，保留Val-Seen指标例外、低合理性区域优先、回退不等于验证成功等边界。"
+      ]
+    }
+  },
+  "readingQuality": {
+    "version": 1,
+    "classification": {
+      "confirmedCategory": "out-of-field",
+      "rationale": "研究城市无人机视觉语言导航的地理先验、主动证据获取与停止核验；可作为机器人/具身系统拓展，非恶劣天气 LiDAR 感知论文，全文未报告雨雾沙尘雪实验或天气迁移。",
+      "source": "项目公开分类规范与机器人/具身拓展范围；论文 Sec. 3.1、4.1–4.2，PDF pp. 3、6–9。",
+      "reviewedAt": "2026-11-07"
+    },
+    "graphics": {
+      "status": "included",
+      "items": [
+        {
+          "figureId": "fig-2",
+          "kind": "paper-crop",
+          "label": "Figure 2",
+          "pdfPage": 4,
+          "sourceUrl": "https://arxiv.org/html/2610.41446v1#S3.F2",
+          "analysisId": "analysis-fig-2"
+        },
+        {
+          "figureId": "table-1",
+          "kind": "paper-crop",
+          "label": "Table 1",
+          "pdfPage": 7,
+          "sourceUrl": "https://arxiv.org/html/2610.41446v1#S4.T1",
+          "analysisId": "analysis-table-1"
+        },
+        {
+          "figureId": "table-3",
+          "kind": "paper-crop",
+          "label": "Table 3",
+          "pdfPage": 8,
+          "sourceUrl": "https://arxiv.org/html/2610.41446v1#S4.T3",
+          "analysisId": "analysis-table-3"
+        },
+        {
+          "figureId": "table-4",
+          "kind": "paper-crop",
+          "label": "Table 4",
+          "pdfPage": 8,
+          "sourceUrl": "https://arxiv.org/html/2610.41446v1#S4.T4",
+          "analysisId": "analysis-table-4"
+        },
+        {
+          "figureId": "fig-3",
+          "kind": "paper-crop",
+          "label": "Figure 3",
+          "pdfPage": 8,
+          "sourceUrl": "https://arxiv.org/html/2610.41446v1#S4.F3",
+          "analysisId": "analysis-fig-3"
+        }
+      ]
+    },
+    "rightsReview": {
+      "basis": "实际核验 arXiv:2610.41446v1 摘要页 Rights to this article 指向 CC BY 4.0；HTML 页首同标识。五项选用原图表 caption 无独立排除声明；署名、原始链接、图号/页序、裁剪身份就近保留。仅必要局部，未公开整篇 PDF。案例含 CityNav 场景，未独立核验底层数据集完整权利链，不授权数据集再分发。",
+      "reviewedAt": "2026-11-07"
+    },
+    "visualReview": {
+      "desktop": true,
+      "mobile": true,
+      "zoom": true,
+      "reviewedAt": "2026-11-07"
+    }
+  }
 }
 ]

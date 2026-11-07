@@ -2491,3 +2491,89 @@ nodes:
     basis: existing-note
     original_pdf_review_status: source-checked
   parent: pipeline-weather-factorized-diffusion
+- id: task-aerial-language-goal
+  kind: task
+  name: 城市空中语言目标定位
+  parent: null
+  novelty_class: 1
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 自然语言指令、每步俯视RGB-D观测、当前三维位置与pitch/yaw、地理实体名称与空间轮廓；绝对目标位置不可用。 → 无人机forward/left/right/ascend/descend/stop动作及最终目标位置；距真值20m内停止算成功。
+    部署有RGB-D/位姿/地理轮廓，zero-shot无任务专属训练。本节点为库内任务分类，不声称首创。
+  source_papers:
+  - georeasoner-2026
+  evidence:
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: pipeline-geospatial-active-reasoning
+  kind: pipeline
+  name: 地理约束—主动取证—一致性验证
+  parent: task-aerial-language-goal
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 先将指令拆成目标g、地标L、上下文C、目标关系Sg和地标关系Sl；地理约束形成竞争区域；区域内生成并合并对象候选；按未决关系主动补观测，更新结构化证据记忆；三角色单轮验证产生支持/不足/冲突状态，分别驱动停止、补观测、重规划或明确未验证的预算回退（Secs.3.1–3.4，Eqs.1–12）。
+  source_papers:
+  - georeasoner-2026
+  evidence:
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-georeasoner-hypotheses
+  kind: module
+  name: 地理约束与竞争区域假设
+  parent: pipeline-geospatial-active-reasoning
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 先限制搜索区域，同时保留尚未核验的上下文关系。
+  source_papers:
+  - georeasoner-2026
+  evidence:
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-georeasoner-active-evidence
+  kind: module
+  name: 未决关系驱动主动取证
+  parent: pipeline-geospatial-active-reasoning
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 按候选间歧义主动选择观测，而非只沿当前轨迹积累。
+  source_papers:
+  - georeasoner-2026
+  evidence:
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-georeasoner-verification
+  kind: module
+  name: 三态一致性验证与预算回退
+  parent: pipeline-geospatial-active-reasoning
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 不把相对领先或证据不足当成充分确认。
+  source_papers:
+  - georeasoner-2026
+  evidence:
+  - paper: georeasoner-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
