@@ -5031,7 +5031,7 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
         - paper: 3d-unoutdet-2025
-          stage: first-pass
+          revisit: 3d-unoutdet-20261108
           anchor: revisit-20261108-thresholds
           status: source-checked
           basis: existing-note
@@ -5061,7 +5061,7 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
         - paper: 3d-unoutdet-2025
-          stage: first-pass
+          revisit: 3d-unoutdet-20261108
           anchor: revisit-20261108-thresholds
           status: source-checked
           basis: existing-note
@@ -5116,7 +5116,7 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
         - paper: 3d-unoutdet-2025
-          stage: first-pass
+          revisit: 3d-unoutdet-20261108
           anchor: revisit-20261108-causality
           status: source-checked
           basis: existing-note
@@ -5158,19 +5158,19 @@ challenges:
         basis: existing-note
         original_pdf_review_status: source-checked
       - paper: 3d-unoutdet-2025
-        stage: first-pass
+        revisit: 3d-unoutdet-20261108
         anchor: revisit-20261108-thresholds
         status: source-checked
         basis: existing-note
         original_pdf_review_status: partial
       - paper: 3d-unoutdet-2025
-        stage: first-pass
+        revisit: 3d-unoutdet-20261108
         anchor: revisit-20261108-results
         status: source-checked
         basis: existing-note
         original_pdf_review_status: partial
       - paper: 3d-unoutdet-2025
-        stage: first-pass
+        revisit: 3d-unoutdet-20261108
         anchor: revisit-20261108-causality
         status: source-checked
         basis: existing-note

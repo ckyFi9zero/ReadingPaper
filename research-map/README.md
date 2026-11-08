@@ -156,3 +156,7 @@ Beyond the Snowflakes 与 SnowRemovalNet 已根据原文及图表核对补充事
 - 保留低合理性区域优先、9m合并、6区域/9候选/4次补观测/2次额外重规划的具体设置与缺少独立参数消融的边界。证据不足时的回退停止不等于充分验证；全冲突且预算耗尽时可无已验证目标结束。
 - Table 1原报告GeoNav与Table 3同Qwen3.8-Flash重现分别记录；Val-Seen的三项不及RingMo-Agent，Val-Seen-Hard的NE不及HETT。完整系统、组件消融和阅读者机制归纳保持独立，缺少成本、实机与天气迁移证据不包装成已验证收益。
 - 保留旧133个Literature节点与29类挑战的原有内容、所有稳定ID和核验等级。增量为5个Literature节点、1类挑战和2张使用卡；pending与novelty gate不变。
+
+## 2026-11-08 独立专题证据
+
+3D-UnOutDet 的专题回看迁至独立 `revisits/3d-unoutdet-20261108.html`，原初读恢复原内容。既有事实与武器库卡中的本次新增证据改用 `revisit: 3d-unoutdet-20261108`，不伪装成初读锚点或新增阅读阶段；验证器以 `revisits.json` 检查论文归属和真实目标。既有 stage 证据、稳定节点与核验等级不变。

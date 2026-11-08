@@ -9,6 +9,7 @@ from urllib.parse import unquote, urlsplit
 
 from check_reading_publish import check_reading_publish
 from evidence import code_href, load_map
+from topic_revisits import load_revisits
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -40,7 +41,10 @@ def check(root=ROOT, papers=None):
         manifest = root / 'site-manifest.json'
         papers = json.loads(manifest.read_text())['papers'] if manifest.exists() else json.loads((root / 'papers.json').read_text())
     check_reading_publish(root, papers)
+    revisits = load_revisits(root, papers)
     paths = [root / "index.html"]
+    if revisits:
+        paths += [root / "revisits.html"] + [root / r["file"] for r in revisits]
     if (root / "overview.html").exists():
         raise ValueError("Retired interface must not be published: overview.html")
     # Map pages are local additions; public exports deliberately omit them.

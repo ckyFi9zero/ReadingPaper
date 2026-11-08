@@ -13,6 +13,7 @@ from urllib.parse import urlsplit, unquote, quote
 import markdown
 
 from check_reading_publish import check_reading_publish
+from topic_revisits import load_revisits, directory_body
 from evidence import EVIDENCE_STYLE, load_map, render_panel
 from linked_reader import available as linked_reader_available, render as render_linked_reader
 
@@ -28,6 +29,7 @@ DESCRIPTIONS = {
 esc = html.escape
 OUTPUTS = {}
 MAP_ENABLED = False
+REVISITS_ENABLED = False
 
 
 def local_path(value):
@@ -75,7 +77,8 @@ def shell(title, body, prefix="", current="library"):
     def nav(href, text, key):
         active = ' aria-current="page"' if current == key else ""
         return f'<a href="{prefix}{href}"{active}>{text}</a>'
-    map_nav = nav('research-map.html', '研究地图', 'research-map') if current == 'research-map' or (MAP_ENABLED and current == 'library') else ''
+    map_nav = nav('research-map.html', '研究地图', 'research-map') if current == 'research-map' or (MAP_ENABLED and current in ('library', 'revisits')) else ''
+    revisit_nav = nav('revisits.html', '专题回看', 'revisits') if REVISITS_ENABLED and current in ('library', 'revisits') else ''
     return f'''<!doctype html>
 {MARKER}
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -85,7 +88,7 @@ def shell(title, body, prefix="", current="library"):
 <body><a class="skip" href="#main">跳到正文</a><div class="layout"><aside class="sidebar">
 <a class="brand" href="{prefix}index.html"><span class="brand-mark" aria-hidden="true">R</span>ReadingPaper</a>
 <p class="side-caption">个人论文阅读库</p><nav aria-label="主导航">
-{nav('index.html', '全部论文', 'library')}{map_nav}
+{nav('index.html', '全部论文', 'library')}{map_nav}{revisit_nav}
 </nav><div class="side-note">研究方向<br>机器人感知<br>恶劣天气点云去噪</div></aside>
 <main id="main">{body}<footer class="footer">ReadingPaper · 阅读、理解与连接<br>阅读阶段依据已保存的笔记；未整理的阶段不计入完成数量。</footer></main></div></body></html>'''
 
@@ -180,7 +183,7 @@ def paper_pages(paper):
 
 def build(papers=None, *, write=True, overview=True, research_map=True):
     # overview is retained as an ignored compatibility argument; this UI is retired.
-    global MAP_ENABLED
+    global MAP_ENABLED, REVISITS_ENABLED
     MAP_ENABLED = research_map and (ROOT / 'research-map').is_dir()
     OUTPUTS.clear()
     papers = copy.deepcopy(papers if papers is not None else json.loads((ROOT / "papers.json").read_text()))
@@ -227,6 +230,10 @@ def build(papers=None, *, write=True, overview=True, research_map=True):
                 date.fromisoformat(review['checkedAt'])
                 if not review.get('evidence') or not isinstance(review['evidence'], list) or not all(isinstance(e, str) and e.strip() for e in review['evidence']):
                     raise ValueError(f"Source check requires concrete evidence: {slug}/{key}")
+    # Topic revisits are independent records, never paper stages. Public exports
+    # remain explicitly selected and do not automatically include this registry.
+    revisits = [] if any(p.get('_public') for p in papers) else load_revisits(ROOT, papers)
+    REVISITS_ENABLED = bool(revisits)
     cards = []
     for paper in sorted(papers, key=lambda p: p["readDate"], reverse=True):
         slug = paper["slug"]
@@ -249,8 +256,10 @@ def build(papers=None, *, write=True, overview=True, research_map=True):
     category_options = ''.join(f'<option value="{key}">{label}（{sum(p["category"] == key for p in papers)}）</option>' for key, label in CATEGORIES.items())
     venues = sorted({p['venue'] for p in papers}, key=str.casefold)
     venue_options = ''.join(f'<option value="{esc(venue, quote=True)}">{esc(venue)}（{sum(p["venue"] == venue for p in papers)}）</option>' for venue in venues)
+    revisit_notice = f'<p class="notice"><a href="revisits.html"><strong>专题回看目录 →</strong></a> · {len({r["paper"] for r in revisits})} 篇论文已有回看，{len(revisits)} 条独立主题记录；可查看哪些论文尚无回看记录。</p>' if revisits else ''
     home = f'''<header class="page-head"><div class="eyebrow">RESEARCH / READING LIBRARY</div><div class="heading-line"><h1>我的论文库</h1><div class="count">{len(papers):02}<small>篇论文</small></div></div><p>从第一遍初读，到写作精读与方法代码阅读。</p></header>
 <div class="stats"><span><strong>{counts['first-pass']}</strong> 篇有初读笔记</span><span><strong>{counts['deep-read']}</strong> 篇有深读笔记</span><span><strong>{counts['code']}</strong> 篇有代码笔记</span></div>
+{revisit_notice}
 <div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" aria-label="搜索论文" placeholder="搜索标题、方法或关键词…" autocomplete="off"></label>
 <select id="category-filter" aria-label="按研究领域筛选"><option value="all">全部领域</option>{category_options}</select>
 <select id="venue-filter" aria-label="按期刊或会议筛选"><option value="">全部发表来源</option>{venue_options}</select>
@@ -263,6 +272,8 @@ def build(papers=None, *, write=True, overview=True, research_map=True):
     for paper in papers:
         paper_pages(paper)
     save("index.html", shell("我的论文库", home))
+    if revisits:
+        save("revisits.html", shell("专题回看", directory_body(papers, revisits), current="revisits"))
     if MAP_ENABLED:
         from build_research_map import render
         OUTPUTS.update(render(ROOT, papers, shell, OUTPUTS))

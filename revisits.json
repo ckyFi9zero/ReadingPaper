@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "revisits": [
+    {
+      "date": "2026-11-08",
+      "title": "教师有依据，学生涨分就等于纠错吗？",
+      "anchor": "revisit-20261108",
+      "sourceScope": "定向核对作者TechRxiv v1文本Sec.III-A–B、TablesI/V及公开四页补充S4/Fig.S1；未重新取得IROS正式PDF，不新增阅读阶段。",
+      "visualReview": {
+        "desktop": true,
+        "mobile": true,
+        "zoom": true,
+        "reviewedAt": "2026-11-08",
+        "scope": "独立专题页桌面及390px手机实际查看；Fig.S1(b)与Table I原尺寸加载及可滚动放大、关闭/Esc核验。目录与地图另做本轮视觉验收。"
+      },
+      "graphics": [
+        {
+          "figureId": "revisit-20261108-fig-s1b",
+          "label": "Fig. S1(b)",
+          "pdfPage": 2,
+          "sourceUrl": "https://sporsho.github.io/3DUnOutDet_Suppli.pdf#page=2",
+          "kind": "paper-crop",
+          "cropPdfPoints": [
+            44,
+            376,
+            567,
+            698
+          ],
+          "renderScale": 3
+        },
+        {
+          "figureId": "revisit-20261108-table-i",
+          "label": "Table I",
+          "pdfPage": 4,
+          "sourceUrl": "https://doi.org/10.1109/IROS60139.2025.11247379",
+          "kind": "paper-crop"
+        }
+      ],
+      "rightsReview": {
+        "reviewedAt": "2026-11-08",
+        "basis": "无CC转载授权声明；仅为具体原创评论摘引作者补充Fig.S1(b)及复用原初读已有IROS Table I必要局部，保留作者、原图内容、页序、图注与来源，不公开完整PDF或整页，不作法律保证。"
+      },
+      "id": "3d-unoutdet-20261108",
+      "paper": "3d-unoutdet-2025",
+      "file": "revisits/3d-unoutdet-20261108.html"
+    }
+  ]
+}

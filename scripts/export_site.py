@@ -16,6 +16,7 @@ import build_site
 from check_site import Page, check
 from evidence import END_MARKER, START_MARKER, load_map
 from render_evidence import render_text
+from topic_revisits import load_revisits
 
 ROOT = build_site.ROOT
 ASSETS = ['assets/style.css', 'assets/app.js', 'assets/reader-nav.js', 'assets/favicon.svg', 'assets/evidence-reader.css', 'assets/evidence-reader.js', 'assets/pdfjs/pdf.min.mjs', 'assets/pdfjs/pdf.worker.mjs', 'assets/pdfjs/LICENSE']
@@ -85,6 +86,9 @@ def export(profile='local'):
                 for stage in paper['available']:
                     if re.search(r'data:image/', outputs[f"papers/{paper['slug']}/{stage}.html"]):
                         raise ValueError(f"{paper['slug']}: embedded paper images need explicit allow_embedded_images review")
+    revisits = [] if public else load_revisits(ROOT, papers)
+    for revisit in revisits:
+        outputs[revisit["file"]] = source_path(revisit["file"]).read_text(encoding="utf-8")
     output = ROOT / ('_site-public' if public else '_site')
     if output.is_symlink() or (output.exists() and not (output / 'site-manifest.json').is_file()):
         raise ValueError(f'Refusing to replace an unmanaged output directory: {output.name}')
@@ -111,6 +115,8 @@ def export(profile='local'):
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(text, encoding='utf-8')
         allowed = set(ASSETS)
+        if revisits:
+            allowed.update(["assets/revisits.js", "revisits.json"])
         if not public and 'research-map.html' in outputs:
             allowed.update(['assets/research-map.css', 'assets/map-layout.js', 'assets/map-canvas.js', 'assets/research-map.js'])
         if public:

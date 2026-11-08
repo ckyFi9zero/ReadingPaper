@@ -266,6 +266,31 @@ class SiteTests(unittest.TestCase):
         self.assertFalse((out/'scripts').exists())
         check(out)
 
+    def test_topic_revisit_exports_locally_without_expanding_selected_public_export(self):
+        image = (Path(__file__).resolve().parents[1] / 'revisits/images/3d-unoutdet-20261108-table-i.png').read_bytes()
+        topic = 'revisits/sample-20261108.html'
+        self.put(topic, '<html><body><h1 id="topic">专题回看，不是新论文</h1>'
+                 '<figure id="proof" data-origin="paper-crop" data-visual-role="evidence">'
+                 '<button class="zoom"><img src="images/proof.png" alt="Original table"></button>'
+                 '<figcaption>Authors, Table I, PDF p.4. <a href="https://example.org/paper">Source</a></figcaption>'
+                 '</figure><p data-for="proof">Table conditions and limits.</p>'
+                 '<a href="../revisits.html">Directory</a></body></html>')
+        self.put('revisits/images/proof.png', image)
+        self.put('assets/revisits.js', '// fixture')
+        record = dict(id='sample-20261108', paper='sample-2026', file=topic, date='2026-11-08',
+                      title='One topic', sourceScope='One original table.', anchor='topic',
+                      graphics=[dict(figureId='proof', label='Table I', pdfPage=4, sourceUrl='https://example.org/paper')],
+                      rightsReview=dict(reviewedAt='2026-11-08', basis='Necessary attributed commentary crop.'),
+                      visualReview=dict(desktop=True, mobile=True, zoom=True, reviewedAt='2026-11-08'))
+        self.put('revisits.json', json.dumps(dict(version=1, revisits=[record])))
+        exporter.export('local')
+        for name in [topic, 'revisits.html', 'revisits.json', 'assets/revisits.js', 'revisits/images/proof.png']:
+            self.assertTrue((self.root/'_site'/name).is_file(), name)
+        self.publish()
+        exporter.export('public')
+        for name in [topic, 'revisits.html', 'revisits.json', 'assets/revisits.js', 'revisits/images/proof.png']:
+            self.assertFalse((self.root/'_site-public'/name).exists(), name)
+
     def test_project_prefix_rejects_absolute_links(self):
         self.put('papers/sample-2026/first-pass.md', '# Note\n\n[bad](/index.html)')
         with self.assertRaisesRegex(ValueError, 'leaves repository'):

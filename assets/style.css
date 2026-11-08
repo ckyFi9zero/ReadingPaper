@@ -6,3 +6,5 @@
 @media(max-width:720px){.layout{display:block;padding:22px 18px 44px}.sidebar{position:static;margin-bottom:30px}.sidebar .side-caption,.side-note{display:none}.sidebar nav{display:flex;flex-wrap:wrap;margin-top:16px;gap:8px}.heading-line{align-items:center}.count{font-size:30px}.paper-card{padding:20px}.card-top{align-items:start}.paper-card h2{font-size:23px}.stage-links{gap:12px 20px}.prose{padding:18px}.toc>ul{columns:1}.toolbar{gap:10px}.search{flex-basis:100%}.toolbar select{flex:1}.paper-meta{gap:6px}.page-head h1{font-size:32px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
 @media print{body{background:white}.layout{display:block;padding:0}.sidebar,.toolbar,.reading-tabs,.skip,.toc,.resource-links{display:none}.prose{border:0;padding:0}.paper-card{break-inside:avoid}.page-head{border-bottom:1px solid #333}}
+/* Independent revisit cards may pair long paper names with a status badge. */
+.revisit-paper{min-width:0;overflow-wrap:anywhere}.revisit-paper .card-top{flex-wrap:wrap}.revisit-paper h2{min-width:0}

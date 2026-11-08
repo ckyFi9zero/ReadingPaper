@@ -15,6 +15,7 @@ from urllib.parse import quote
 
 import yaml
 from evidence import page_ids
+from topic_revisits import load_revisits, revisit_path
 
 PAGES = ('research-map.html', 'literature-tree.html', 'challenge-insight-tree.html')
 STAGES = {'first-pass', 'deep-read', 'code'}
@@ -105,6 +106,7 @@ def validate(data, root, papers, rendered=None):
     root = Path(root).resolve()
     catalogue = {p['slug']: p for p in papers}
     facts = data['facts']
+    revisits = {r['id']: r for r in load_revisits(root, papers)}
     rendered = rendered or {}
     anchor_cache = {}
 
@@ -132,10 +134,14 @@ def validate(data, root, papers, rendered=None):
             require(isinstance(ev, dict), f'Invalid evidence: {where}')
             slug, stage, anchor = ev.get('paper'), ev.get('stage'), ev.get('anchor')
             require(slug in catalogue and slug in facts, f'Unknown evidence paper: {slug}')
-            require(stage in STAGES and stage in catalogue[slug].get('stages', {}), f'Unavailable evidence stage: {slug}/{stage}')
+            topic = ev.get('revisit')
+            if 'revisit' in ev:
+                require(stage is None and topic in revisits and revisits[topic]['paper'] == slug, f'Unavailable/mismatched topic evidence: {slug}/{topic}')
+            else:
+                require(stage in STAGES and stage in catalogue[slug].get('stages', {}), f'Unavailable evidence stage: {slug}/{stage}')
             require(ev.get('status') in STATUSES, f'Invalid evidence status: {where}')
             text(anchor, where)
-            name = f'papers/{slug}/{stage}.html'
+            name = revisit_path(topic) if topic else f'papers/{slug}/{stage}.html'
             if name not in anchor_cache:
                 if name in rendered:
                     from evidence import _IDParser
@@ -361,14 +367,23 @@ def validate(data, root, papers, rendered=None):
     return data
 
 
+def evidence_kind(ev):
+    return '专题回看' if ev.get('revisit') else ev['stage']
+
+
+def evidence_href(ev):
+    path = revisit_path(ev['revisit']) if ev.get('revisit') else f'papers/{ev["paper"]}/{ev["stage"]}.html'
+    return f'{path}#{quote(ev["anchor"], safe="-._~")}'
+
+
 def evidence_links(values, catalogue):
     links = []
     for ev in values:
-        slug = ev['paper']; href = f'papers/{slug}/{ev["stage"]}.html#{quote(ev["anchor"], safe="-._~")}'
+        slug = ev['paper']; href = evidence_href(ev)
         label = LABELS[ev['status']]
         original = ev.get('original_pdf_review_status', 'unregistered')
         origin = '原文核对已登记' if original == 'source-checked' else '原文核对未登记'
-        links.append(f'<li><a href="{e(href, quote=True)}">{e(catalogue[slug]["name"])} · {e(ev["stage"])} · #{e(ev["anchor"])}</a> <small>{label} · {origin}</small></li>')
+        links.append(f'<li><a href="{e(href, quote=True)}">{e(catalogue[slug]["name"])} · {e(evidence_kind(ev))} · #{e(ev["anchor"])}</a> <small>{label} · {origin}</small></li>')
     return '<ul class="map-evidence">' + ''.join(links) + '</ul>'
 
 
@@ -379,8 +394,8 @@ GRAPH_COLORS = ['#176758', '#2f7180', '#8a6a2f', '#6d7d69', '#76538a', '#92713c'
 
 def _evidence_detail(values, catalogue):
     return [{
-        'href': f'papers/{ev["paper"]}/{ev["stage"]}.html#{quote(ev["anchor"], safe="-._~")}',
-        'label': f'{catalogue[ev["paper"]]["name"]} · {ev["stage"]} · #{ev["anchor"]}',
+        'href': evidence_href(ev),
+        'label': f'{catalogue[ev["paper"]]["name"]} · {evidence_kind(ev)} · #{ev["anchor"]}',
         'status': LABELS[ev['status']],
     } for ev in values]
 

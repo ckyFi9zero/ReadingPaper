@@ -287,6 +287,27 @@ class ResearchMapTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Missing HTML anchor'):
             research_map.validate(bad, ROOT, self.papers)
 
+    def test_topic_evidence_rejects_unknown_mismatched_or_fake_stage_references(self):
+        for change in ({'revisit': 'unknown-topic'}, {'paper': 'dror-2018'},
+                       {'stage': 'first-pass'}, {'anchor': 'missing-topic-anchor'}):
+            bad = copy.deepcopy(self.data)
+            def locate(value):
+                if isinstance(value, dict):
+                    if value.get('revisit') == '3d-unoutdet-20261108': return value
+                    for child in value.values():
+                        found = locate(child)
+                        if found is not None: return found
+                elif isinstance(value, list):
+                    for child in value:
+                        found = locate(child)
+                        if found is not None: return found
+                return None
+            evidence = locate(bad['challenges'])
+            self.assertIsNotNone(evidence)
+            evidence.update(change)
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                research_map.validate(bad, ROOT, self.papers)
+
     def test_pending_gate_cannot_have_pipeline(self):
         bad = copy.deepcopy(self.data)
         candidate = bad['gate']['candidates'][0]

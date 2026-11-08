@@ -73,7 +73,7 @@ limitations:
 - text: 作者补充S4说明按阈值0/2.5/5/7.5/10的可视化选择2.5，不以WADS点级标注求最优；Fig.S1(b)仍标出误判，不能将无人工训练标签写成无人工判断。
   evidence:
   - paper: 3d-unoutdet-2025
-    stage: first-pass
+    revisit: 3d-unoutdet-20261108
     anchor: revisit-20261108-thresholds
     status: source-checked
     basis: existing-note
@@ -208,7 +208,7 @@ analysis:
         basis: existing-note
         original_pdf_review_status: source-checked
       - paper: 3d-unoutdet-2025
-        stage: first-pass
+        revisit: 3d-unoutdet-20261108
         anchor: revisit-20261108-causality
         status: source-checked
         basis: existing-note
