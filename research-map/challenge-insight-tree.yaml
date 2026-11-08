@@ -4983,8 +4983,8 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
       mechanism:
-        text: 3D-UnOutDet 用 SSR 邻域强度 FFT 范数给伪标签，训练原 3D-OutDet 后端；RPS 的 DMROR 离线生成伪标签，在线只运行
-          point/range 网络及其后处理。FFT 在 SSR 标签路径，不是插入后端的 DWT 模块。 SnowRemovalNet 沿用先前工作[11]的ASDR+C-GLP离线概率标签；网络训练以软BCE、置信课程mask及max(.5,2|y−.5|)权重共同监督，推理只运行网络并在概率≥.5时删点（Sec.4.2，Eqs.1–4，Algorithm1；Sec.4.6）。
+        text: 3D-UnOutDet 用 SSR 邻域强度 FFT 范数给伪标签，训练原 3D-OutDet 后端；RPS 的 DMROR 离线生成伪标签，在线只运行 point/range 网络及其后处理。FFT
+          在 SSR 标签路径，不是插入后端的 DWT 模块。 SnowRemovalNet 沿用先前工作[11]的ASDR+C-GLP离线概率标签；网络训练以软BCE、置信课程mask及max(.5,2|y−.5|)权重共同监督，推理只运行网络并在概率≥.5时删点（Sec.4.2，Eqs.1–4，Algorithm1；Sec.4.6）。
         basis: note-summary
         status: source-checked
         evidence:
@@ -5007,8 +5007,8 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
       engineering_tricks:
-        text: SSR 与后端共享 kNN 索引/距离，强度可做距离平方校正；DMROR 组合两次判定，RPS 后处理把预测先验参数与初始先验加权融合。
-          SnowRemovalNet：100epochs分1–34/35–67/68–100；先纳入y≤.1或≥.9，再≤.3或≥.7，最后全部。加权损失除以有效权重和；验证不用课程mask，只在第三阶段选最低验证损失；权重下限.5避免最终阶段彻底忽略含糊点（pp.5–6）。
+        text: SSR 与后端共享 kNN 索引/距离，强度可做距离平方校正；DMROR 组合两次判定，RPS 后处理把预测先验参数与初始先验加权融合。 SnowRemovalNet：100epochs分1–34/35–67/68–100；先纳入y≤.1或≥.9，再≤.3或≥.7，最后全部。加权损失除以有效权重和；验证不用课程mask，只在第三阶段选最低验证损失；权重下限.5避免最终阶段彻底忽略含糊点（pp.5–6）。
+          3D-UnOutDet 作者补充 S4 用五种阈值的可视化比较选择 WADS 阈值2.5，并明确不以点级标注求最优值；这仍包含人工观察与经验选参（补充p.1，Fig.S1）。
         basis: note-summary
         status: source-checked
         evidence:
@@ -5030,9 +5030,15 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: 3d-unoutdet-2025
+          stage: first-pass
+          anchor: revisit-20261108-thresholds
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: partial
       assumptions_cost:
-        text: 教师先验、阈值和传感器配置必须适用；还需离线搜索/训练。SSR 最近邻仍是瓶颈，DMROR 的慢速计算被移到训练前。 SnowRemovalNet
-          的监督仍依赖ASDR+C-GLP规则与局部传播。每数据集30帧实际21训练+9验证；CADC/WADS标签计算217/927ms，学生17/59ms，均为论文硬件报告，不是无成本无监督。
+        text: 教师先验、阈值和传感器配置必须适用；还需离线搜索/训练。SSR 最近邻仍是瓶颈，DMROR 的慢速计算被移到训练前。 SnowRemovalNet 的监督仍依赖ASDR+C-GLP规则与局部传播。每数据集30帧实际21训练+9验证；CADC/WADS标签计算217/927ms，学生17/59ms，均为论文硬件报告，不是无成本无监督。
+          原文不使用人工训练标签，并不等于阈值选择没有人工判断；该区别来自对补充S4的阅读者解释，不是对完整流程数据泄漏与否的判定。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -5054,9 +5060,14 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: 3d-unoutdet-2025
+          stage: first-pass
+          anchor: revisit-20261108-thresholds
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: partial
       failure_boundary:
-        text: SSR 对 fog/dirt 不保证同等效力，WADS→CADC 需调 k；RPS 也依赖低强度/近距/低高度先验。无人工标签不等于无偏监督。
-          SnowRemovalNet 学生F1 CADC98.10/WADS97.23仍低于离线标签器98.61/98.01；教师概率不能等同物理真值。论文报告学生对稀疏树叶与建筑误删，不能据此认定已纠正教师偏差（Tables2–3；Fig.9）。
+        text: SSR 对 fog/dirt 不保证同等效力，WADS→CADC 需调 k；RPS 也依赖低强度/近距/低高度先验。无人工标签不等于无偏监督。 SnowRemovalNet 学生F1 CADC98.10/WADS97.23仍低于离线标签器98.61/98.01；教师概率不能等同物理真值。论文报告学生对稀疏树叶与建筑误删，不能据此认定已纠正教师偏差（Tables2–3；Fig.9）。
         basis: note-summary
         status: source-checked
         evidence:
@@ -5079,9 +5090,10 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
       evidence_scope:
-        text: SSR 与学习器主表可比较，3D-UnOutDet Table V 有标签/后端设计对照；RPS Table VIII 比较标签源，Table
-          VII 是累计组件配置，不能把相邻差当任意组合独立贡献。 SnowRemovalNet：该消融只检验概率监督训练组合，不能把增益独立归于软标签、课程或权重。C-GLP标签器来自前作，本篇不是其首创；离线到在线的共同路线不说明各论文教师偏差相同。
-          SnowRemovalNet 点级主表仅对应指定测试样本：CADC 47,132 个标注点，WADS Table 3 为一个测试帧；不是全数据集均值（Secs.5.1、5.6）。
+        text: SSR 与学习器主表可比较，3D-UnOutDet Table V 有标签/后端设计对照；RPS Table VIII 比较标签源，Table VII 是累计组件配置，不能把相邻差当任意组合独立贡献。
+          SnowRemovalNet：该消融只检验概率监督训练组合，不能把增益独立归于软标签、课程或权重。C-GLP标签器来自前作，本篇不是其首创；离线到在线的共同路线不说明各论文教师偏差相同。 SnowRemovalNet
+          点级主表仅对应指定测试样本：CADC 47,132 个标注点，WADS Table 3 为一个测试帧；不是全数据集均值（Secs.5.1、5.6）。 本次3D-UnOutDet回看将Table I中SSR→学生mIoU的7.28个百分点差值与纠错机制分开：主表及Table
+          V后端配置对照不单独量化学生修复/复制教师错误的比例，作者的特征学习解释不升级为已隔离因果。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -5103,10 +5115,15 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: 3d-unoutdet-2025
+          stage: first-pass
+          anchor: revisit-20261108-causality
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: partial
       reported_effect:
-        text: 3d-unoutdet-2025：WADS 上 3D-UnOutDet mIoU 89.04%，SSR 81.76%，监督 3D-OutDet
-          90.00%；总耗时 82 ms（Table I）。；rpsnownet-2026：WADS 上 DMROR mIoU 88.06%、897 ms；RPSnowNet
-          88.92%、15 ms。CADC 逐点去雪为定性，检测另有 box 定量（Table III）。 SnowRemovalNet 硬标签变体同时关闭课程和不确定加权，CADC/WADS
+        text: 3d-unoutdet-2025：WADS 上 3D-UnOutDet mIoU 89.04%，SSR 81.76%，监督 3D-OutDet 90.00%；总耗时 82 ms（Table I）。；rpsnownet-2026：WADS
+          上 DMROR mIoU 88.06%、897 ms；RPSnowNet 88.92%、15 ms。CADC 逐点去雪为定性，检测另有 box 定量（Table III）。 SnowRemovalNet 硬标签变体同时关闭课程和不确定加权，CADC/WADS
           F1 94.33/94.44%，完整98.10/97.23%。五种子30帧均值另为97.35±1.00/95.29±1.73%，不与主表单次结果混用（Tables2–3、6）。
         basis: note-summary
         status: source-checked
@@ -5131,7 +5148,8 @@ challenges:
           original_pdf_review_status: source-checked
     source_locations:
     - paper: 3d-unoutdet-2025
-      location: Sec. III-A–B，Algorithm 1，Fig. 2；Tables I、V；Sec. VII
+      location: Sec. III-A–B，Algorithm 1，Fig. 2；Tables I、V；Sec. VII；2026-11-08专题回看：TechRxiv v1 Sec.III-A–B、Tables
+        I/V（原文文本）；作者公开补充S4(p.1)、Fig.S1(b)(p.2)
       evidence:
       - paper: 3d-unoutdet-2025
         stage: first-pass
@@ -5139,6 +5157,24 @@ challenges:
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+      - paper: 3d-unoutdet-2025
+        stage: first-pass
+        anchor: revisit-20261108-thresholds
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: partial
+      - paper: 3d-unoutdet-2025
+        stage: first-pass
+        anchor: revisit-20261108-results
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: partial
+      - paper: 3d-unoutdet-2025
+        stage: first-pass
+        anchor: revisit-20261108-causality
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: partial
     - paper: rpsnownet-2026
       location: Sec. III-A–C，Fig. 2，Algorithm 1；Tables VII–VIII
       evidence:
@@ -5149,8 +5185,8 @@ challenges:
         basis: existing-note
         original_pdf_review_status: source-checked
     - paper: snowremovalnet-2026
-      location: Sec.2 p.3；Sec.4.2 Eqs.1–4 p.5、Algorithm1 p.6；Sec.4.6 p.9；Tables1–3
-        pp.10–12；Sec.5.2.2 p.13；Table6 p.16
+      location: Sec.2 p.3；Sec.4.2 Eqs.1–4 p.5、Algorithm1 p.6；Sec.4.6 p.9；Tables1–3 pp.10–12；Sec.5.2.2 p.13；Table6
+        p.16
       evidence:
       - paper: snowremovalnet-2026
         stage: first-pass
