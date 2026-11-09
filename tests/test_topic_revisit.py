@@ -36,8 +36,8 @@ class TopicRevisitTests(unittest.TestCase):
     def test_directory_distinguishes_reviewed_and_not_yet(self):
         papers=json.loads((ROOT/'papers.json').read_text());records=load_revisits(ROOT,papers)
         s=directory_body(papers,records)
-        self.assertEqual(s.count('data-revisit-state="reviewed"'),1)
-        self.assertEqual(s.count('data-revisit-state="not-yet"'),len(papers)-1)
+        self.assertEqual(s.count('data-revisit-state="reviewed"'),len({r['paper'] for r in records}))
+        self.assertEqual(s.count('data-revisit-state="not-yet"'),len(papers)-len({r['paper'] for r in records}))
         self.assertIn('2026-11-08',s)
         self.assertIn('revisits/3d-unoutdet-20261108.html#revisit-20261108',s)
         self.assertIn('暂无回看记录',s)
@@ -46,7 +46,7 @@ class TopicRevisitTests(unittest.TestCase):
         papers=json.loads((ROOT/'papers.json').read_text());data=json.loads((ROOT/'revisits.json').read_text())
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp)
-            for path in [r['file'] for r in data['revisits']]+['revisits/images/3d-unoutdet-20261108-fig-s1b.png','revisits/images/3d-unoutdet-20261108-table-i.png']:
+            for path in [r['file'] for r in data['revisits']]+[str(p.relative_to(ROOT)) for p in (ROOT/'revisits/images').glob('*.png')]:
                 target=root/path;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes((ROOT/path).read_bytes())
             def check(data):
                 (root/'revisits.json').write_text(json.dumps(data));return load_revisits(root,papers)

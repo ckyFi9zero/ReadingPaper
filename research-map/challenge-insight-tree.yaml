@@ -660,7 +660,7 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
       failure_boundary:
-        text: 距离补偿不自动解决局部密度、低反射物体或密集雪团；LIOR 的 10 FPS 依赖前方 ROI，DCOR 定量限单地点单传感器。
+        text: 距离补偿不自动解决局部密度、低反射物体或密集雪团；LIOR 的 10 FPS 依赖前方 ROI，DCOR 定量限单地点单传感器。 DSOR v2的Sec.V-C报告20m外树梢、杆与悬空电线误删；距离补偿仍不能保证这些真实稀疏结构保真。
         basis: note-summary
         status: source-checked
         evidence:
@@ -688,8 +688,14 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: dsor-2021
+          revisit: dsor-20261109
+          anchor: range-evidence
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       evidence_scope:
-        text: DROR/ROR 是设计比较，DSOR 未记录内部独立消融；DCOR 固定/动态半径对照支持对应配置差异；不能把不同论文硬件上的时间直接排名。
+        text: DROR/ROR 是设计比较，DSOR 未记录内部独立消融；DCOR 固定/动态半径对照支持对应配置差异；不能把不同论文硬件上的时间直接排名。 DSOR的按距离删点比例、雪点Recall和删除集合Precision具有不同分母，65.1%Precision不能换算为全部环境点误删34.9%；缺少相应混淆计数时不补造环境保留率。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -714,6 +720,12 @@ challenges:
         - paper: dcor-2024
           stage: first-pass
           anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: dsor-2021
+          revisit: dsor-20261109
+          anchor: denominators
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
@@ -769,6 +781,15 @@ challenges:
         status: source-checked
         basis: existing-note
         original_pdf_review_status: unregistered
+    - paper: dsor-2021
+      location: 专题2026-11-09：v2 Sec.IV-A，V-B–C，Fig.5/6，PDF pp.4–6；分母解释为阅读者分析
+      evidence:
+      - paper: dsor-2021
+        revisit: dsor-20261109
+        anchor: denominators
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
     - paper: lior-snow-2020
       location: Sec. III-B、IV-B–C，Fig. 9
       evidence:

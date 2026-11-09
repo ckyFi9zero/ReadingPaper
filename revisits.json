@@ -43,6 +43,56 @@
       "id": "3d-unoutdet-20261108",
       "paper": "3d-unoutdet-2025",
       "file": "revisits/3d-unoutdet-20261108.html"
+    },
+    {
+      "id": "dsor-20261109",
+      "paper": "dsor-2021",
+      "date": "2026-11-09",
+      "title": "距离补偿能保证不误删远处结构吗？",
+      "file": "revisits/dsor-20261109.html",
+      "anchor": "revisit-20261109",
+      "sourceScope": "重新取得并阅读全文7页arXiv:2109.07078v2；Figures1–7、TablesI–II、Algorithm1；本专题定向重核Sec.IV-A、V-B–C及Figures5/6，分开作者解释和阅读者指标分母展开；未运行代码或取得正式版。",
+      "visualReview": {
+        "desktop": true,
+        "mobile": true,
+        "zoom": true,
+        "reviewedAt": "2026-11-09",
+        "scope": "云浏览器实际查看独立专题页1180px桌面及1440px/390px同源iframe渲染；两图点击原尺寸滚动、关闭和Esc；修复长SHA手机溢出，并核验图片切换滚动复位。非手机真机。"
+      },
+      "graphics": [
+        {
+          "figureId": "dsor-20261109-fig5",
+          "label": "Figure 5",
+          "pdfPage": 5,
+          "sourceUrl": "https://arxiv.org/pdf/2109.07078v2#page=5",
+          "kind": "paper-crop",
+          "cropPdfPoints": [
+            47,
+            332,
+            301,
+            545
+          ],
+          "renderScale": 3
+        },
+        {
+          "figureId": "dsor-20261109-fig6",
+          "label": "Figure 6",
+          "pdfPage": 5,
+          "sourceUrl": "https://arxiv.org/pdf/2109.07078v2#page=5",
+          "kind": "paper-crop",
+          "cropPdfPoints": [
+            309,
+            394,
+            564,
+            591
+          ],
+          "renderScale": 3
+        }
+      ],
+      "rightsReview": {
+        "reviewedAt": "2026-11-09",
+        "basis": "arXiv v2许可明确CC BY-SA4.0；仅选Figures5/6必要局部支撑对照与分母分析，保留作者、图例坐标轴及caption，两份裁剪亦按CC BY-SA4.0提供并说明裁剪；不上传完整PDF/整页，无私人材料，不作法律保证。"
+      }
     }
   ]
 }

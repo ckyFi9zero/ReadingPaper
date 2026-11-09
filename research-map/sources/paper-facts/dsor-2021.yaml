@@ -68,6 +68,14 @@ limitations:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: unregistered
+- text: 本次重核v2的Fig.5/6与Sec.V-B–C：距离删点百分比不含真假标签分解，DSOR相比SOR在远处删得少、相比DROR却更多；Precision65.1%不是环境点总体误删率34.9%。
+  evidence:
+  - paper: dsor-2021
+    revisit: dsor-20261109
+    anchor: denominators
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
 evidence_status: source-checked
 source_excerpt:
   problem: 02 Research Problem 具体问题是什么？ 作者表述 落雪被 LiDAR 探测到后形成 clutter-noise；滤波需要尽量去除雪点，同时不误删环境中重要的点。 ↗
@@ -245,3 +253,9 @@ analysis:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: unregistered
+
+source_review:
+  checked_at: '2026-11-09'
+  scope: 取得并阅读全文7页arXiv:2109.07078v2及全部7图2表和Algorithm1；专题只增补Sec.IV-A、V-B–C和Fig.5/6的核验，保留既有初读与其他核验等级。不表示代码复现或正式版核验。
+  version: arXiv:2109.07078v2（PDF标记2021-10-30）
+  pdf_sha256: 479af9c31e914f00c6d0194d9cfa458a9335b925f3bbda4c9c4ac90af3bf1e9c
