@@ -1,0 +1,369 @@
+version: 1
+paper: neo-vla-2026
+scope: out-of-field
+source_basis: original-pdf-and-reading-note
+source_sha256: 0c071564cf8f6cb2d5003407ec27a66708c6981b4a02e1851e277d567ad193ab
+checked_at: '2026-11-10'
+source_version: arXiv:2611.06918v2，2026-11-06预印本
+source_url: https://arxiv.org/abs/2611.06918v2
+read_scope: 地图证据核对固定v2正文Secs.1–6 pp.1–12，重点Secs.3、5，Tables2–4、6、8、10–11及Fig.4；本事实层未运行代码或复现。文件共16页，无p.7提及的附录。
+source_review:
+  scope: 本轮结论回到固定v2原文核对；可点击阅读页为索引。原PDF核验单独标记，不提升旧来源等级；作者表述、阅读者归纳和未核验迁移分别保留。
+  checked_at: '2026-11-10'
+task:
+  name: 语言条件机器人动作块生成
+  input: 前后两时刻多视角图像、相机几何、语言指令、机器人状态与动作噪声
+  output: 双臂及body的30步连续动作块
+  conditions: 九类公开数据预训练及作者后训练；LIBERO受控对照与跨论文benchmark分开。实机每任务50示范、20试验，三任务；不是天气去噪。
+  evidence:
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: module-flow-actions
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: result-real-latency
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 作者指出固定视觉编码终点隐藏中间视觉计算；动作所需细粒度几何未必在语义末层最可用。本文干预支持本模型的深度相关敏感性，不证明所有编码器均丢失同一信息。
+  evidence:
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: result-layer-map
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-native-visual-action-readout
+  name: 原生视觉语言计算与可配置动作读出
+  description: 两阶段stride32卷积把图像转成32×32区域token，与语言在40层2B backbone中共同演化。动作专家每层按映射读取某一backbone层的缓存KV，再与动作token的KV联合attention；不强制只读取最终视觉表示。first28、skip28、end28共享28层专家宽度，full40另属更深专家设置（Secs.3.1–3.4，pp.3–5）。
+  evidence:
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: module-native-prefix
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: module-depth-readout
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-neo-native-prefix
+  name: 像素与语言共同形成多模态前缀
+  role: core-module
+  motivation: 让动作专家可访问视觉计算过程，而非固定的独立编码器输出。
+  evidence:
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: module-native-prefix
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-neo-depth-readout
+  name: 按层映射读取视觉语言KV
+  role: core-module
+  motivation: 检验动作所需视觉、语言与几何信息在不同深度的可用性。
+  evidence:
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: module-depth-readout
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: result-layer-map
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-action-visual-access
+novelty_assessment:
+  novelty_class: 2
+  confidence: provisional
+  reason: 按视觉接口与动作读出路线归类；不是经独立检索确认的领域首创。
+limitations:
+- text: 固定arXiv:2611.06918v2预印本。原任务为视觉语言机器人操作，没有恶劣天气LiDAR验证。Table2的模型容量和预训练不同，作者p.2明确不能将全部收益归因于移除编码器。Table4的first28/first14还剪短backbone，不能当纯层位因果。Table8位置泛化3.0%、任务泛化6.3%，不支持普遍SOTA。PDF正文p.7提到附录，但这份16页文件pp.12–16为参考文献，未含该附录，不声称其配置已核验。
+  evidence:
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: result-backbone
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: result-layer-map
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: result-benchmarks
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: source-boundaries
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+tags:
+- 拓展阅读
+- VLA
+- 机器人操作
+- 视觉层级
+- 动作读出
+analysis:
+  updated_at: '2026-11-10'
+  previous_methods:
+    text: 按作者介绍，常见VLA先用独立视觉编码器生成固定输出，再接语言与动作模型；此处不是对所有前作的独立核查。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: neo-vla-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 语义理解终点和动作所需的局部几何可能并不一致；这是由本文设计与干预得到的有条件归纳。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: neo-vla-2026
+      stage: first-pass
+      anchor: result-layer-map
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 动作头所需信息不必集中在最后一层。把视觉读出层位作为显式设计变量，并分别核验冻结与全量微调时的映射；不能把中间特征接入本身当作通用收益保证。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: neo-vla-2026
+      stage: first-pass
+      anchor: result-layer-map
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: neo-vla-2026
+      stage: first-pass
+      anchor: result-backbone
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-neo-readout
+    name: 把视觉计算层级开放给动作专家
+    module_ids:
+    - module-neo-native-prefix
+    - module-neo-depth-readout
+    motivation:
+      text: 作者希望避免动作被固定视觉接口限制。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: neo-vla-2026
+        stage: first-pass
+        anchor: section-03
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 两阶段stride32卷积把图像转成32×32区域token，与语言在40层2B backbone中共同演化。动作专家每层按映射读取某一backbone层的缓存KV，再与动作token的KV联合attention；不强制只读取最终视觉表示。first28、skip28、end28共享28层专家宽度，full40另属更深专家设置（Secs.3.1–3.4，pp.3–5）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: neo-vla-2026
+        stage: first-pass
+        anchor: module-native-prefix
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: neo-vla-2026
+        stage: first-pass
+        anchor: module-depth-readout
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 动作头所需信息不必集中在最后一层。把视觉读出层位作为显式设计变量，并分别核验冻结与全量微调时的映射；不能把中间特征接入本身当作通用收益保证。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: neo-vla-2026
+        stage: first-pass
+        anchor: result-layer-map
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 在本模型中可显式比较层映射，冻结与微调的最佳设置不同；不把一套映射作为普遍最优。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: neo-vla-2026
+        stage: first-pass
+        anchor: result-layer-map
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-neo-layer-map
+    name: 匹配容量的层映射对照
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-neo-readout
+    result:
+      text: Table4（p.8，OXE预训练75k、30k checkpoint、每配置2000 rollouts）：相同40层backbone与28层专家下，skip28/end28冻结成功率90.9/86.7%，全量微调95.3/92.5%。first28冻结94.9%、微调94.6%，但backbone仅保留28层，非纯层位对照。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: neo-vla-2026
+        stage: first-pass
+        anchor: result-layer-map
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: skip28/end28控制backbone和专家层数；first28同时改变深度和计算，不能单独证明早层位置导致全部增益。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: neo-vla-2026
+        stage: first-pass
+        anchor: result-layer-map
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-neo-encoder-access
+    name: 编码器中间特征接入反例
+    kind: design-choice
+    assessment: reported
+    contribution_ids:
+    - contribution-neo-readout
+    result:
+      text: Table3（p.7）Qwen3-VL无新增参数接入中间视觉特征：冻结79.5→64.9%，全量微调90.8→90.9%。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: neo-vla-2026
+        stage: first-pass
+        anchor: result-backbone
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 不能将NEO的收益简化为任何模型都应加早层旁路；预训练形成方式仍有混杂。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: neo-vla-2026
+        stage: first-pass
+        anchor: result-backbone
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-neo-co-training
+    name: 理解数据共训练对照
+    kind: ablation
+    assessment: reported
+    contribution_ids: []
+    result:
+      text: Table6（p.9）RoboTwin2.0 C2R共训练69.4%，action-only10.7%；后者不能产生有效文本。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: neo-vla-2026
+        stage: first-pass
+        anchor: result-co-training
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持本配方保留理解训练的效果，不证明对任意VLA普遍必要，也不单独分解所有数据因素。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: neo-vla-2026
+        stage: first-pass
+        anchor: result-co-training
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-neo-generalization
+    name: 空间与任务变化反例
+    kind: comparison
+    assessment: reported
+    contribution_ids: []
+    result:
+      text: Table8（p.10）LIBERO-Pro：object84.3、position3.0、semantic98.0、task6.3，平均47.9%，低于π0.5的53.3%。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: neo-vla-2026
+        stage: first-pass
+        anchor: result-benchmarks
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 跨论文版本、相机、数据和协议不同；该表用于能力边界，不作为严格统一预算排名或模块消融。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: neo-vla-2026
+        stage: first-pass
+        anchor: result-benchmarks
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 固定arXiv:2611.06918v2预印本。原任务为视觉语言机器人操作，没有恶劣天气LiDAR验证。Table2的模型容量和预训练不同，作者p.2明确不能将全部收益归因于移除编码器。Table4的first28/first14还剪短backbone，不能当纯层位因果。Table8位置泛化3.0%、任务泛化6.3%，不支持普遍SOTA。PDF正文p.7提到附录，但这份16页文件pp.12–16为参考文献，未含该附录，不声称其配置已核验。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: neo-vla-2026
+      stage: first-pass
+      anchor: source-boundaries
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: neo-vla-2026
+      stage: first-pass
+      anchor: result-benchmarks
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: neo-vla-2026
+      stage: first-pass
+      anchor: result-layer-map
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

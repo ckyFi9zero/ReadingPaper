@@ -1351,5 +1351,158 @@
       "reviewedAt": "2026-11-07"
     }
   }
+},
+{
+  "slug": "neo-vla-2026",
+  "category": "out-of-field",
+  "name": "NEO-VLA",
+  "title": "From Pixels to Actions — Towards Native Vision-Language-Action Policies",
+  "authors": [
+    "Weichen Fan",
+    "Haiwen Diao",
+    "Penghao Wu",
+    "Siyuan Hu",
+    "Ziqi Huang",
+    "Tianqi Liu",
+    "Mingze Sun",
+    "Ziyi Wang",
+    "Zhongang Cai",
+    "Hanming Deng",
+    "Quan Wang",
+    "Lei Yang",
+    "Lewei Lu",
+    "Fangzhou Hong",
+    "Zhaoxi Chen",
+    "Dahua Lin",
+    "Ziwei Liu"
+  ],
+  "year": 2026,
+  "venue": "arXiv",
+  "readDate": "2026-11-10",
+  "doi": "10.48550/arXiv.2611.06918",
+  "url": "https://arxiv.org/abs/2611.06918v2",
+  "tags": [
+    "拓展阅读",
+    "VLA",
+    "具身智能",
+    "跨层读取",
+    "视觉动作接口",
+    "操作鲁棒性"
+  ],
+  "summary": "让动作专家读取原生视觉语言骨干的不同深度；区分同深度读取对照、骨干预训练混杂、空间/任务扰动反例及小规模真机证据。",
+  "stages": {
+    "first-pass": "first-pass.html"
+  },
+  "reviews": {
+    "first-pass": {
+      "status": "source-checked",
+      "noteStatus": "organized",
+      "checkedAt": "2026-11-10",
+      "evidence": [
+        "完整核对arXiv2611.06918v2的16页及Figure1–6、Table1–11；正文到p12、参考文献pp12–16；当前PDF缺少p7所指附录。",
+        "五项必要CC BY4.0局部原图表支持方法、受控骨干/读取设计和失败边界；不读代码、不运行实验。"
+      ]
+    }
+  },
+  "readingQuality": {
+    "version": 1,
+    "classification": {
+      "confirmedCategory": "out-of-field",
+      "rationale": "机器人VLA操作拓展：多视图/语言/本体状态到动作块，LIBERO系列、RoboTwin与真机操作；没有恶劣天气LiDAR或雪尘去噪实验。",
+      "source": "用户机器人拓展范围；Secs.3/5，pp3–12",
+      "reviewedAt": "2026-11-10"
+    },
+    "graphics": {
+      "status": "included",
+      "items": [
+        {
+          "figureId": "figure-2",
+          "kind": "paper-crop",
+          "label": "Figure 2",
+          "pdfPage": 4,
+          "sourceUrl": "https://arxiv.org/pdf/2611.06918v2#page=4",
+          "analysisId": "analysis-figure-2",
+          "cropPdfPoints": [
+            55,
+            50,
+            565,
+            361
+          ],
+          "renderScale": 3
+        },
+        {
+          "figureId": "table-2",
+          "kind": "paper-crop",
+          "label": "Table 2",
+          "pdfPage": 7,
+          "sourceUrl": "https://arxiv.org/pdf/2611.06918v2#page=7",
+          "analysisId": "analysis-table-2",
+          "cropPdfPoints": [
+            84,
+            55,
+            530,
+            232
+          ],
+          "renderScale": 3
+        },
+        {
+          "figureId": "table-4",
+          "kind": "paper-crop",
+          "label": "Table 4",
+          "pdfPage": 8,
+          "sourceUrl": "https://arxiv.org/pdf/2611.06918v2#page=8",
+          "analysisId": "analysis-table-4",
+          "cropPdfPoints": [
+            84,
+            55,
+            533,
+            234
+          ],
+          "renderScale": 3
+        },
+        {
+          "figureId": "figure-4",
+          "kind": "paper-crop",
+          "label": "Figure 4",
+          "pdfPage": 8,
+          "sourceUrl": "https://arxiv.org/pdf/2611.06918v2#page=8",
+          "analysisId": "analysis-figure-4",
+          "cropPdfPoints": [
+            84,
+            240,
+            533,
+            553
+          ],
+          "renderScale": 3
+        },
+        {
+          "figureId": "table-8",
+          "kind": "paper-crop",
+          "label": "Table 8",
+          "pdfPage": 10,
+          "sourceUrl": "https://arxiv.org/pdf/2611.06918v2#page=10",
+          "analysisId": "analysis-table-8",
+          "cropPdfPoints": [
+            309,
+            266,
+            529,
+            391
+          ],
+          "renderScale": 3
+        }
+      ]
+    },
+    "rightsReview": {
+      "basis": "arXiv:2611.06918v2许可明确CC BY4.0；五项必要Figure/Table局部支撑原创中文分析，保留内部内容、作者、图号/页序、源链接和裁剪身份，无独立第三方排除声明；不上传整篇PDF或整页，不授权底层数据再分发或作法律保证。",
+      "reviewedAt": "2026-11-10"
+    },
+    "visualReview": {
+      "desktop": true,
+      "mobile": true,
+      "zoom": true,
+      "reviewedAt": "2026-11-10",
+      "scope": "云浏览器同源1440px桌面与390px手机视口实际查看正文和证据图；检查章节跳转、原尺寸放大滚动、关闭；非手机真机；构建后目录、地图两受影响节点的桌面/手机详情、筛选和来源锚点均已实际查看。"
+    }
+  }
 }
 ]

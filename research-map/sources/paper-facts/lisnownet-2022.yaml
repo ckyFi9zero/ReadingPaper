@@ -68,6 +68,22 @@ limitations:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+- text: 本次arXiv v1重核：Table II只比较β=0.1至0.9，且每个β重新网格搜索最优α；不能视为固定α或FFT-only/DWT-only的独立消融。
+  evidence:
+  - paper: lisnownet-2022
+    revisit: lisnownet-20261110
+    anchor: part3
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- text: 训练损失无逐点监督，但Sec.III-E另设残差方向、形状参数和阈值；原文未完整交代选参目标及标签使用方式，不能断言整套流程零标签或使用测试标签。
+  evidence:
+  - paper: lisnownet-2022
+    revisit: lisnownet-20261110
+    anchor: part4
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
 evidence_status: source-checked
 source_excerpt:
   problem: 二、Research Problem 具体问题 作者表述 从每帧约 10 万点、10 Hz 的现代 LiDAR 点云中实时移除雪花形成的 ghost measurements。 （Abstract；Sec.
@@ -239,3 +255,11 @@ analysis:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+
+revisit_reviews:
+- revisit: lisnownet-20261110
+  reviewed_at: '2026-11-10'
+  source_url: https://arxiv.org/pdf/2211.10023v1
+  original_pdf_review_status: source-checked
+  scope: 重新取得作者arXiv v1七页全文，读Secs.I–VII、Figures1–4与TablesI–II；本专题定向核对III-C–E、VI-B及Eqs.8–10；实际查看裁剪Figure3及TableII，未运行代码或实验。
+  locations: PDF p.4 Figure3、Eqs.7–8；p.5 Eq.9、III-D/E与TableII；pp.6–7 VI-B、Eq.10。

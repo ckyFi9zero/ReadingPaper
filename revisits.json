@@ -93,6 +93,42 @@
         "reviewedAt": "2026-11-09",
         "basis": "arXiv v2许可明确CC BY-SA4.0；仅选Figures5/6必要局部支撑对照与分母分析，保留作者、图例坐标轴及caption，两份裁剪亦按CC BY-SA4.0提供并说明裁剪；不上传完整PDF/整页，无私人材料，不作法律保证。"
       }
+    },
+    {
+      "id": "lisnownet-20261110",
+      "paper": "lisnownet-2022",
+      "date": "2026-11-10",
+      "title": "无标签训练，不等于没有参数选择",
+      "file": "revisits/lisnownet-20261110.html",
+      "anchor": "part0",
+      "sourceScope": "重新取得arXiv2211.10023v1全文7页，全部Figure1–4、TableI–II；定向重核III-C–E与VI-B，区分训练无标签、重新选alpha及推理判定。未运行代码或重新取得IROS正式PDF。",
+      "graphics": [
+        {
+          "figureId": "lisnownet-20261110-fig3",
+          "label": "Figure 3",
+          "pdfPage": 4,
+          "sourceUrl": "https://arxiv.org/pdf/2211.10023v1#page=4",
+          "kind": "paper-crop"
+        },
+        {
+          "figureId": "lisnownet-20261110-table2",
+          "label": "Table II",
+          "pdfPage": 5,
+          "sourceUrl": "https://arxiv.org/pdf/2211.10023v1#page=5",
+          "kind": "paper-crop"
+        }
+      ],
+      "rightsReview": {
+        "reviewedAt": "2026-11-10",
+        "basis": "一手arXivv1许可CC BY4.0，必要Figure3/TableII局部支撑原创稀疏先验/选参评论；保留作者/图表号/页序/来源/裁剪身份与许可，无完整PDF/整页，无私密内容，不作法律保证。"
+      },
+      "visualReview": {
+        "desktop": true,
+        "mobile": true,
+        "zoom": true,
+        "reviewedAt": "2026-11-10",
+        "scope": "云浏览器1440px桌面及390px同源手机视口实际查看独立页；原图Figure3/TableII加载及原尺寸滚动放大、关闭。非手机真机；构建后专题目录搜索/状态及地图源锚点已实际查看。"
+      }
     }
   ]
 }

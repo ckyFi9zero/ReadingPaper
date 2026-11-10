@@ -2577,3 +2577,67 @@ nodes:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+
+- id: pipeline-native-visual-action-readout
+  kind: pipeline
+  name: 原生视觉语言计算与可配置动作读出
+  parent: task-vla-chunk-control
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 两阶段stride32卷积把图像转成32×32区域token，与语言在40层2B backbone中共同演化。动作专家每层按映射读取某一backbone层的缓存KV，再与动作token的KV联合attention；不强制只读取最终视觉表示。first28、skip28、end28共享28层专家宽度，full40另属更深专家设置（Secs.3.1–3.4，pp.3–5）。
+  source_papers:
+  - neo-vla-2026
+  evidence:
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: module-native-prefix
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: module-depth-readout
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-neo-native-prefix
+  kind: module
+  name: 像素与语言共同形成多模态前缀
+  parent: pipeline-native-visual-action-readout
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 让动作专家可访问视觉计算过程，而非固定的独立编码器输出。
+  source_papers:
+  - neo-vla-2026
+  evidence:
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: module-native-prefix
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-neo-depth-readout
+  kind: module
+  name: 按层映射读取视觉语言KV
+  parent: pipeline-native-visual-action-readout
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 检验动作所需视觉、语言与几何信息在不同深度的可用性。
+  source_papers:
+  - neo-vla-2026
+  evidence:
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: module-depth-readout
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: neo-vla-2026
+    stage: first-pass
+    anchor: result-layer-map
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
