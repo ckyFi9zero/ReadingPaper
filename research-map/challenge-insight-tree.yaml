@@ -142,6 +142,7 @@ challenges:
         text: SDOR 用扇区密度与距离共同调节半径；PMDF 从粗滤雪样本拟合距离/高度分布并更新参数；RPS 的 DMROR 用估计 noise
           ratio 调节非线性半径。DeSnow-GNN 的图表示提供局部上下文，不能据此说它实现了前三者的显式密度校准。
           DTF以k近邻距离估密度，并以密度幂次调节阈值；距离MAD、曲率与原始强度共同组成空间异常分数。
+          RPS专题补充：N为强度、距离和高度先验筛选的K1占全部点比例，最终雪点为K1与邻域判定K2交集；它不同于Fig.4使用GT计算的噪声比例。
         basis: note-summary
         status: source-checked
         evidence:
@@ -175,10 +176,18 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          revisit: rpsnownet-20261111
+          anchor: part3
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+
       engineering_tricks:
         text: SDOR 的 blending 抑制纯局部密度导致的极端半径；boundary band 补偿扇区邻居截断。PMDF 在拟合前做 target
           recovery。它们是已记录的实现措施，各补丁的独立必要性不能由整体表格推出。
           DTF将分数变成软置信并传给地面拟合和聚类；正文k=16但Table4网格搜索最优30，不能静默选择一个作复现默认值。
+          RPS先对不同N的帧视觉比较去噪结果选b，再对(N,b)最小二乘拟合a₀/a₁/a₂；不是从Fig.4曲线直接拟合半径。
         basis: note-summary
         status: source-checked
         evidence:
@@ -212,9 +221,17 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          revisit: rpsnownet-20261111
+          anchor: part4
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+
       assumptions_cost:
         text: 需要足够可靠的局部统计或初始雪样本；SDOR 分区/线程有管理开销，PMDF 有 cold start，图构造也有成本。
           DTF不训练滤波网络，但规则超参数仍使用验证集网格搜索；训练自由不等于免调参。
+          RPS的先验估计N仍受候选集合条件影响；TableII的WADS/CADC各有参数，不等于固定参数跨传感器迁移。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -248,9 +265,17 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          revisit: rpsnownet-20261111
+          anchor: part4
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+
       failure_boundary:
         text: SDOR 扇区边界仍较差；PMDF 体素化可能损伤近处低密度结构且主表排除 cold start；RPS 的物理先验和 DeSnow 的图映射各有适用条件。
           DTF仅单机场16线JT16；强度未完成距离校正，反射/安全服饱和与换传感器需再校验。
+          RPS作者仍要求传感器或数据集显著变化时重新估计拟合参数，并承认覆雪植被误删；局部稳定不消除先验适用边界。
         basis: note-summary
         status: source-checked
         evidence:
@@ -284,10 +309,18 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          revisit: rpsnownet-20261111
+          anchor: part5
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+
       evidence_scope:
         text: SDOR 有分区、线程和边界对照，但不是所有补丁的独立因果消融；PMDF 笔记未记录独立模块消融；RPS 的组件表是累计配置；DeSnow
           有移除时空组件对照。四者不是同一种干预。
           DTF论文将密度适配作为原因解释，但Table8是整段DTF前处理或完整系统比较，不证明该项独立必要。
+          RPS专题公式展开：固定N时半径在dmin以下为常数、以上随d线性，非线性在N维度；Fig.4的GT描述性观察不证明唯一物理规律，Fig.12的组级局部扰动不隔离每个阈值的必要性。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -321,6 +354,13 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          revisit: rpsnownet-20261111
+          anchor: part3
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+
       reported_effect:
         text: sdor-2026：WADS 上报告 F1 90.53%、runtime 0.662 s；Weather-KITTI Rain 的 F1
           85.27%，与 DROR 85.30% 接近（Tables 7、9）。；pmdf-2026：CADC、BOREAS、WADS 的 F1 均超过
@@ -328,6 +368,7 @@ challenges:
           88.06%、897 ms；RPSnowNet 88.92%、15 ms。CADC 逐点去雪为定性，检测另有 box 定量（Table III）。；desnow-gnn-2026：WADS
           上报告 Precision 97.4%、F1 95.3%；雨雾适配在当前笔记中为定性可视化（Table 2；Fig. 7）。
           DTF Table7的ROR1.03%/RMSE0.091m为组合配置，不是密度阈值独立消融。
+          RPS Fig.12在WADS默认值附近±5/10/15%扰动，手动组mIoU86.97%–88.05%、拟合组87.62%–88.05%，默认88.06%；固定a/k未纳入敏感性测试；沿用作者mIoU标记，Eq.18写为TP/(TP+FP+FN)，不自行解释为两类IoU均值。
         basis: note-summary
         status: source-checked
         evidence:
@@ -361,6 +402,12 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: rpsnownet-2026
+          revisit: rpsnownet-20261111
+          anchor: part5
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
     source_locations:
     - paper: sdor-2026
       location: Methods：Spatial division、Density adjustment factor with blending，Eqs.
@@ -382,11 +429,29 @@ challenges:
         basis: existing-note
         original_pdf_review_status: source-checked
     - paper: rpsnownet-2026
-      location: Sec. III-B，Algorithm 1，Eqs. (1)–(3)
+      location: Sec. III-B，Algorithm 1，Eqs. (1)–(3)；专题补核Fig.4/p.5、TableII/p.9、Fig.12/pp.12–13，区分GT观察、代理N、视觉标定与局部扰动
       evidence:
       - paper: rpsnownet-2026
         stage: first-pass
         anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: rpsnownet-2026
+        revisit: rpsnownet-20261111
+        anchor: part2
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: rpsnownet-2026
+        revisit: rpsnownet-20261111
+        anchor: part4
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: rpsnownet-2026
+        revisit: rpsnownet-20261111
+        anchor: part5
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked

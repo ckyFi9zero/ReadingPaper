@@ -129,6 +129,49 @@
         "reviewedAt": "2026-11-10",
         "scope": "云浏览器1440px桌面及390px同源手机视口实际查看独立页；原图Figure3/TableII加载及原尺寸滚动放大、关闭。非手机真机；构建后专题目录搜索/状态及地图源锚点已实际查看。"
       }
+    },
+    {
+      "id": "rpsnownet-20261111",
+      "paper": "rpsnownet-2026",
+      "date": "2026-11-11",
+      "title": "DMROR的依据：观测、估计与经验标定",
+      "file": "revisits/rpsnownet-20261111.html",
+      "anchor": "revisit-20261111",
+      "sourceScope": "11月11日重新核读保留的IEEE正式版15页PDF及图1–13、表I–VIII；本专题聚焦Sec.III-B、IV-A/F/G、Fig.4/12和TableII。11月12日恢复独立页并再次核对PDF哈希、标定和敏感性原文；未复现实验，未重新下载IEEE全文。",
+      "graphics": [
+        {
+          "figureId": "rpsnownet-20261111-fig4",
+          "label": "Figure 4",
+          "pdfPage": 5,
+          "sourceUrl": "https://ieeexplore.ieee.org/document/11494867",
+          "kind": "paper-crop"
+        },
+        {
+          "figureId": "rpsnownet-20261111-table2",
+          "label": "Table II",
+          "pdfPage": 9,
+          "sourceUrl": "https://ieeexplore.ieee.org/document/11494867",
+          "kind": "paper-crop"
+        },
+        {
+          "figureId": "rpsnownet-20261111-fig12",
+          "label": "Figure 12",
+          "pdfPage": 13,
+          "sourceUrl": "https://ieeexplore.ieee.org/document/11494867",
+          "kind": "paper-crop"
+        }
+      ],
+      "rightsReview": {
+        "reviewedAt": "2026-11-12",
+        "basis": "正式版©2026 IEEE，非CC；无一般转载授权声明。仅为具体原创评论摘引Fig.4、TableII、Fig.12必要局部，分别支撑观测条件、参数与局部敏感性分析，保留作者、图注、页序及一手来源，不公开完整PDF/整页，不作法律保证。"
+      },
+      "visualReview": {
+        "desktop": true,
+        "mobile": true,
+        "zoom": true,
+        "reviewedAt": "2026-11-12",
+        "scope": "云浏览器桌面及390px同源iframe响应式视口实际查看独立页；三幅原图加载、图注与章节对应，点击原尺寸放大，TableII横向滚动至右侧系数，弹窗关闭；移动正文无横向溢出。非手机真机。目录与武器库交互另在构建后验收。"
+      }
     }
   ]
 }
