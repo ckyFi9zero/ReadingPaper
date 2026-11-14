@@ -2,11 +2,11 @@ version: 1
 paper: awcr-2026
 scope: in-field
 source_basis: original-pdf-and-reading-note
-source_sha256: 897dc54810b46d52054b489d0d80a01ff6158d2bd9241c1e471653275c079023
-checked_at: '2026-10-30'
-source_version: arXiv:2610.35110v1
-source_url: https://arxiv.org/abs/2610.35110v1
-read_scope: PDF pp. 1–10（全文、Figures 1–4、Tables 1–3）；本轮直接核对原文，阅读页作为可点击定位。
+source_sha256: 8b70b057ee076e65bcee6a1eb5d13413c677ab2876119ab6f0a3719580fd4014
+checked_at: '2026-11-13'
+source_version: arXiv:2610.35110v2
+source_url: https://arxiv.org/abs/2610.35110v2
+read_scope: 本轮地图核验范围：v2 正文 Secs. 1–6、Tables 1–3；附录 A–C 的实现、诊断、权重及候选归因；D 的重复拟合；E 的公共基准、通信和评测顺序；F 的独立录制。重点原表为 S3–S4、S7–S11、S16、S19–S22。阅读页另记录完整 Stage 1 覆盖；报告值非复现实测。
 tags:
 - 协同检测
 - 恶劣天气
@@ -31,8 +31,7 @@ task:
     basis: existing-note
     original_pdf_review_status: source-checked
 problem:
-  failure_case: 作者在固定检测器上保留所有标注物体内部 detector-retained points，仅移除外部点，仍观察到先前正确的协同目标漏检；目标点保留不保证其编码和协同帮助不变（Sec.
-    3.2–3.4，pp. 3–4）。
+  failure_case: v2 Secs. 3.1–3.2、Table 1（PDF pp.3–4）：保留标注框内点的数值和顺序、只改外部点，完整 CoInfra development 的326个原正确观察中丢失72个；恢复原物体邻域特征救回71个，三种等面积外部对照各救回0个。该干预只隔离作者指定的外部变化，不等同自然天气全机制。
   evidence:
   - paper: awcr-2026
     stage: first-pass
@@ -49,8 +48,8 @@ problem:
 pipeline:
   id: pipeline-cooperative-repair
   name: 固定检测器的输入过滤或候选修复
-  description: 两种分别训练的实现：模拟数据 Point Classifier 过滤 peer 新增天气点后送固定检测器；真实数据 Local Correction 产生有界候选，Quality
-    Selection 用双源当前量测支持选择。诊断特征替换不属于推理流水线（Sec. 4，pp. 4–6）。
+  description: 模拟 V2X-R 的 Point Classifier 以生成点身份训练，在固定检测器前过滤 peer 点；候选修复保留原框、增加有界修正，再用双源当前点统计与校准权重 λ 联合选择。原特征替换仅诊断，推理不需要原始配对参考（v2
+    Secs.3–4，PDF pp.3–6）。
   evidence:
   - paper: awcr-2026
     stage: first-pass
@@ -99,8 +98,8 @@ novelty_assessment:
   confidence: provisional
   reason: 仅按固定检测器上的输入过滤/候选修复作增量方法登记；作者 controlled-study 首次性主张未独立检索，不判定 seminal work 或领域空白。
 limitations:
-- text: 原文 Sec. 5.1–5.4（PDF pp. 6–7）：真实输入来自 CoInfra 两个固定路侧节点对，结果是 development 数据；自然天气行共用双源点与固定背景图 support
-    filter，控制行不使用该过滤。控制干预是晴天真实输入上的构造 exterior loss，不是自然配对雪天观测；特征恢复需原输入特征，属于诊断而非部署模块。真实修复只改变 Car 输出且集中计算双源点统计；未验证跨传感器泛化或所有真实天气因果机制。
+- text: v2 Sec.5、附录A–C：CoInfra仍是development而非全新独立测试，人工外部删除不是完整自然天气过程；全320视图机制诊断与64视图晴天修复子集不同。自然CoInfra行共享双源当前点和背景图support
+    filter，控制行不使用。修复需要标注、固定检测器及集中点统计；跨数据集的训练/公共权重并非零样本跨硬件保证。默认λ=0.7仍损失部分原正确检测；V2X-DGW同预测在frame-order评价下低于Original，不能仅报global-ranking正增益（Sec.5.2、E.3/TableS21，PDF p.24）。
   evidence:
   - paper: awcr-2026
     stage: first-pass
@@ -117,9 +116,9 @@ limitations:
 evidence_status: source-checked
 transfer_status: unverified
 analysis:
-  updated_at: '2026-10-30'
+  updated_at: '2026-11-13'
   previous_methods:
-    text: 作者区分天气鲁棒融合/去噪与本篇目标级诊断：aggregate scores 未单独说明哪些既有协同帮助消失及原因；这不是断言前人未研究上下文（Secs. 1–2，pp. 1–3）。
+    text: 作者区分天气鲁棒融合/去噪与受控上下文诊断：单次漏检不能区分物体测量改变与外部环境改变；prior-work描述仅为本文作者概括（v2 Secs.1–2，PDF pp.1–3）。
     basis: note-summary
     status: source-checked
     evidence:
@@ -130,7 +129,7 @@ analysis:
       basis: existing-note
       original_pdf_review_status: source-checked
   technical_reason:
-    text: 整理者归纳：目标点保持不变不足以保证编码稳定，因为周围观测参与了特征形成。依据是作者报告的受控外部移除、前融合特征变化及区域特征替换结果；作者据此支持 object-region representation pathway，但该综合解释不证明自然天气下全部失败均由此引起（Secs. 3.2–3.4，PDF pp. 3–4）。
+    text: 阅读者归纳：保留物体点不保证邻域表示稳定。v2以完整320视图的71/72物体区域恢复和三个0/72等面积外部对照定位表示路径；外部对照距离相近但占据率/替换幅度不同，不能宣称消除了全部控制混杂（Sec.3.2、Table1、附录B.3/TableS3）。
     basis: analyst-inference
     status: inferred
     evidence:
@@ -159,7 +158,7 @@ analysis:
     - module-awcr-local-correction
     - module-awcr-quality-selection
     motivation:
-      text: 作者由天气点过滤实验和候选可用性分析选取修复位置，目标同时包含 recovery 与 retention（Secs. 3.5–4.1，pp. 3–4）。
+      text: v2 Sec.3.3：64视图晴天修复集的31个诱导漏检中，19个仍有预算内准确候选，12个完整原候选池也没有；因此同时考虑重新选择与有界几何修正，并用权重控制新候选损害原检测的风险。
       basis: note-summary
       status: source-checked
       evidence:
@@ -170,8 +169,8 @@ analysis:
         basis: existing-note
         original_pdf_review_status: source-checked
     implementation:
-      text: 两种分别训练的实现：模拟数据 Point Classifier 过滤 peer 新增天气点后送固定检测器；真实数据 Local Correction 产生有界候选，Quality
-        Selection 用双源当前量测支持选择。诊断特征替换不属于推理流水线（Sec. 4，pp. 4–6）。
+      text: 模拟 V2X-R 的 Point Classifier 以生成点身份训练，在固定检测器前过滤 peer 点；候选修复保留原框、增加有界修正，再用双源当前点统计与校准权重 λ 联合选择。原特征替换仅诊断，推理不需要原始配对参考（v2
+        Secs.3–4，PDF pp.3–6）。
       basis: note-summary
       status: source-checked
       evidence:
@@ -182,7 +181,7 @@ analysis:
         basis: existing-note
         original_pdf_review_status: source-checked
     mechanism:
-      text: 模拟分支以生成身份训练分类器，推理仅据当前 peer 点特征识别天气点；真实分支将有界候选改动与当前量测质量评估分开。两分支的训练信号和作用对象不同，不能当作单一去雪网络。
+      text: 阅读者归纳：把候选是否存在、是否定位准确、是否通过分数/NMS分开；λ既改变候选入池优先级，也插值原框质量分数并缩放修正框分数。不能把整个端点差异归给几何变化；固定分数几何回退才支持部分近阈值目标的定位解释（Secs.4.3、5.3、B.8）。
       basis: analyst-inference
       status: inferred
       evidence:
@@ -193,7 +192,7 @@ analysis:
         basis: existing-note
         original_pdf_review_status: source-checked
     advantage:
-      text: 真实分支不要求自然配对 clear/adverse recordings，但仍需已有标注、晴天输入和人工 loss variants；不能解释为无监督或无清洁数据。
+      text: 训练不要求自然配对clear/adverse录制，但CoInfra构造监督仍使用标注和晴天观测。默认权重在repair-training内部60/12/24个物理时刻的fit/buffer/validation划分选择；不是在development上择优（Sec.4.4、A.6）。
       basis: note-summary
       status: source-checked
       evidence:
@@ -210,8 +209,7 @@ analysis:
     assessment: reported
     contribution_ids: []
     result:
-      text: Table 1（p.4）：V2X-ViT 模拟 216 个原正确观察中方向移除损失 8 个，三随机种子等数量对照损失 2–4；真实晴天构造输入 150 个中损失 31 个，随机对照
-        5–10。物体邻域前融合原特征恢复 7/8 与 30/31；真实三种等面积外部掩码各 0/31，原稳定观察均无新增损失。
+      text: v2 Table1（PDF p.4）：全320-view/80-time CoInfra诊断326原正确中方向性删除损失72，等数量随机损失10–18；物体邻域恢复71/72，无新增稳定损失0/254，三个等面积外部区域各0/72。模拟仍为7/8物体恢复、4/8外部恢复。晴天64-view修复子集的30/31保留在TableS4，不与全量71/72混用。
       basis: note-summary
       status: source-checked
       evidence:
@@ -222,7 +220,7 @@ analysis:
         basis: existing-note
         original_pdf_review_status: source-checked
     interpretation:
-      text: 该诊断替换依赖原始输入特征，不能等同 AWCR 在线可恢复 30/31；控制移除不是自然雪过程的完整模型，三外部对照只对应真实实验设置。
+      text: 原始同场景特征恢复是诊断上界式干预，不是AWCR部署恢复率；公共三录制中方向性删除并非始终比随机更差。TablesS3–S4明确外部控制与子集条件。
       basis: analyst-inference
       status: inferred
       evidence:
@@ -239,9 +237,7 @@ analysis:
     contribution_ids:
     - contribution-repair
     result:
-      text: Table 2（p.7）及 Sec.5.2（p.6）：CoInfra natural adverse development 上 V2X-ViT Car BEV AP@0.7 从
-        25.70 到 30.37（作者报 +4.66，表值相减为 4.67；原文未提供未舍入值）；AttFuse 10.55 到 16.11（+5.56）。模拟 fog vehicle AP@0.7 从 22.94
-        到 27.41（+4.47），预算 4096。
+      text: v2 Tables2–3（PDF p.7）、Sec.5.2：CoInfra V2X-ViT默认λ=0.7三fit Car AP70均值29.92±0.34，对Original25.70为+4.22点；固定fit29.95另列。HEAL全V2X-Radar-C验证922输入67.53→68.22±0.04；独立DAIR/V2X-Seq雨录制32.86→37.86±0.97。不能沿用v1满权重固定fit30.37当默认均值。
       basis: note-summary
       status: source-checked
       evidence:
@@ -252,7 +248,7 @@ analysis:
         basis: existing-note
         original_pdf_review_status: source-checked
     interpretation:
-      text: 报告值不是复现；真实 car 与模拟 vehicle 属不同数据/设定，不形成跨论文排行榜。真实自然行使用共享 support filter；AWCR 只修改 Car。
+      text: 本文SOTA表述限LiDAR-only V2X-Radar-C验证与作者列出的比较；不同数据不拼排行榜。公共V2X-DGW global-confidence-ranking增益与原frame-order evaluator下降2.79/3.98/3.65点（雾/雨/雪）必须同时保留（Sec.5.2、E.3）。
       basis: analyst-inference
       status: inferred
       evidence:
@@ -269,9 +265,7 @@ analysis:
     contribution_ids:
     - contribution-repair
     result:
-      text: Table 3 与 Secs.5.3–5.4（pp.6–7）：计数采用 score > 0.27、BEV IoU ≥ 0.7；controlled rescue 要求原始与改变后两个输入均正确，new losses 指原稳定的 119 个观察中任一输入失败。真实自然天气正确/错误检测 230/447→251/335，保留原正确 220/230、原协同帮助 131/140。控制输入
-        AWCR 恢复 11/31，另增 6 个损失，总错误 31→26；这些 11 次恢复原预算候选池已有准确几何。自然天气相对 Selection Only 净增 13 个正确目标；27 个
-        gain 中 9 个在预算截断前原有效 Car 候选也达不到 IoU 0.7，14 个 loss 均涉及高分修正框压制准确框。
+      text: v2 Table3（PDF p.7）、TablesS7/S9/S11/S16（PDF pp.16–17、19、22）：默认λ=0.7三fit受控恢复8/6/8，新损失1/1/2，剩余错误均值25；去掉点统计恢复均值仍7.33但新损失1.33→4.33。自然天气默认对AWCR0新增正确14/15/13、损失6/6/8，其中需新几何为4/2/2；固定最终分数回退几何后这些近阈值恢复消失。默认自然保留225.33/230（fit均值），false均值290.33；满权重端点11恢复/6新损失不是默认结果。
       basis: note-summary
       status: source-checked
       evidence:
@@ -282,7 +276,7 @@ analysis:
         basis: existing-note
         original_pdf_review_status: source-checked
     interpretation:
-      text: 区分候选重新选择与几何定位改善；不能以总 AP 或控制恢复数证明每个修正都产生新准确几何，且修复存在 retention 代价。
+      text: 受控救回目标原池都有准确候选，不能称为新几何救回；自然输入仅指定近阈值目标通过完整原池检查和固定分数回退支持几何作用。总AP提升与原正确/false代价分别报告，不把整个配置收益归于每个模块。
       basis: analyst-inference
       status: inferred
       evidence:
@@ -293,8 +287,8 @@ analysis:
         basis: existing-note
         original_pdf_review_status: source-checked
   boundary:
-    text: 原文 Sec. 5.1–5.4（PDF pp. 6–7）：真实输入来自 CoInfra 两个固定路侧节点对，结果是 development 数据；自然天气行共用双源点与固定背景图 support
-      filter，控制行不使用该过滤。控制干预是晴天真实输入上的构造 exterior loss，不是自然配对雪天观测；特征恢复需原输入特征，属于诊断而非部署模块。真实修复只改变 Car 输出且集中计算双源点统计；未验证跨传感器泛化或所有真实天气因果机制。
+    text: v2 Sec.5、附录A–C：CoInfra仍是development而非全新独立测试，人工外部删除不是完整自然天气过程；全320视图机制诊断与64视图晴天修复子集不同。自然CoInfra行共享双源当前点和背景图support
+      filter，控制行不使用。修复需要标注、固定检测器及集中点统计；跨数据集的训练/公共权重并非零样本跨硬件保证。默认λ=0.7仍损失部分原正确检测；V2X-DGW同预测在frame-order评价下低于Original，不能仅报global-ranking正增益（Sec.5.2、E.3/TableS21，PDF p.24）。
     basis: note-summary
     status: source-checked
     evidence:
@@ -304,3 +298,8 @@ analysis:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+version_history:
+- version: arXiv:2610.35110v1
+  checked_at: '2026-10-30'
+  sha256: 897dc54810b46d52054b489d0d80a01ff6158d2bd9241c1e471653275c079023
+  note: 旧初读保存在 first-pass-v1.html；v1 30.37 与 11/31+6 在 v2 是固定 fit 的满权重端点，不能当作 v2 默认配置。

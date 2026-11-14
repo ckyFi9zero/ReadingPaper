@@ -3720,8 +3720,7 @@ challenges:
     - VGICP
     - 跨数据集评测
     status: inferred
-    transfer_boundary: 3D-UnOutDet 平均 mIoU 提升时 road/fence 仍可能下降；LTDNet 真实几何无配对验证；SET-Det
-      的天气迁移未证实。 AWCR 的晴天构造外部损失诊断与自然 adverse development 检测须分开；不推广为全部真实雪/传感器的机制。
+    transfer_boundary: "3D-UnOutDet 平均 mIoU 提升时 road/fence 仍可能下降；LTDNet 真实几何无配对验证；SET-Det 的天气迁移未证实。 AWCR v2 的全量受控机制诊断、晴天修复子集与自然 adverse development 检测须分开；不推广为全部真实雪/传感器的机制。"
     source_papers:
     - ltdnet-2026
     - 3d-unoutdet-2025
@@ -3942,12 +3941,7 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
       engineering_tricks:
-        text: 明确下游是否重训、输入是否更换、阈值是否固定，并单列保留真实结构的代价；这些是阅读者整理的评测使用方式，不是新增网络模块。 AWCR 将原/修正候选并池后以输入置信度截为
-          4096；Ordinary Quality 使用相同候选/质量目标/回归器但将 60 项点统计置零，Selection Only 只对原候选重评分。训练
-          correction 最后层零初始化、残差有界并使用保留损失（Secs.4.3–5.1）。 SnowRemovalNet：分割训练先按标签移除falling
-          snow，网络不设该类；沿LiSnowNet划分并排除与测试重复的训练序列。Boreas用WADS模型无重训，按KITTI协议RPE及94个重叠子段的rigid-aligned
-          ATE分别记录（Sec.5.4）。
-          DTF按簇而非全帧送分类器，正文通常5–15候选簇/帧；低置信点的加权距离降低其形成伪簇的连通性。
+        text: "明确下游是否重训、输入是否更换、阈值是否固定，并单列保留真实结构的代价；这些是阅读者整理的评测使用方式，不是新增网络模块。 AWCR v2：原/修正候选按p/λp竞争4096预算；R0只拟合原框，R1拟合两分支，λ插值原框分数并缩放修正框分数。repair-training内部60/12/24时刻fit/buffer/validation选λ，取距最优0.1AP内最小值0.7；最终层零初始化、有界残差和Lkeep保留（Secs.4.2–4.4、A.4–A.6）。固定分数几何回退与完整原池检查用于区分选择恢复和几何恢复（B.8），不称每项技巧都被证明必要。 SnowRemovalNet：分割训练先按标签移除falling snow，网络不设该类；沿LiSnowNet划分并排除与测试重复的训练序列。Boreas用WADS模型无重训，按KITTI协议RPE及94个重叠子段的rigid-aligned ATE分别记录（Sec.5.4）。 DTF按簇而非全帧送分类器，正文通常5–15候选簇/帧；低置信点的加权距离降低其形成伪簇的连通性。"
         basis: analyst-inference
         status: inferred
         evidence:
@@ -4000,9 +3994,7 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
       assumptions_cost:
-        text: 需要对应任务标签和一致的评测设置；重训模型、预处理和生成分支各有额外成本。 AWCR 真实实现需要标注训练观察、已有晴天及构造损失变体、双源当前点的集中统计；自然行还共享固定背景图
-          support filter。无自然配对记录不等于无监督；不据此声称满足通信或延时预算。 SnowRemovalNet：需要语义标注或GNSS/INS参考；Boreas结果限13,624帧、7.9km单路线和VGICP。94个4323帧子段每100帧起始，非独立94路线；模型迁移同时改变传感器与场景。
-          DTF晴天约8万点时滤波9.5–10.2ms，后段0.8–1.3ms，完整流水线约11ms；不同表的11.1/11.0口径分开。
+        text: "需要对应任务标签和一致的评测设置；重训模型、预处理和生成分支各有额外成本。 AWCR v2仍需标注训练、当前双源点的集中统计；CoInfra自然行共享背景图support filter。RTX4080 FP32中央处理V2X-ViT294→584ms、AttFuse515→1030ms，12输入/2暖机/3交错重复；不计I/O、原始预处理和网络传输。FadeLead hybrid额外未压缩源数据平均13.875MB/输入，不能称通信免费或满足实时预算（Sec.5.4、A.2–A.3、E）。 SnowRemovalNet：需要语义标注或GNSS/INS参考；Boreas结果限13,624帧、7.9km单路线和VGICP。94个4323帧子段每100帧起始，非独立94路线；模型迁移同时改变传感器与场景。 DTF晴天约8万点时滤波9.5–10.2ms，后段0.8–1.3ms，完整流水线约11ms；不同表的11.1/11.0口径分开。"
         basis: analyst-inference
         status: inferred
         evidence:
@@ -4055,12 +4047,7 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
       failure_boundary:
-        text: 3D-UnOutDet 平均 mIoU 提升时 road/fence 仍可能下降；LTDNet 真实几何无配对验证；SET-Det 的天气迁移未证实。
-          原文 Sec. 5.1–5.4（PDF pp. 6–7）：真实输入来自 CoInfra 两个固定路侧节点对，结果是 development 数据；自然天气行共用双源点与固定背景图
-          support filter，控制行不使用该过滤。控制干预是晴天真实输入上的构造 exterior loss，不是自然配对雪天观测；特征恢复需原输入特征，属于诊断而非部署模块。真实修复只改变
-          Car 输出且集中计算双源点统计；未验证跨传感器泛化或所有真实天气因果机制。 SnowRemovalNet 分割mIoU上升同时building
-          IoU77.82→74.21、accumulated snow57.08→51.59；Boreas定性仍删部分树点，旋转RPE仅.151→.150°/100m（Sec.5.3–5.4；Tables4–5）。
-          DTF完整系统限低速/静止目标；同JT16的雪辅助集不等于跨传感器或主数据雪验证。
+        text: "3D-UnOutDet 平均 mIoU 提升时 road/fence 仍可能下降；LTDNet 真实几何无配对验证；SET-Det 的天气迁移未证实。 AWCR v2 Sec.5、附录A–C：CoInfra仍是development而非全新独立测试，人工外部删除不是完整自然天气过程；全320视图机制诊断与64视图晴天修复子集不同。自然CoInfra行共享双源当前点和背景图support filter，控制行不使用。修复需要标注、固定检测器及集中点统计；跨数据集的训练/公共权重并非零样本跨硬件保证。默认λ=0.7仍损失部分原正确检测；V2X-DGW同预测在frame-order评价下低于Original，不能仅报global-ranking正增益（Sec.5.2）。 SnowRemovalNet 分割mIoU上升同时building IoU77.82→74.21、accumulated snow57.08→51.59；Boreas定性仍删部分树点，旋转RPE仅.151→.150°/100m（Sec.5.3–5.4；Tables4–5）。 DTF完整系统限低速/静止目标；同JT16的雪辅助集不等于跨传感器或主数据雪验证。"
         basis: note-summary
         status: source-checked
         evidence:
@@ -4113,12 +4100,7 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
       evidence_scope:
-        text: 原论文报告检测、分割或补全的对应结果；不能从整体收益推出“去噪越多越好”，也不能从单个定性例宣称稳定下游增益。 AWCR Table 1
-          的 30/31 是真实晴天构造损失下的诊断特征恢复，不是自然雪检测或部署恢复率；Table 3 的 AWCR 控制恢复为 11/31 且新增 6
-          个损失。自然天气候选追踪另显示 9 个 gained 目标由不足阈值的原几何经修正获得准确框；不能混同两种恢复机制。 SnowRemovalNet：支持论文指定分割/里程计设置下的平均收益，同时保留受损类别与结构反例；不是所有任务收益保证，也不证明哪一个去雪模块独立造成下游改善。
-          Beyond the Snowflakes 的 WADS-3D 使用 KITTI 预训练模型直接推理，CADC 则以 50:50 划分并在过滤训练数据上微调，64线/32线传感器亦不同；两者不能构成只改变雪或传感器的控制实验，也不支持所有去雪方法普遍有用/无用。
-          SnowRemovalNet 点级主表仅对应指定测试样本：CADC 47,132 个标注点，WADS Table 3 为一个测试帧；不是全数据集均值（Secs.5.1、5.6）。
-          DTF前处理对照与完整混合系统是不同干预；不把整体F1当逐点雪标签质量，也不把总增益逐项归给时序/密度/软权重。
+        text: "原论文报告检测、分割或补全的对应结果；不能从整体收益推出“去噪越多越好”，也不能从单个定性例宣称稳定下游增益。 AWCR v2 Table1的71/72是全320视图诊断恢复，不是部署恢复率；64视图晴天子集仍是30/31（TableS4）。默认λ=0.7三fit受控恢复8/6/8且新损失1/1/2，均有原准确候选；自然输入4/2/2个新几何收益另经完整原池与固定分数回退核对（B.6、B.8）。旧v1的11/31+6与9个新几何目标在v2属于满权重固定fit端点，不能冒充默认。 SnowRemovalNet：支持论文指定分割/里程计设置下的平均收益，同时保留受损类别与结构反例；不是所有任务收益保证，也不证明哪一个去雪模块独立造成下游改善。 Beyond the Snowflakes 的 WADS-3D 使用 KITTI 预训练模型直接推理，CADC 则以 50:50 划分并在过滤训练数据上微调，64线/32线传感器亦不同；两者不能构成只改变雪或传感器的控制实验，也不支持所有去雪方法普遍有用/无用。 SnowRemovalNet 点级主表仅对应指定测试样本：CADC 47,132 个标注点，WADS Table 3 为一个测试帧；不是全数据集均值（Secs.5.1、5.6）。 DTF前处理对照与完整混合系统是不同干预；不把整体F1当逐点雪标签质量，也不把总增益逐项归给时序/密度/软权重。"
         basis: analyst-inference
         status: inferred
         evidence:
@@ -4183,19 +4165,7 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
       reported_effect:
-        text: ltdnet-2026：IQA3D 使用合成配对测质量、真实序列测检测；LTDNet 的 NR-F1 并非所有天气组合最高（Tables
-          1–2）。；3d-unoutdet-2025：WADS 上 3D-UnOutDet mIoU 89.04%，SSR 81.76%，监督 3D-OutDet
-          90.00%；总耗时 82 ms（Table I）。；rpsnownet-2026：WADS 上 DMROR mIoU 88.06%、897 ms；RPSnowNet
-          88.92%、15 ms。CADC 逐点去雪为定性，检测另有 box 定量（Table III）。；triplemixer-2025：在去噪、语义分割、地点识别与检测上分别评估；真实
-          SemanticSTF 的下游模型不重训，三模型平均 mIoU 提高 2.38 点（Tables VIII–X）。；shape-enhanced-set-det-2026：KITTI、Waymo
-          上分别报告检测指标与补全指标，另比较不同距离、遮挡与效率（Sec. IV）。 AWCR（Tables 2–3，pp.7）：CoInfra natural
-          adverse development 的 V2X-ViT Car BEV AP@0.7 25.70→30.37，作者报 +4.66（表值相减为
-          4.67；原文未提供未舍入值）；AttFuse +5.56；模拟 fog 固定 4096 候选 vehicle AP@0.7 +4.47。自然天气保留原正确
-          220/230、协同帮助 131/140；这些是原文报告，非复现。 SnowRemovalNet WADS八类mIoU44.90→48.40%，10m内31.48→48.79%；Boreas保留77.4%点，平移RPE
-          .645→.614%，平均ATE3.70→3.60m，94子段中83下降（Tables4–5，pp.15–16）。 Beyond the Snowflakes：DSOR→LIOR
-          过滤在 WADS-3D 上作者报告平均 6.72% AP improvement，CADC 增益可忽略；保留原文百分比表述，不改写为百分点（Sec.IV-A3
-          / Fig.4，PDF p.4）。
-          DTF Table8在IoU0.5/1647行人上，CenterPoint .871→.928，PointPillars .860→.919；完整混合系统F1 .952。后者比.871绝对差.081，不能照抄9.3%绝对增益。
+        text: "ltdnet-2026：IQA3D 使用合成配对测质量、真实序列测检测；LTDNet 的 NR-F1 并非所有天气组合最高（Tables 1–2）。；3d-unoutdet-2025：WADS 上 3D-UnOutDet mIoU 89.04%，SSR 81.76%，监督 3D-OutDet 90.00%；总耗时 82 ms（Table I）。；rpsnownet-2026：WADS 上 DMROR mIoU 88.06%、897 ms；RPSnowNet 88.92%、15 ms。CADC 逐点去雪为定性，检测另有 box 定量（Table III）。；triplemixer-2025：在去噪、语义分割、地点识别与检测上分别评估；真实 SemanticSTF 的下游模型不重训，三模型平均 mIoU 提高 2.38 点（Tables VIII–X）。；shape-enhanced-set-det-2026：KITTI、Waymo 上分别报告检测指标与补全指标，另比较不同距离、遮挡与效率（Sec. IV）。 AWCR v2（Tables2–3、Sec.5）：默认λ=0.7 CoInfra adverse V2X-ViT Car AP70三fit均值25.70→29.92±0.34（+4.22），保留225.33/230，false均值290.33；固定fit为29.95，非30.37满权重端点。HEAL全922输入验证67.53→68.22±0.04；独立DAIR雨录制32.86→37.86±0.97。V2X-DGW全局置信排序增益不能掩盖原frame-order evaluator下雾/雨/雪平均下降2.79/3.98/3.65点。以上均为作者报告、非复现。 SnowRemovalNet WADS八类mIoU44.90→48.40%，10m内31.48→48.79%；Boreas保留77.4%点，平移RPE .645→.614%，平均ATE3.70→3.60m，94子段中83下降（Tables4–5，pp.15–16）。 Beyond the Snowflakes：DSOR→LIOR 过滤在 WADS-3D 上作者报告平均 6.72% AP improvement，CADC 增益可忽略；保留原文百分比表述，不改写为百分点（Sec.IV-A3 / Fig.4，PDF p.4）。 DTF Table8在IoU0.5/1647行人上，CenterPoint .871→.928，PointPillars .860→.919；完整混合系统F1 .952。后者比.871绝对差.081，不能照抄9.3%绝对增益。"
         basis: note-summary
         status: source-checked
         evidence:
@@ -4300,9 +4270,7 @@ challenges:
         basis: existing-note
         original_pdf_review_status: source-checked
     - paper: awcr-2026
-      location: arXiv:2610.35110v1；Secs. 3.1–3.5，PDF pp. 3–4（控制诊断正文）；Fig. 1 在 p. 1，Fig.
-        2 / Table 1 在 p. 4，Fig. 3 在 p. 5；Secs. 4.1–4.4，pp. 4–6 / Fig. 2（两种修复）；Secs.
-        5.1–5.4，pp. 6–7，Tables 2–3（development 条件、候选追踪与 retention）。
+      location: "arXiv:2610.35110v2；Secs.3.1–3.3/Table1（PDF pp.3–5）：全量控制诊断与候选证据；Secs.4.2–4.4（pp.5–6）、A.4–A.6（S2–S3）：有界修正、权重和训练校准；Tables2–3（p.7）、B.6–B.9、TablesS7–S11（PDF pp.15–19）、TableS16（PDF p.22）：默认/端点、几何归因、恢复与保留；Sec.5.4/A.3（PDF pp.8、12）：中央计时；E.2/E.3、TablesS19–S21（PDF p.24）：通信、公共基准与评测顺序；F/TableS22（PDF p.25）：独立雨/干燥录制。旧v1数值不静默迁移为v2默认。"
       evidence:
       - paper: awcr-2026
         stage: first-pass
@@ -4362,8 +4330,7 @@ challenges:
         basis: existing-note
         original_pdf_review_status: source-checked
     open_questions:
-      text: 统一控制下游训练/阈值后，哪些被删或被补结构导致具体类别收益/损害，不能由平均指标作因果归因。 AWCR 在未报告传感器/场景下的泛化、自然天气中
-        context pathway 的独立因果占比及通信/时延代价，仍未核验。
+      text: "统一控制下游训练/阈值后，哪些被删或被补结构导致具体类别收益/损害，不能由平均指标作因果归因。 AWCR 在未报告传感器/场景下的泛化、自然天气中 context pathway 的独立因果占比仍未核验；v2已报告中央处理与额外负载，但端到端联网实时预算仍未验证。"
       basis: not-assessed
       status: unverified
       evidence: []
