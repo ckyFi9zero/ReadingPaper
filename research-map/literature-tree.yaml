@@ -2641,3 +2641,55 @@ nodes:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+- id: pipeline-spectral-tta
+  kind: pipeline
+  name: 局部谱分解驱动测试时适应
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: Sec.5.1–5.3（PDF pp.5–7）：预测框内居中点构建kNN图；归一化Laplacian图频域中，用局部支撑B-Spline分离两流。稳定流按不变分量保留比例选择原坐标点、产生检测框伪标签；特定流输入X+εXsp，对检测器和滤波端点联合优化一致性、稳定性及互补约束。不是逐点雪标签，也不是把重建Xin直接输入检测器。
+  source_papers:
+  - find-2026
+  evidence:
+  - paper: find-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-3d-object-detection
+- id: module-find-spectral-selection
+  kind: module
+  name: 稳定谱驱动原坐标选择
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: N=12、K=3、τ=10；固定结点/基函数/边界约束，只优化端点响应Δ，由可微线性系统导出C。η初值0.2、EMA因子0.001平滑点选择阈值，不是EMA教师权重；目标批次累计能量一二阶矩形成稳定性掩膜（Sec.5，App.A.1/C.5，PDF
+    pp.5–7,15–17,20）。
+  source_papers:
+  - find-2026
+  evidence:
+  - paper: find-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-spectral-tta
+- id: module-find-online-consistency
+  kind: module
+  name: 特定谱扰动与联合正则
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: Sec.5.2–5.3（pp.6–7）：一致性、目标谱稳定性、互补约束联合优化检测器与滤波器；EMA仅平滑选择阈值。
+  source_papers:
+  - find-2026
+  evidence:
+  - paper: find-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-spectral-tta

@@ -1520,5 +1520,143 @@
       "scope": "云浏览器同源1440px桌面与390px手机视口实际查看正文和证据图；检查章节跳转、原尺寸放大滚动、关闭；非手机真机；构建后目录、地图两受影响节点的桌面/手机详情、筛选和来源锚点均已实际查看。"
     }
   }
+},
+{
+  "slug": "find-2026",
+  "category": "in-field",
+  "name": "FIND",
+  "title": "FIND: Frequency Invariance Disentanglement for Test-Time Adaptation in LiDAR 3D Detection",
+  "authors": [
+    "Dongxiao Li",
+    "Zixuan Hu",
+    "Ling-Yu Duan"
+  ],
+  "year": 2026,
+  "venue": "arXiv v1（作者注明 NeurIPS 2026 接收；会议终版未独立核验）",
+  "readDate": "2026-11-15",
+  "doi": "10.48550/arXiv.2611.09170",
+  "url": "https://arxiv.org/abs/2611.09170v1",
+  "tags": [
+    "LiDAR",
+    "测试时适配",
+    "伪标签",
+    "雪",
+    "雨",
+    "雾",
+    "跨传感器",
+    "3D检测",
+    "频域滤波",
+    "模拟退化"
+  ],
+  "summary": "以局部 B-spline 图频谱滤波和双流检测伪标签一致性应对域偏移；核对源统计初始化、KITTI-C 天气评测、持续适配及预测框漏检边界。",
+  "stages": {
+    "first-pass": "first-pass.html"
+  },
+  "reviews": {
+    "first-pass": {
+      "status": "source-checked",
+      "noteStatus": "organized",
+      "checkedAt": "2026-11-15",
+      "evidence": [
+        "完整核读 arXiv:2611.09170v1 的24页正文/附录及Figure1–10、Table1–14；未读代码、未复现实验。",
+        "原文含KITTI-C雾雨雪退化、跨数据集适配和无重置Fog→Rain→Snow检测评测；不是点级去雪标注。"
+      ]
+    }
+  },
+  "readingQuality": {
+    "version": 1,
+    "classification": {
+      "confirmedCategory": "in-field",
+      "rationale": "KITTI-C simulated fog/rain/snow and sensor-corruption LiDAR 3D detection evaluation; test-time pseudo-label alignment and cross-sensor/domain adaptation, not point-wise snow denoising.",
+      "source": "用户恶劣天气机器人LiDAR范围包含下游检测/传感器退化评测；Sec.6、Tables2–3及Appendix C.5/Table12（PDF pp7–9、20–23）。",
+      "reviewedAt": "2026-11-15"
+    },
+    "graphics": {
+      "status": "included",
+      "items": [
+        {
+          "figureId": "fig2",
+          "kind": "paper-crop",
+          "label": "Figure 2",
+          "pdfPage": 4,
+          "sourceUrl": "https://arxiv.org/pdf/2611.09170v1#page=4",
+          "analysisId": "analysis-fig2",
+          "cropPdfPoints": [
+            105,
+            70,
+            508,
+            242
+          ]
+        },
+        {
+          "figureId": "fig3",
+          "kind": "paper-crop",
+          "label": "Figure 3",
+          "pdfPage": 6,
+          "sourceUrl": "https://arxiv.org/pdf/2611.09170v1#page=6",
+          "analysisId": "analysis-fig3",
+          "cropPdfPoints": [
+            105,
+            70,
+            508,
+            287
+          ]
+        },
+        {
+          "figureId": "table2",
+          "kind": "paper-crop",
+          "label": "Table 2",
+          "pdfPage": 8,
+          "sourceUrl": "https://arxiv.org/pdf/2611.09170v1#page=8",
+          "analysisId": "analysis-table2",
+          "cropPdfPoints": [
+            105,
+            256,
+            508,
+            392
+          ]
+        },
+        {
+          "figureId": "table12",
+          "kind": "paper-crop",
+          "label": "Table 12",
+          "pdfPage": 23,
+          "sourceUrl": "https://arxiv.org/pdf/2611.09170v1#page=23",
+          "analysisId": "analysis-table12",
+          "cropPdfPoints": [
+            105,
+            75,
+            508,
+            213
+          ]
+        },
+        {
+          "figureId": "table14",
+          "kind": "paper-crop",
+          "label": "Table 14",
+          "pdfPage": 24,
+          "sourceUrl": "https://arxiv.org/pdf/2611.09170v1#page=24",
+          "analysisId": "analysis-table14",
+          "cropPdfPoints": [
+            105,
+            75,
+            508,
+            225
+          ]
+        }
+      ]
+    },
+    "rightsReview": {
+      "basis": "依据 arXiv:2611.09170v1 标明的 CC BY 4.0，仅摘引 Figure 2/3、Table 2/12/14 五处必要局部，与原创分析对应，保留作者、编号、页序、来源、许可和裁剪身份；不上传整篇PDF或整页，不承诺底层数据再分发权。",
+      "reviewedAt": "2026-11-15"
+    },
+    "visualReview": {
+      "desktop": true,
+      "mobile": true,
+      "zoom": true,
+      "scope": "官方 managed preview 云浏览器桌面及390×844 iframe响应式窄屏（非真机）逐项查看5幅原图、原尺寸放大/滚动/关闭；地图新增与增补节点、方法路线、筛选、详情及来源锚点已实际检查。",
+      "reviewedAt": "2026-11-15"
+    }
+  }
 }
 ]

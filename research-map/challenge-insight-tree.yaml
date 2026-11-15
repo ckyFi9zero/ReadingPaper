@@ -3623,6 +3623,160 @@ challenges:
       basis: not-assessed
       status: unverified
       evidence: []
+  - id: insight-stable-spectral-guidance
+    name: 分开稳定谱监督与特定谱扰动
+    techniques:
+    - 图频域
+    - B-Spline
+    - 稳定性代理
+    - 检测框伪标签
+    - 在线一致性
+    status: inferred
+    transfer_boundary: Sec.7（p.10）承认密度大变可能需手调参数。Table14（p.24）：移除10%预测框后Waymo→KITTI-C重度八类均值32.39，低于MOS32.62；仅有限扰动范围，不证明严重漏检仍可自纠。未验证真实雪点逐点去噪或沙尘。
+    source_papers:
+    - find-2026
+    evidence:
+    - paper: find-2026
+      stage: first-pass
+      anchor: fig2
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: find-2026
+      stage: first-pass
+      anchor: fig3
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    principle:
+      text: 当干扰跨越全谱且局部变化不均时，按频带稳定性划分监督与扰动职责，比预设低频等于语义更可检验；稳定性仍只是代理，不是清洁点证明。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: find-2026
+        stage: first-pass
+        anchor: fig2
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 已有源检测器、允许测试时更新且有可用对象框时，可评估局部图谱引导的检测适应；不等同离线逐点去雪训练。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: find-2026
+          stage: first-pass
+          anchor: section-02
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: Sec.5.1–5.3（PDF pp.5–7）：预测框内居中点构建kNN图；归一化Laplacian图频域中，用局部支撑B-Spline分离两流。稳定流按不变分量保留比例选择原坐标点、产生检测框伪标签；特定流输入X+εXsp，对检测器和滤波端点联合优化一致性、稳定性及互补约束。不是逐点雪标签，也不是把重建Xin直接输入检测器。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: find-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: N=12、K=3、τ=10；固定结点/基函数/边界约束，只优化端点响应Δ，由可微线性系统导出C。η初值0.2、EMA因子0.001平滑点选择阈值，不是EMA教师权重；目标批次累计能量一二阶矩形成稳定性掩膜（Sec.5，App.A.1/C.5，PDF
+          pp.5–7,15–17,20）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: find-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 部署前使用源域谱统计初始化，在线阶段不访问源样本或标签；依赖预测框图和目标批次统计。Table5/10（pp.9,22）：RTX4090、batch8，194±18ms/点云、峰值11540MiB；谱处理27ms只是总时间的13.92%，不能当全方法延时。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: find-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: Sec.7（p.10）承认密度大变可能需手调参数。Table14（p.24）：移除10%预测框后Waymo→KITTI-C重度八类均值32.39，低于MOS32.62；仅有限扰动范围，不证明严重漏检仍可自纠。未验证真实雪点逐点去噪或沙尘。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: find-2026
+          stage: first-pass
+          anchor: table14
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: Table2（p.8）：SECOND-IoU、KITTI→KITTI-C heavy、Car/moderate AP3D八类均值59.62，MOS57.48；雪64.89，雨78.23仍低于DUO78.49。Table3（p.9）复合跨域均值33.99，但雾42.99<MOS43.26、雪30.10<DUO30.33。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: find-2026
+          stage: first-pass
+          anchor: table2
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: Fig2（p.4）及App.B（pp.18–19）的CV–KL相关和固定场景corruption分析支持稳定性代理，不证明频带拥有普适因果语义。Table4/13为作者指定配置消融，不将整体检测增益拆给每项工程补丁；Table12（p.23）仅Fog→Rain→Snow单一无重置顺序，非真实时序逐点雪去噪。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: find-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: find-2026
+      location: Secs.4–5, Fig2（p.4）, Fig3（p.6）, Eqs.6–17（pp.5–7）；App.A–B（pp.15–19）；Tables2–5（pp.8–9）、10（p.22）、12–14（pp.23–24）。
+      evidence:
+      - paper: find-2026
+        stage: first-pass
+        anchor: fig2
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: find-2026
+        stage: first-pass
+        anchor: fig3
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: find-2026
+        stage: first-pass
+        anchor: table2
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: find-2026
+        stage: first-pass
+        anchor: table12
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: find-2026
+        stage: first-pass
+        anchor: table14
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 真实雪/尘逐点标签质量、严重框漏检下是否仍适用、跨顺序长期稳定性和低成本谱近似尚未验证。
+      basis: not-assessed
+      status: unverified
+      evidence: []
   why_hard:
     text: 天气、传感器和数据采集域共同改变观测；统一训练、条件化与跨域泛化不是同一个命题。
     basis: analyst-inference
@@ -3722,6 +3876,7 @@ challenges:
     status: inferred
     transfer_boundary: "3D-UnOutDet 平均 mIoU 提升时 road/fence 仍可能下降；LTDNet 真实几何无配对验证；SET-Det 的天气迁移未证实。 AWCR v2 的全量受控机制诊断、晴天修复子集与自然 adverse development 检测须分开；不推广为全部真实雪/传感器的机制。"
     source_papers:
+    - find-2026
     - ltdnet-2026
     - 3d-unoutdet-2025
     - rpsnownet-2026
@@ -3732,6 +3887,12 @@ challenges:
     - beyondsnowflakes-2026
     - dtf-filter-2026
     evidence:
+    - paper: find-2026
+      stage: first-pass
+      anchor: table14
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
     - paper: ltdnet-2026
       stage: first-pass
       anchor: section-05
@@ -4224,6 +4385,21 @@ challenges:
           basis: existing-note
           original_pdf_review_status: source-checked
     source_locations:
+    - paper: find-2026
+      location: FIND Table2/3（pp.8–9）与Table14（p.24）：检测均值收益不保证每种天气获胜；移除10%构图框使Waymo→KITTI-C均值32.39低于MOS32.62。不能由检测框伪标签或AP增益推定逐点雪标签正确。
+      evidence:
+      - paper: find-2026
+        stage: first-pass
+        anchor: table2
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: find-2026
+        stage: first-pass
+        anchor: table14
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
     - paper: ltdnet-2026
       location: IQA3D，Tables 1–3
       evidence:

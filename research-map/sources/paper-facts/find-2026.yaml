@@ -1,0 +1,287 @@
+version: 1
+paper: find-2026
+scope: in-field
+source_basis: original-pdf-and-reading-note
+source_sha256: 9f93d0a3df88e9a986cef789bad249fb60c40f90675754788c249a05b6054630
+checked_at: '2026-11-15'
+source_version: arXiv:2611.09170v1
+source_url: https://arxiv.org/abs/2611.09170v1
+read_scope: 原文24页正文及附录A–D已核读；地图重点核验Secs.4–7、Fig2–3、Tables2–5/10/12–14、App.B/C.5/D.3。作者报告而非复现；代码未展开。
+tags:
+- LiDAR
+- 雨
+- 雾
+- 雪
+- TTA
+- 检测框伪标签
+- 跨传感器
+- 图频域
+task:
+  name: 跨域与天气退化LiDAR三维检测的测试时自适应
+  input: 预训练SECOND-IoU、无标签目标点云；部署前源域谱统计
+  output: 适应后的3D检测框/类别，不是逐点去雪标签
+  conditions: KITTI-C合成雪雨雾及传感器corruption下游检测使本篇属于主线领域内；跨数据集域同时改变传感器和场景，不能隔离为纯传感器效应。
+  evidence:
+  - paper: find-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: find-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: Sec.4 Fig2（p.4）：不同频段均含跨域差异；刚性滤去低/中/高频都会破坏局部几何。CV与KL的相关是作者选择稳定性代理的依据，不是低频恒为语义的证明。
+  evidence:
+  - paper: find-2026
+    stage: first-pass
+    anchor: fig2
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-spectral-tta
+  name: 局部谱分解驱动双流在线适应
+  description: Sec.5.1–5.3（PDF pp.5–7）：预测框内居中点构建kNN图；归一化Laplacian图频域中，用局部支撑B-Spline分离两流。稳定流按不变分量保留比例选择原坐标点、产生检测框伪标签；特定流输入X+εXsp，对检测器和滤波端点联合优化一致性、稳定性及互补约束。不是逐点雪标签，也不是把重建Xin直接输入检测器。
+  evidence:
+  - paper: find-2026
+    stage: first-pass
+    anchor: fig3
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-find-spectral-selection
+  name: 局部谱滤波与原坐标选择
+  role: pseudo-label-input-selection
+  motivation: 避免固定频带假设破坏语义结构，以稳定性代理选择检测伪标签输入。
+  evidence:
+  - paper: find-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-find-online-consistency
+  name: 特定分量扰动与联合正则
+  role: online-adaptation
+  motivation: 以稳定流检测监督特定流扰动，同时约束滤波互补和目标统计稳定性。
+  evidence:
+  - paper: find-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-weather
+- challenge-downstream
+novelty_assessment:
+  novelty_class: 4
+  confidence: provisional
+  reason: 按既有3D检测测试时适应任务整理频域技术路线；未独立检索作者first声明，不认定首创。
+limitations:
+- text: Sec.7（p.10）承认密度大变可能需手调参数。Table14（p.24）：移除10%预测框后Waymo→KITTI-C重度八类均值32.39，低于MOS32.62；仅有限扰动范围，不证明严重漏检仍可自纠。未验证真实雪点逐点去噪或沙尘。
+  evidence:
+  - paper: find-2026
+    stage: first-pass
+    anchor: table14
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- text: 部署前使用源域谱统计初始化，在线阶段不访问源样本或标签；依赖预测框图和目标批次统计。Table5/10（pp.9,22）：RTX4090、batch8，194±18ms/点云、峰值11540MiB；谱处理27ms只是总时间的13.92%，不能当全方法延时。
+  evidence:
+  - paper: find-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+analysis:
+  updated_at: '2026-11-15'
+  previous_methods:
+    text: Sec.2/4：作者认为空间域增强或刚性频带划分难以隔离域特定扰动，相关工作不等于所有方法已经同条件复现。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: find-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 跨频带混杂使简单低通未必保留语义；把稳定性当代理仍取决于对象图和目标统计是否可靠。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: find-2026
+      stage: first-pass
+      anchor: fig2
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 与其把单一频段永久视为噪声，可分别指定稳定分量的监督职责和特定分量的扰动职责，在目标流中联合适应。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: find-2026
+      stage: first-pass
+      anchor: fig3
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-dual-spectral
+    name: 稳定性引导的双流频域适应
+    module_ids:
+    - module-find-spectral-selection
+    - module-find-online-consistency
+    motivation:
+      text: Fig2显示跨谱域差异与窄带波动，促成局部频带建模。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: find-2026
+        stage: first-pass
+        anchor: fig2
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: Sec.5.1–5.3（PDF pp.5–7）：预测框内居中点构建kNN图；归一化Laplacian图频域中，用局部支撑B-Spline分离两流。稳定流按不变分量保留比例选择原坐标点、产生检测框伪标签；特定流输入X+εXsp，对检测器和滤波端点联合优化一致性、稳定性及互补约束。不是逐点雪标签，也不是把重建Xin直接输入检测器。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: find-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 稳定流提供相对可靠的检测伪标签，特定流提供域扰动；互补约束限制平凡解。机制解释是作者设计动机，不意味着所有保留点均为清洁点。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: find-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 允许窄带局部调整，不预设全部低频不变或全部高频为噪声；适用性仍受预测框及统计约束。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: find-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-weather
+    name: 合成天气与跨域下游检测
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-dual-spectral
+    result:
+      text: Table2（p.8）：SECOND-IoU、KITTI→KITTI-C heavy、Car/moderate AP3D八类均值59.62，MOS57.48；雪64.89，雨78.23仍低于DUO78.49。Table3（p.9）复合跨域均值33.99，但雾42.99<MOS43.26、雪30.10<DUO30.33。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: find-2026
+        stage: first-pass
+        anchor: table2
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 整体均值改善与单列反例并存，不能推广为全部天气、类别、传感器或逐点标签质量。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: find-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-box-errors
+    name: 构图框可靠性压力测试
+    kind: ablation
+    assessment: reported
+    contribution_ids:
+    - contribution-dual-spectral
+    result:
+      text: Sec.7（p.10）承认密度大变可能需手调参数。Table14（p.24）：移除10%预测框后Waymo→KITTI-C重度八类均值32.39，低于MOS32.62；仅有限扰动范围，不证明严重漏检仍可自纠。未验证真实雪点逐点去噪或沙尘。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: find-2026
+        stage: first-pass
+        anchor: table14
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 有效对象区域减少会削弱优势；不能将潜在自纠解释当作保证。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: find-2026
+        stage: first-pass
+        anchor: table14
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-continual
+    name: 无重置天气顺序适应
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-dual-spectral
+    result:
+      text: App.C.5/Table12（pp.20–23）：heavy KITTI-C Fog→Rain→Snow无重置、无域边界标签；FIND独立平均71.46→连续71.09，MOS69.87→68.83。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: find-2026
+        stage: first-pass
+        anchor: table12
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 一个测试顺序支持该设置下持续适应；没有证明顺序无关、长期稳定或多帧雪噪声识别。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: find-2026
+        stage: first-pass
+        anchor: table12
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: Sec.7（p.10）承认密度大变可能需手调参数。Table14（p.24）：移除10%预测框后Waymo→KITTI-C重度八类均值32.39，低于MOS32.62；仅有限扰动范围，不证明严重漏检仍可自纠。未验证真实雪点逐点去噪或沙尘。
+      部署前使用源域谱统计初始化，在线阶段不访问源样本或标签；依赖预测框图和目标批次统计。Table5/10（pp.9,22）：RTX4090、batch8，194±18ms/点云、峰值11540MiB；谱处理27ms只是总时间的13.92%，不能当全方法延时。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: find-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
