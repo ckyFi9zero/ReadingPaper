@@ -2693,3 +2693,61 @@ nodes:
     basis: existing-note
     original_pdf_review_status: source-checked
   parent: pipeline-spectral-tta
+
+- id: pipeline-fog-waveform-benchmark
+  kind: pipeline
+  name: 雾天波形参考标签与峰值覆盖评测
+  parent: task-weather-evaluation
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: CARLA八城每城1500视点生成12000帧；异质羽流消光场、时间分辨体散射渲染及发射脉冲卷积，再以SPAD饱和/死时间/保持输出建模光子计数；同传感器400×512×700格式的Real仅评价、Sim用于训练。该协议允许严格sim-to-real评测，v1未报告方法迁移成绩（Secs.III–IV，pp.2–5）。
+  source_papers:
+  - fog-fwl-2026
+  evidence:
+  - paper: fog-fwl-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: fog-fwl-2026
+    stage: first-pass
+    anchor: table3
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-fog-waveform-reference
+  kind: module
+  name: 无雾参考标签与衰减分层
+  parent: pipeline-fog-waveform-benchmark
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 不因雾中峰消失而同时失去标注位置；按物体信号而非全局雾量分难度。
+  source_papers:
+  - fog-fwl-2026
+  evidence:
+  - paper: fog-fwl-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-fog-waveform-simulator
+  kind: module
+  name: 异质介质与SPAD联合仿真
+  parent: pipeline-fog-waveform-benchmark
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 共同保留光传输与接收器对波形的影响，统一合成训练/实测评价格式；并非已验证跨设备泛化。
+  source_papers:
+  - fog-fwl-2026
+  evidence:
+  - paper: fog-fwl-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked

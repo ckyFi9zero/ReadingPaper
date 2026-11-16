@@ -1,0 +1,273 @@
+version: 1
+paper: fog-fwl-2026
+scope: in-field
+source_basis: original-pdf-and-reading-note
+source_sha256: dc3285d7aaf61fbf935c6c3bfde7d437ce32fb937e8dcfba3f07f3f828026cff
+checked_at: '2026-11-16'
+source_version: arXiv:2611.16742v1
+source_url: https://arxiv.org/abs/2611.16742v1
+source_review:
+  scope: 本轮核读6页v1全文及Figure1/TablesI–III；重点核对Secs.III–VI、标注规则、难度定义和TableIII数值。作者报告非复现，数据及代码未取得。
+tags:
+- LiDAR
+- 雾
+- 全波形
+- SPAD
+- 数据集
+- sim-to-real
+- 参考标签
+task:
+  name: 雾天全波形恢复与下游检测的数据基础
+  input: 峰值检测前SPAD光子计数波形及同配置无雾参考；仿真场景与接收器模型
+  output: Real评价集、Sim训练集、Object/Fog/Noise时间bin标签、3D框及衰减难度等级，不是恢复算法
+  conditions: 人工局部雾波形及峰值丢失分析直接关联天气LiDAR感知；属于主线领域内而非仅因未提出去噪网络归领域外。Real不用于训练，v1尚无恢复/检测算法基准。
+  evidence:
+  - paper: fog-fwl-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: Sec.I/II-A（pp.1–2）：雾近场后向散射与物体反射衰减共同使弱物体峰被Top-k输出截断；点云后处理只接触幸存回波。TableIII量化此特定采集条件下的输入信息损失。
+  evidence:
+  - paper: fog-fwl-2026
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: fog-fwl-2026
+    stage: first-pass
+    anchor: table3
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-fog-waveform-benchmark
+  name: 保留原始波形并用清洁参考构造分层评价
+  description: CARLA八城每城1500视点生成12000帧；异质羽流消光场、时间分辨体散射渲染及发射脉冲卷积，再以SPAD饱和/死时间/保持输出建模光子计数；同传感器400×512×700格式的Real仅评价、Sim用于训练。该协议允许严格sim-to-real评测，v1未报告方法迁移成绩（Secs.III–IV，pp.2–5）。
+  evidence:
+  - paper: fog-fwl-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-fog-waveform-reference
+  name: 无雾参考标签与衰减分层
+  role: dataset-annotation
+  motivation: 不因雾中峰消失而同时失去标注位置；按物体信号而非全局雾量分难度。
+  evidence:
+  - paper: fog-fwl-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-fog-waveform-simulator
+  name: 异质介质与SPAD联合仿真
+  role: training-data-generation
+  motivation: 共同保留光传输与接收器对波形的影响，统一合成训练/实测评价格式；并非已验证跨设备泛化。
+  evidence:
+  - paper: fog-fwl-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-weather
+- challenge-downstream
+novelty_assessment:
+  novelty_class: 2
+  confidence: provisional
+  reason: 按天气感知评测任务新增波形级数据路线；作者first/579×主张限其比较表，不独立认定领域首创。
+limitations:
+- text: arXiv v1仅含数据集构建与峰值覆盖分析；数据计划接收后公开，恢复方法及下游3D检测基准留待未来版本。真实采集限户外停车场人工局部雾、10–20m车辆和自制SPAD；自然雾、更多对象及其他LiDAR是作者未来工作，跨传感器泛化未验证。
+  evidence:
+  - paper: fog-fwl-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- text: 原文Fig.1（p.4）Real饼图为4307/2251/969，而TablesII/III（p.5）为4007/2451/1069，总数均7527。此处引用表格值并显式保留版本冲突，未向作者核实哪组最终正确。
+  evidence:
+  - paper: fog-fwl-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- text: 标注依赖同配置清洁参考；无峰时的kref标签不能证明实际波形可恢复。v1未给自然雾/跨传感器误差或参考配准扰动实验。
+  evidence:
+  - paper: fog-fwl-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: fog-fwl-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+analysis:
+  updated_at: '2026-11-16'
+  previous_methods:
+    text: 作者将峰后点云/多回波处理与峰前全波形区分：只有幸存峰的输入不含所有弱物体回波。对前人不足的概括属于论文论述，未独立穷尽检索。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: fog-fwl-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 当对象回波在峰排序阶段被截断，下游删除错误点不能找回这项已丢失的观测；保留波形只避免该级截断，不保证信噪比足以恢复。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: fog-fwl-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 先检查任务信息是否在传感器输出阶段消失，再选择恢复输入表示；输入覆盖诊断和恢复效果评测应分开。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: fog-fwl-2026
+      stage: first-pass
+      anchor: table3
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-waveform-data
+    name: 同格式Real/Sim数据与参考标签协议
+    module_ids:
+    - module-fog-waveform-reference
+    - module-fog-waveform-simulator
+    motivation:
+      text: 需要真实雾波形、细粒度回波标签、下游框和可分层难度，来评价弱对象反射恢复。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: fog-fwl-2026
+        stage: first-pass
+        anchor: section-03
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: Sec.III-E（p.3）：同场景同配置约100帧无雾波形求和，参考最大峰kref给出表面位置；雾帧在±2 bins（±0.30m）内取最近峰，无峰则仍标kref。天空用参考波形的时间集中度排除。Object包括地面、墙、建筑，并非车辆类别；这建立参考监督，不表示雾帧中物体回波一定可辨。
+        CARLA八城每城1500视点生成12000帧；异质羽流消光场、时间分辨体散射渲染及发射脉冲卷积，再以SPAD饱和/死时间/保持输出建模光子计数；同传感器400×512×700格式的Real仅评价、Sim用于训练。该协议允许严格sim-to-real评测，v1未报告方法迁移成绩（Secs.III–IV，pp.2–5）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: fog-fwl-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 清洁参考固定对象表面身份，而原始波形保留峰排序之外的信号；异质介质与接收器响应共同控制输入分布。这是设计解释，不是模块独立因果验证。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: fog-fwl-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 可分别诊断候选峰损失和安排不使用真实训练波形的评价；尚不能据此声称仿真已消除域差异。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: fog-fwl-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-peak-coverage
+    name: 按难度统计候选峰中的对象覆盖
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-waveform-data
+    result:
+      text: TableIII/Sec.V（p.5）：3D框内物体射线的Object标签进入Top-3最强峰比例，Easy/Moderate/Hard为87.1%/65.8%/34.9%；Hard的Top-1/2为11.6%/25.5%。这是候选峰覆盖率，不是恢复算法精度、检测召回率或AP。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: fog-fwl-2026
+        stage: first-pass
+        anchor: table3
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 支持该人工雾数据中峰后信息减少的诊断；不证明全波形恢复算法必然成功，更不证明下游检测已经提升。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: fog-fwl-2026
+        stage: first-pass
+        anchor: table3
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  - id: experiment-recovery-benchmark
+    name: 恢复与下游检测基准尚未报告
+    kind: comparison
+    assessment: not-reported-in-note
+    contribution_ids: []
+    result:
+      text: Sec.VI明确将在未来版本报告恢复算法与下游3D检测结果；v1没有这组实验成绩。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: fog-fwl-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 数据协议、样本规模与输入覆盖率不能代替方法AP或泛化成绩。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: fog-fwl-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: arXiv v1仅含数据集构建与峰值覆盖分析；数据计划接收后公开，恢复方法及下游3D检测基准留待未来版本。真实采集限户外停车场人工局部雾、10–20m车辆和自制SPAD；自然雾、更多对象及其他LiDAR是作者未来工作，跨传感器泛化未验证。
+      原文Fig.1（p.4）Real饼图为4307/2251/969，而TablesII/III（p.5）为4007/2451/1069，总数均7527。此处引用表格值并显式保留版本冲突，未向作者核实哪组最终正确。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: fog-fwl-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

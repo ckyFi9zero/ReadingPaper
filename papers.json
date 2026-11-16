@@ -1658,5 +1658,122 @@
       "reviewedAt": "2026-11-15"
     }
   }
-}
+},
+  {
+    "slug": "fog-fwl-2026",
+    "category": "in-field",
+    "name": "Fog-FWL",
+    "title": "Fog-FWL: A Large-Scale Full-Waveform LiDAR Dataset for Recovering Fog-Hidden Objects",
+    "authors": [
+      "Kazuma Ikeda",
+      "Kotaro Oishi",
+      "Ryosei Hara",
+      "Ryo Yoshida",
+      "Takahiro Kado",
+      "Ibuki Fujioka",
+      "Taro Beppu",
+      "Mariko Isogawa",
+      "Kentaro Yoshioka"
+    ],
+    "year": 2026,
+    "venue": "arXiv v1（预印本）",
+    "readDate": "2026-11-16",
+    "doi": "10.48550/arXiv.2611.16742",
+    "url": "https://arxiv.org/abs/2611.16742v1",
+    "tags": [
+      "LiDAR",
+      "雾",
+      "全波形",
+      "数据集",
+      "SPAD",
+      "天气退化",
+      "sim-to-real",
+      "3D检测评测"
+    ],
+    "summary": "构建人工局部雾全波形真实评测与模拟训练数据，量化最强峰的弱目标回波丢失；数据尚待接收后公开、恢复和检测基准未报告，并保留图表数量不一致提示。",
+    "stages": {
+      "first-pass": "first-pass.html"
+    },
+    "reviews": {
+      "first-pass": {
+        "status": "source-checked",
+        "noteStatus": "organized",
+        "checkedAt": "2026-11-16",
+        "evidence": [
+          "完整核读arXiv2611.16742v1六页正文及参考文献；实际查看Figure1与TablesI–III。未读代码、未复现实验。",
+          "区分真实人工雾与自然雾，标签覆盖与检测AP；记录Figure1/表II的Real难度帧数冲突及接收后才公开的状态。"
+        ]
+      }
+    },
+    "readingQuality": {
+      "version": 1,
+      "classification": {
+        "confirmedCategory": "in-field",
+        "rationale": "直接研究雾衰减与LiDAR峰值检测信息丢失，提供真实/模拟全波形、逐bin标签、3D框和难度评测协议；符合用户的天气退化、数据集及下游评测范围，不以提出去噪网络为必要条件。",
+        "source": "用户恶劣天气机器人LiDAR范围；Sec.I、III–V与TableIII，PDF pp.1–5。",
+        "reviewedAt": "2026-11-16"
+      },
+      "graphics": {
+        "status": "included",
+        "items": [
+          {
+            "figureId": "fig1",
+            "kind": "paper-crop",
+            "label": "Figure 1",
+            "pdfPage": 4,
+            "sourceUrl": "https://arxiv.org/pdf/2611.16742v1#page=4",
+            "analysisId": "analysis-fig1",
+            "cropPdfPoints": [
+              46,
+              51,
+              570,
+              310
+            ],
+            "renderScale": 3
+          },
+          {
+            "figureId": "table2",
+            "kind": "paper-crop",
+            "label": "Table II",
+            "pdfPage": 5,
+            "sourceUrl": "https://arxiv.org/pdf/2611.16742v1#page=5",
+            "analysisId": "analysis-table2",
+            "cropPdfPoints": [
+              48,
+              51,
+              302,
+              139
+            ],
+            "renderScale": 3
+          },
+          {
+            "figureId": "table3",
+            "kind": "paper-crop",
+            "label": "Table III",
+            "pdfPage": 5,
+            "sourceUrl": "https://arxiv.org/pdf/2611.16742v1#page=5",
+            "analysisId": "analysis-table3",
+            "cropPdfPoints": [
+              45,
+              143,
+              303,
+              243
+            ],
+            "renderScale": 3
+          }
+        ]
+      },
+      "rightsReview": {
+        "basis": "arXiv2611.16742v1主页面及HTML标明CC BY4.0；仅取Figure1和TablesII–III必要局部，与模拟数据/难度及峰覆盖分析对应，作者、编号、页码、来源及裁剪变化逐图归因。无整页/完整PDF或私人内容。",
+        "reviewedAt": "2026-11-16"
+      },
+      "visualReview": {
+        "desktop": true,
+        "mobile": true,
+        "zoom": true,
+        "scope": "云浏览器实际查看桌面及390×844 iframe手机响应式（非真机），三幅图表与原尺寸放大、滚动、关闭；武器库两受影响节点的桌面和390px详情、雾筛选及来源锚点已检查。",
+        "reviewedAt": "2026-11-16"
+      }
+    }
+  }
 ]

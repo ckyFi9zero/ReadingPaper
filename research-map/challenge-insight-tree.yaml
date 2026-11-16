@@ -2761,12 +2761,16 @@ challenges:
     status: inferred
     source_papers:
     - weathernet-2020
+    - fog-fwl-2026
     techniques:
     - 清洁参考
     - 自动标注
     - 天气增强
     - 静态场景
     - clear/rain/fog
+    - 全波形参考
+    - 无峰位置标注
+    - 难度协议
     principle:
       text: 当粒子难以人工标注而静态场景可重复采集时，可把同光束的清洁参考转成标签来源；标签生成条件与网络结构应分开看。
       basis: analyst-inference
@@ -2780,7 +2784,18 @@ challenges:
         original_pdf_review_status: source-checked
     transfer_boundary: 动态自然雨雾只能定性评估；参考标注的可靠性不能未经核查迁移到运动场景。
     evidence:
-    - *id020
+    - paper: weathernet-2020
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: fog-fwl-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
     playbook:
       use_when:
         text: 能在静态、受控天气场景中取得对齐清洁参考时；不能直接假定动态道路也满足此条件。
@@ -2795,19 +2810,26 @@ challenges:
           original_pdf_review_status: source-checked
       mechanism:
         text: WeatherNet 堆叠无天气参考帧，与雨雾帧同光束距离比较生成 clutter 标签；以 distance/intensity 图监督
-          clear/rain/fog 分割，再移除天气类。
+          clear/rain/fog 分割，再移除天气类。 Sec.III-E（p.3）：同场景同配置约100帧无雾波形求和，参考最大峰kref给出表面位置；雾帧在±2
+          bins（±0.30m）内取最近峰，无峰则仍标kref。天空用参考波形的时间集中度排除。Object包括地面、墙、建筑，并非车辆类别；这建立参考监督，不表示雾帧中物体回波一定可辨。
         basis: note-summary
         status: source-checked
         evidence:
         - paper: weathernet-2020
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: fog-fwl-2026
           stage: first-pass
           anchor: section-05
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
       engineering_tricks:
-        text: 使用参考差距 ±35 cm 规则；道路天气增强缓解气候舱场景过拟合；LiLaBlock 加 dilated convolution 与
-          dropout 并减深度。
+        text: 使用参考差距 ±35 cm 规则；道路天气增强缓解气候舱场景过拟合；LiLaBlock 加 dilated convolution 与 dropout
+          并减深度。 Secs.III-D/IV-D（pp.3–5）：实测框内物体峰强度比Ifog/Iclear按帧求均值，再以每序列20个均匀帧的中位数分Easy≥0.70、Moderate[0.40,0.70)、Hard<0.40。仿真密度先按残余比0.80/0.50/0.25搜索，但最终用生成波形按同一规则重判，不能用目标档位替代实际难度。
         basis: note-summary
         status: source-checked
         evidence:
@@ -2817,8 +2839,14 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: fog-fwl-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       assumptions_cost:
-        text: 自动标签依赖静态可重复采集；仿真增强需天气模型，投影和强度输入有传感器条件。
+        text: 自动标签依赖静态可重复采集；仿真增强需天气模型，投影和强度输入有传感器条件。 Fog-FWL补充：需要同场景同配置约100帧无雾参考及峰前SPAD数据；仿真与实测共享扫描格式，未验证换设备即用。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -2828,19 +2856,31 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: fog-fwl-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       failure_boundary:
-        text: 动态自然雨雾只能定性评估；参考标注的可靠性不能未经核查迁移到运动场景。
+        text: 动态自然雨雾只能定性评估；参考标注的可靠性不能未经核查迁移到运动场景。 arXiv v1仅含数据集构建与峰值覆盖分析；数据计划接收后公开，恢复方法及下游3D检测基准留待未来版本。真实采集限户外停车场人工局部雾、10–20m车辆和自制SPAD；自然雾、更多对象及其他LiDAR是作者未来工作，跨传感器泛化未验证。
         basis: note-summary
         status: source-checked
         evidence:
         - paper: weathernet-2020
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: fog-fwl-2026
           stage: first-pass
           anchor: section-08
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
       evidence_scope:
-        text: Table I 的三种训练数据组合支持数据/增强设置的比较，并未逐项消融网络模块；Figs. 7–8 为动态场景定性。
+        text: Table I 的三种训练数据组合支持数据/增强设置的比较，并未逐项消融网络模块；Figs. 7–8 为动态场景定性。 Fog-FWL新增原文核对仅支持标签构造和输入峰覆盖诊断，没有参考标签正确率、独立标注辅件消融或下游检测成绩。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -2850,15 +2890,27 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: fog-fwl-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       reported_effect:
-        text: weathernet-2020：气候舱报告逐类 IoU、运行时与参数量；动态自然小雨和浓雾场景使用定性示例（Table I；Figs.
-          7–8）。
+        text: weathernet-2020：气候舱报告逐类 IoU、运行时与参数量；动态自然小雨和浓雾场景使用定性示例（Table I；Figs. 7–8）。
+          Fog-FWL v1 TableII报告7527真实帧、12000仿真帧；这是数据规模而非标签精度或恢复收益。原文Fig.1（p.4）Real饼图为4307/2251/969，而TablesII/III（p.5）为4007/2451/1069，总数均7527。此处引用表格值并显式保留版本冲突，未向作者核实哪组最终正确。
         basis: note-summary
         status: source-checked
         evidence:
         - paper: weathernet-2020
           stage: first-pass
           anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: fog-fwl-2026
+          stage: first-pass
+          anchor: section-08
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
@@ -2869,6 +2921,22 @@ challenges:
       - paper: weathernet-2020
         stage: first-pass
         anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    - paper: fog-fwl-2026
+      location: arXiv:2611.16742v1 Sec.III-D/E p.3、IV-D pp.4–5、TablesII/III与Sec.VI p.5；Fig.1
+        p.4内部计数冲突。
+      evidence:
+      - paper: fog-fwl-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: fog-fwl-2026
+        stage: first-pass
+        anchor: section-08
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
@@ -4952,6 +5020,153 @@ challenges:
         original_pdf_review_status: source-checked
     open_questions:
       text: 居中平滑的实际在线延迟、对比阈值/系数不一致的作者澄清、不同分割质量与传感器配置的校准、以及闭环控制收益仍缺充分证据；不将这些缺口称为已确认研究空白。
+      basis: not-assessed
+      status: unverified
+      evidence: []
+  - id: insight-prepeak-evidence
+    observable_failures:
+    - Fog-FWL Table III：实测框内物体射线的 Top-3 峰覆盖率随 Easy、Moderate、Hard 从 87.1% 降为 65.8%、34.9%；仅为候选峰覆盖，不是检测 AP。
+    - 峰值列表未覆盖参考 Object 标签不等于原波形一定可恢复该物体；v1 未提供恢复方法或下游检测基准结果。
+    name: 先量化峰值截断，再决定恢复表示
+    techniques:
+    - 全波形
+    - Top-k峰覆盖
+    - Object射线
+    - 接收器响应
+    - 数据集诊断
+    status: inferred
+    transfer_boundary: arXiv v1仅含数据集构建与峰值覆盖分析；数据计划接收后公开，恢复方法及下游3D检测基准留待未来版本。真实采集限户外停车场人工局部雾、10–20m车辆和自制SPAD；自然雾、更多对象及其他LiDAR是作者未来工作，跨传感器泛化未验证。
+    source_papers:
+    - fog-fwl-2026
+    evidence:
+    - paper: fog-fwl-2026
+      stage: first-pass
+      anchor: table3
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    principle:
+      text: 某类信息若在峰值检测时已从输入剔除，点云后处理的困难不只是噪点多。先量化物体标签在候选峰中的覆盖，再判断是否需要保留峰前波形；保留波形不是恢复成功保证。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: fog-fwl-2026
+        stage: first-pass
+        anchor: table3
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 局部浓雾使强后向散射占据有限回波名额，而目标结构在峰后点云中大量缺失，且能够取得峰前波形时。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: fog-fwl-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: Sec.V/TableIII（p.5）在实测3D框内物体射线上，统计参考Object标签是否进入最强k峰，按衰减难度分组；使用FWL保留这些有限峰输出之外的时域观测。本文只给数据/分析，不提出完整恢复网络。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: fog-fwl-2026
+          stage: first-pass
+          anchor: table3
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: Sec.III-E（p.3）：同场景同配置约100帧无雾波形求和，参考最大峰kref给出表面位置；雾帧在±2 bins（±0.30m）内取最近峰，无峰则仍标kref。天空用参考波形的时间集中度排除。Object包括地面、墙、建筑，并非车辆类别；这建立参考监督，不表示雾帧中物体回波一定可辨。
+          Secs.III-D/IV-D（pp.3–5）：实测框内物体峰强度比Ifog/Iclear按帧求均值，再以每序列20个均匀帧的中位数分Easy≥0.70、Moderate[0.40,0.70)、Hard<0.40。仿真密度先按残余比0.80/0.50/0.25搜索，但最终用生成波形按同一规则重判，不能用目标档位替代实际难度。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: fog-fwl-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 自制SPAD FPGA输出400×512×700时间bin、1ns分辨率；需原始波形、同配置清洁参考与框标注。仿真还需异质介质时间分辨渲染和SPAD模型。论文未给端到端恢复时延或存储成本基准。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: fog-fwl-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: arXiv v1仅含数据集构建与峰值覆盖分析；数据计划接收后公开，恢复方法及下游3D检测基准留待未来版本。真实采集限户外停车场人工局部雾、10–20m车辆和自制SPAD；自然雾、更多对象及其他LiDAR是作者未来工作，跨传感器泛化未验证。
+          原文Fig.1（p.4）Real饼图为4307/2251/969，而TablesII/III（p.5）为4007/2451/1069，总数均7527。此处引用表格值并显式保留版本冲突，未向作者核实哪组最终正确。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: fog-fwl-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: TableIII/Sec.V（p.5）：3D框内物体射线的Object标签进入Top-3最强峰比例，Easy/Moderate/Hard为87.1%/65.8%/34.9%；Hard的Top-1/2为11.6%/25.5%。这是候选峰覆盖率，不是恢复算法精度、检测召回率或AP。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: fog-fwl-2026
+          stage: first-pass
+          anchor: table3
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: Top-k改变的是候选输入覆盖，不是训练模型或组件对照。标签缺失于Top-3支持峰后观测受限，却不证明所有这些标签均可从含噪原波形可靠恢复；不可换算检测AP提升。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: fog-fwl-2026
+          stage: first-pass
+          anchor: table3
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: fog-fwl-2026
+      location: arXiv:2611.16742v1 Sec.I/II-A pp.1–2；Sec.III-D/E p.3；TableIII与Secs.V–VI
+        p.5。
+      evidence:
+      - paper: fog-fwl-2026
+        stage: first-pass
+        anchor: section-03
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: fog-fwl-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: fog-fwl-2026
+        stage: first-pass
+        anchor: table3
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: fog-fwl-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 恢复方法、3D检测基准、自然雾与跨设备迁移、参考标注误差和运行成本待后续公开材料；不把v1未报告等同领域无人解决。
       basis: not-assessed
       status: unverified
       evidence: []
