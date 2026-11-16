@@ -173,3 +173,7 @@ python3 scripts/check_site.py --root _site-public
 - 研究地图证据可使用 `{paper: 原slug, revisit: 专题id, anchor: 真实锚点, ...}`，不同时写 `stage`。验证器检查专题确属该论文；阅读者归纳与原文核验身份不因此升级。
 - `build_site.py` 生成回看目录，不覆盖手写专题正文。完整本地导出包含独立专题与依赖；受 `publish.json` 选择的历史公开导出不自动附带专题，当前 main/root Pages 的公开行为保持不变。
 - 原论文页保留原笔记，回看从目录或独立页访问；不把新日期写入原 `readDate` 冒充新论文。运行原全部发布检查，另执行 `node --test tests/test_revisits.cjs`，并实际验证首页入口、两种状态/关键词交集、空结果/重置、主题原图放大和双向来源跳转。
+
+## 2026-11-16：历史 PDF 缺失引用修复
+
+3D-UnOutDet 的公开联动入口改为作者项目页/预印本与正式发表 DOI 入口，不托管私有 PDF，不再尝试加载不存在的 source.pdf；保留初读、代码笔记与证据定位。该页明确说明当前不提供内嵌 PDF 和页码联动，预印本分页可能不同。生成器通过 viewer.public_source / publication_source 在本地 PDF 不可用时生成此降级入口，避免后续构建删除入口。原两条缺失引用已消除；全站检查应零错误。

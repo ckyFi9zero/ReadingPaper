@@ -3,7 +3,9 @@
   "paper": "3d-unoutdet-2025",
   "viewer": {
     "local_pdf": "source.pdf",
-    "default_stage": "first-pass"
+    "default_stage": "first-pass",
+    "public_source": "https://sporsho.github.io/3DUnOutDet",
+    "publication_source": "https://doi.org/10.1109/IROS60139.2025.11247379"
   },
   "nodes": [
     {
