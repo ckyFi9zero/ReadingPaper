@@ -2751,3 +2751,105 @@ nodes:
     status: source-checked
     basis: existing-note
     original_pdf_review_status: source-checked
+- id: pipeline-paired-graded-fog-evaluation
+  kind: pipeline
+  name: 固定几何的分级雾与模态对照
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 相机按散射模型、LiDAR按衰减/后向散射生成三等级，雷达不施加雾退化；同场景几何与标注跨天气共享，按等级分别评估训练组合、去雾输入与雷达分支。
+  source_papers:
+  - fogdrive-2026
+  evidence:
+  - paper: fogdrive-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-weather-evaluation
+- id: module-fogdrive-paired-severity
+  kind: module
+  name: 清洁—分级雾配对及场景划分
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 用固定几何、标签和场景级分割减少跨天气比较的场景混杂。
+  source_papers:
+  - fogdrive-2026
+  evidence:
+  - paper: fogdrive-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-paired-graded-fog-evaluation
+- id: module-fogdrive-radar-control
+  kind: module
+  name: 未施雾雷达分支对照
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 将雷达点柱化至共同BEV并拼接融合，检验该模拟器中的第三模态收益。
+  source_papers:
+  - fogdrive-2026
+  evidence:
+  - paper: fogdrive-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-paired-graded-fog-evaluation
+- id: pipeline-measure-command-humanoid
+  kind: pipeline
+  name: 测量调用—全身命令—轨迹教师学习
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: VLM每轮发测量或执行调用；像素查询通过深度反投影为观测系3D位置，planner将身体分部命令变为全身参考，HEFT以50Hz跟踪；五任务同接口教师轨迹用于监督微调。
+  source_papers:
+  - hitch-2026
+  evidence:
+  - paper: hitch-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-mobile-manipulation
+- id: module-hitch-measure-execute
+  kind: module
+  name: 按需测量与显式全身接口
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 先量目标位置再执行完整姿态，避免慢速决策反复凭像素试探。
+  source_papers:
+  - hitch-2026
+  evidence:
+  - paper: hitch-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-measure-command-humanoid
+- id: module-hitch-observable-teacher
+  kind: module
+  name: 可观测教师与接口分布训练
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 教师只按指令和自身量测选动作；tracker在planner产生的参考上再训，VLM模仿相同接口的轨迹。
+  source_papers:
+  - hitch-2026
+  evidence:
+  - paper: hitch-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-measure-command-humanoid

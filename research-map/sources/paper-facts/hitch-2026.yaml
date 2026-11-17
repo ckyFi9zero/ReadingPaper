@@ -1,0 +1,218 @@
+version: 1
+paper: hitch-2026
+scope: out-of-field
+source_basis: original-pdf-and-reading-note
+source_sha256: 32f3dc76656655ef216e686b434704a096cf96dad3e728cd22f1963509776351
+checked_at: '2026-11-17'
+source_version: arXiv:2611.08039v1，2026-11-05预印本
+source_url: https://arxiv.org/abs/2611.08039v1
+source_review:
+  scope: 核读13页v1正文与附录A–F；地图定点回核III-A–E、IV-A–G、TablesI–III、附录C/E/F。作者报告非实机复现；没有天气LiDAR迁移验证。
+tags:
+- 拓展阅读
+- 人形机器人
+- VLM
+- 全身接口
+task:
+  name: 语言指令驱动的人形机器人移动操作
+  input: 指令、头部RGB图像、身体状态及交互历史；按需查询像素对应深度位置
+  output: 骨盆、躯干、手掌、手指、行走及视线的全身命令
+  conditions: Unitree G1，Qwen3.8-27B，五基础任务各500教师轨迹；SIMPLE六任务180 episodes、HumanoidArena四任务80 episodes。改相机/指令与45s/60s预算，不直接当官方榜单公平横比。
+  evidence:
+  - paper: hitch-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 低频VLM每次命令执行完才再次观测，靠图像估距离或追踪偏差反复修正代价大；教师若使用学生看不到的对象信息，动作不能从学生输入解释（III-A）。
+  evidence:
+  - paper: hitch-2026
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-measure-command-humanoid
+  name: 测量调用—全身命令—轨迹教师学习
+  description: VLM每轮发测量或执行调用；像素查询通过深度反投影为观测系3D位置，planner将身体分部命令变为全身参考，HEFT以50Hz跟踪；五任务同接口教师轨迹用于监督微调。
+  evidence:
+  - paper: hitch-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-hitch-measure-execute
+  name: 按需测量与显式全身接口
+  role: core-design
+  motivation: 先量目标位置再执行完整姿态，避免慢速决策反复凭像素试探。
+  evidence:
+  - paper: hitch-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-hitch-observable-teacher
+  name: 可观测教师与接口分布训练
+  role: core-design
+  motivation: 教师只按指令和自身量测选动作；tracker在planner产生的参考上再训，VLM模仿相同接口的轨迹。
+  evidence:
+  - paper: hitch-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-manipulation-interface
+novelty_assessment:
+  novelty_class: 2
+  confidence: provisional
+  reason: 按原任务的接口/数据组织建立路线，不独立认定领域首创或全面SOTA。
+limitations:
+- text: 评测更换相机并改写指令，使用45s/60s模拟时长；部分模型选择SIMPLE成功率最高checkpoint。去感知配置重新训练，不是仅推理时遮挡。HA仅四任务，加入SIMPLE专用数据后HA成功率可下降；实机只搬箱13/20、导航6/10。平地planner不支持全部运动，行走后旧量测位置不可靠；没有天气感知或普遍机器人泛化证据。
+  evidence:
+  - paper: hitch-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: hitch-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+analysis:
+  updated_at: '2026-11-17'
+  previous_methods:
+    text: 作者区分端到端VLA的大量全身示范成本、只选技能的智能体接口和逐任务在线探索；强调接口之外仍要学习如何运用身体。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: hitch-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 长命令期间缺少高频决策纠偏，量测和执行偏差会累积；在老师与学生可见信息不一致时，模仿动作也不具备可解释的输入依据。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: hitch-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 把慢速语义决策与几何量测、准确身体执行分开，并让示范在相同信息和调用接口下产生；不把准确控制器等同于已学会任务决策。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: hitch-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 测量调用—全身命令—轨迹教师学习
+    module_ids:
+    - module-hitch-measure-execute
+    - module-hitch-observable-teacher
+    motivation:
+      text: 低频VLM每次命令执行完才再次观测，靠图像估距离或追踪偏差反复修正代价大；教师若使用学生看不到的对象信息，动作不能从学生输入解释（III-A）。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: hitch-2026
+        stage: first-pass
+        anchor: section-03
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 像素坐标归一至[0,1000]并由深度反投影到每次观测重设的O系；planner以关节/速度/自碰撞约束求IK，HEFT跟踪并在教师planner参考上继续训练。教师只用自身量测与身体可达图；冻结视觉编码器、微调语言模型，损失仅作用教师响应。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: hitch-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 把慢速语义决策与几何量测、准确身体执行分开，并让示范在相同信息和调用接口下产生；不把准确控制器等同于已学会任务决策。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: hitch-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 该设计提供分层核验接口与结果的条件，但总体成绩不能证明每个实现环节均独立必要。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: hitch-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-controlled-results
+    name: 分开执行器对照、任务迁移及感知重训配置
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: TableI教师240 episodes成功97.9%，原HEFT94.2%、SONIC27.9%、AMO12.9%；不是VLM任务成功率。TableII base-only SIMPLE51.1%、HA42.5%；加每任务10条SIMPLE后98.9%/28.8%。去感知并重训base-only为2.8%/27.5%。实机搬箱13/20、导航6/10。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: hitch-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: 评测更换相机并改写指令，使用45s/60s模拟时长；部分模型选择SIMPLE成功率最高checkpoint。去感知配置重新训练，不是仅推理时遮挡。HA仅四任务，加入SIMPLE专用数据后HA成功率可下降；实机只搬箱13/20、导航6/10。平地planner不支持全部运动，行走后旧量测位置不可靠；没有天气感知或普遍机器人泛化证据。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: hitch-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: 评测更换相机并改写指令，使用45s/60s模拟时长；部分模型选择SIMPLE成功率最高checkpoint。去感知配置重新训练，不是仅推理时遮挡。HA仅四任务，加入SIMPLE专用数据后HA成功率可下降；实机只搬箱13/20、导航6/10。平地planner不支持全部运动，行走后旧量测位置不可靠；没有天气感知或普遍机器人泛化证据。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: hitch-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

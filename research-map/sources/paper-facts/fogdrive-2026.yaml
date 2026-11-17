@@ -1,0 +1,220 @@
+version: 1
+paper: fogdrive-2026
+scope: in-field
+source_basis: original-pdf-and-reading-note
+source_sha256: a98dcfcb678b1fd219710bccbb10c777a894acc7d3c3ff90a70e57c57856b9e7
+checked_at: '2026-11-17'
+source_version: arXiv:2607.22698v2，2026-11-09实质修订
+source_url: https://arxiv.org/abs/2607.22698v2
+source_review:
+  scope: 核读19页v2正文及补充D1–D12；地图关键结论定点回核Secs.3–5、Tables4–6、附录D10–D12。记录作者实验而非复现；v1/v2差异由本轮阅读记录说明。
+tags:
+- 雾
+- 多模态
+- 配对评测
+task:
+  name: 固定场景下多模态分级雾鲁棒性评测
+  input: 同一CARLA场景的清洁及轻/中/浓雾相机、LiDAR与不施雾雷达；同一几何标注
+  output: 分雾等级的三维检测、二维检测和雷达融合对照
+  conditions: 六城666场景、132996帧；场景级70/15/15划分，清洁/雾变体同属一分割。纯仿真、固定传感器、三类四轮车辆，不是自然雾/雪尘验证。
+  evidence:
+  - paper: fogdrive-2026
+    stage: first-pass
+    anchor: section-02
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+problem:
+  failure_case: 作者指出真实天气难以独立控制严重度，纯相机或单等级小规模数据不能同时比较训练多样性、去雾后检测及多模态互补；该前作概括不是独立穷尽检索。
+  evidence:
+  - paper: fogdrive-2026
+    stage: first-pass
+    anchor: section-03
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+pipeline:
+  id: pipeline-paired-graded-fog-evaluation
+  name: 固定几何的分级雾与模态对照
+  description: 相机按散射模型、LiDAR按衰减/后向散射生成三等级，雷达不施加雾退化；同场景几何与标注跨天气共享，按等级分别评估训练组合、去雾输入与雷达分支。
+  evidence:
+  - paper: fogdrive-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+modules:
+- id: module-fogdrive-paired-severity
+  name: 清洁—分级雾配对及场景划分
+  role: core-design
+  motivation: 用固定几何、标签和场景级分割减少跨天气比较的场景混杂。
+  evidence:
+  - paper: fogdrive-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+- id: module-fogdrive-radar-control
+  name: 未施雾雷达分支对照
+  role: core-design
+  motivation: 将雷达点柱化至共同BEV并拼接融合，检验该模拟器中的第三模态收益。
+  evidence:
+  - paper: fogdrive-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+challenges:
+- challenge-weather
+- challenge-downstream
+novelty_assessment:
+  novelty_class: 2
+  confidence: provisional
+  reason: 按原任务的接口/数据组织建立路线，不独立认定领域首创或全面SOTA。
+limitations:
+- text: Sec.4.1对每个训练×测试组合在该测试子集选择best-FDS checkpoint，不能称独立验证选模的盲测泛化；Mixed-S约24%对单等级20%并非严格等量。纯仿真、固定rig、仅三类四轮车辆；雷达不施雾且无RCS，前向120°仅覆盖43.4%范围内GT框。图像质量指标与检测结论限所测任务；浓雾BEVFusion单等级Dense优于混合，不能说混合始终最佳。
+  evidence:
+  - paper: fogdrive-2026
+    stage: first-pass
+    anchor: section-08
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  - paper: fogdrive-2026
+    stage: first-pass
+    anchor: section-07
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+evidence_status: source-checked
+transfer_status: unverified
+analysis:
+  updated_at: '2026-11-17'
+  previous_methods:
+    text: 作者将真实天气采集、相机去雾数据与多模态模拟数据区分，指出缺少兼顾训练规模、校准分级和雷达的配对条件。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: fogdrive-2026
+      stage: first-pass
+      anchor: section-03
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  technical_reason:
+    text: 跨天气同时改变几何/标签、训练样本数或模态会混合多个差异；固定部分条件能使对照更可解释，但不能消除选模和训练预算混杂。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: fogdrive-2026
+      stage: first-pass
+      anchor: section-04
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  insight:
+    text: 先固定场景几何与标注，再分严重度记录不同训练策略和模态的收益；重建相似度、下游检测与定位质量分别判读。
+    basis: analyst-inference
+    status: inferred
+    evidence:
+    - paper: fogdrive-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+  contributions:
+  - id: contribution-main
+    name: 固定几何的分级雾与模态对照
+    module_ids:
+    - module-fogdrive-paired-severity
+    - module-fogdrive-radar-control
+    motivation:
+      text: 作者指出真实天气难以独立控制严重度，纯相机或单等级小规模数据不能同时比较训练多样性、去雾后检测及多模态互补；该前作概括不是独立穷尽检索。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: fogdrive-2026
+        stage: first-pass
+        anchor: section-03
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    implementation:
+      text: 666场景按场景级70/15/15划分；清洁及约165/100/50m能见度配对。TransFusion-L/BEVFusion比较Light、Dense、Mixed-S和Mixed-L；YOLOv8-m比较清洁/雾输入及三种去雾配置；雷达点[x,y,z,vr,r]以pillar
+        scatter进入共同BEV并拼接。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: fogdrive-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    mechanism:
+      text: 先固定场景几何与标注，再分严重度记录不同训练策略和模态的收益；重建相似度、下游检测与定位质量分别判读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: fogdrive-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    advantage:
+      text: 该设计提供分层核验接口与结果的条件，但总体成绩不能证明每个实现环节均独立必要。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: fogdrive-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  experiments:
+  - id: experiment-controlled-results
+    name: 分级训练、重建质量及雷达分支对照
+    kind: comparison
+    assessment: reported
+    contribution_ids:
+    - contribution-main
+    result:
+      text: Table4六个mAP列中五列由混合配置取优，浓雾BEVFusion为Dense 0.7761，Mixed-L仅0.7242。Table5浓雾DCP PSNR12.56、mAP0.438；微调DehazeFormer-S
+        PSNR22.78、mAP0.415；直接雾训练mAP0.647。Table6 C+L→C+L+R在轻/中/浓雾为0.7683→0.7779、0.7609→0.7734、0.6547→0.6631，增益不随雾增强单调扩大。
+      basis: note-summary
+      status: source-checked
+      evidence:
+      - paper: fogdrive-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    interpretation:
+      text: Sec.4.1对每个训练×测试组合在该测试子集选择best-FDS checkpoint，不能称独立验证选模的盲测泛化；Mixed-S约24%对单等级20%并非严格等量。纯仿真、固定rig、仅三类四轮车辆；雷达不施雾且无RCS，前向120°仅覆盖43.4%范围内GT框。图像质量指标与检测结论限所测任务；浓雾BEVFusion单等级Dense优于混合，不能说混合始终最佳。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: fogdrive-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+  boundary:
+    text: Sec.4.1对每个训练×测试组合在该测试子集选择best-FDS checkpoint，不能称独立验证选模的盲测泛化；Mixed-S约24%对单等级20%并非严格等量。纯仿真、固定rig、仅三类四轮车辆；雷达不施雾且无RCS，前向120°仅覆盖43.4%范围内GT框。图像质量指标与检测结论限所测任务；浓雾BEVFusion单等级Dense优于混合，不能说混合始终最佳。
+    basis: note-summary
+    status: source-checked
+    evidence:
+    - paper: fogdrive-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked

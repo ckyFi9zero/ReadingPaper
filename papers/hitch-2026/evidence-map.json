@@ -1,0 +1,272 @@
+{
+  "version": 1,
+  "paper": "hitch-2026",
+  "nodes": [
+    {
+      "id": "note:s01",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-01",
+      "label": "论文一句话在做什么"
+    },
+    {
+      "id": "pdf:s01",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2611.08039v1#page=1",
+      "page": 1,
+      "label": "论文一句话在做什么",
+      "section": "I"
+    },
+    {
+      "id": "note:s02",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-02",
+      "label": "Research Problem"
+    },
+    {
+      "id": "pdf:s02",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2611.08039v1#page=3",
+      "page": 3,
+      "label": "Research Problem",
+      "section": "III-A"
+    },
+    {
+      "id": "note:s03",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-03",
+      "label": "Existing Methods & Gap"
+    },
+    {
+      "id": "pdf:s03",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2611.08039v1#page=2",
+      "page": 2,
+      "label": "Existing Methods & Gap",
+      "section": "I–II"
+    },
+    {
+      "id": "note:s04",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-04",
+      "label": "Core Observation / Insight"
+    },
+    {
+      "id": "pdf:s04",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2611.08039v1#page=4",
+      "page": 4,
+      "label": "Core Observation / Insight",
+      "section": "III-A"
+    },
+    {
+      "id": "note:s05",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-05",
+      "label": "Method：宏观逻辑"
+    },
+    {
+      "id": "pdf:s05",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2611.08039v1#page=3",
+      "page": 3,
+      "label": "Method：宏观逻辑",
+      "section": "III"
+    },
+    {
+      "id": "note:s06",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-06",
+      "label": "Contributions"
+    },
+    {
+      "id": "pdf:s06",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2611.08039v1#page=2",
+      "page": 2,
+      "label": "Contributions",
+      "section": "I contributions"
+    },
+    {
+      "id": "note:s07",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-07",
+      "label": "Experiments"
+    },
+    {
+      "id": "pdf:s07",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2611.08039v1#page=7",
+      "page": 7,
+      "label": "Experiments",
+      "section": "IV/Table II"
+    },
+    {
+      "id": "note:s08",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-08",
+      "label": "Limitations"
+    },
+    {
+      "id": "pdf:s08",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2611.08039v1#page=9",
+      "page": 9,
+      "label": "Limitations",
+      "section": "V"
+    },
+    {
+      "id": "note:s09",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-09",
+      "label": "Future Work / Research Implications"
+    },
+    {
+      "id": "pdf:s09",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2611.08039v1#page=9",
+      "page": 9,
+      "label": "Future Work / Research Implications",
+      "section": "V"
+    },
+    {
+      "id": "note:s10",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-10",
+      "label": "论文逻辑链"
+    },
+    {
+      "id": "pdf:s10",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2611.08039v1#page=7",
+      "page": 7,
+      "label": "论文逻辑链",
+      "section": "IV"
+    },
+    {
+      "id": "note:s11",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-11",
+      "label": "应记住的五点"
+    },
+    {
+      "id": "pdf:s11",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2611.08039v1#page=7",
+      "page": 7,
+      "label": "应记住的五点",
+      "section": "IV"
+    },
+    {
+      "id": "note:s12",
+      "kind": "note",
+      "stage": "first-pass",
+      "anchor": "section-12",
+      "label": "暂时不要深入的内容"
+    },
+    {
+      "id": "pdf:s12",
+      "kind": "pdf",
+      "href": "https://arxiv.org/pdf/2611.08039v1#page=11",
+      "page": 11,
+      "label": "暂时不要深入的内容",
+      "section": "Appendix C"
+    }
+  ],
+  "edges": [
+    {
+      "from": "note:s01",
+      "to": "pdf:s01",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "evidence-1"
+    },
+    {
+      "from": "note:s02",
+      "to": "pdf:s02",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "evidence-2"
+    },
+    {
+      "from": "note:s03",
+      "to": "pdf:s03",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "evidence-3"
+    },
+    {
+      "from": "note:s04",
+      "to": "pdf:s04",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "evidence-4"
+    },
+    {
+      "from": "note:s05",
+      "to": "pdf:s05",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "evidence-5"
+    },
+    {
+      "from": "note:s06",
+      "to": "pdf:s06",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "evidence-6"
+    },
+    {
+      "from": "note:s07",
+      "to": "pdf:s07",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "evidence-7"
+    },
+    {
+      "from": "note:s08",
+      "to": "pdf:s08",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "evidence-8"
+    },
+    {
+      "from": "note:s09",
+      "to": "pdf:s09",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "evidence-9"
+    },
+    {
+      "from": "note:s10",
+      "to": "pdf:s10",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "evidence-10"
+    },
+    {
+      "from": "note:s11",
+      "to": "pdf:s11",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "evidence-11"
+    },
+    {
+      "from": "note:s12",
+      "to": "pdf:s12",
+      "type": "derived-from",
+      "status": "source-checked",
+      "id": "evidence-12"
+    }
+  ]
+}

@@ -1775,5 +1775,213 @@
         "reviewedAt": "2026-11-16"
       }
     }
+  },
+{
+  "slug": "fogdrive-2026",
+  "category": "in-field",
+  "name": "FogDrive",
+  "title": "FogDrive: A Multi-Modal Synthetic Driving Dataset for Perception under Graded Fog",
+  "authors": [
+    "Vansh Panwar",
+    "Naveen Varshney",
+    "Prashant W. Patil"
+  ],
+  "year": 2026,
+  "venue": "arXiv v2（预印本；2026-11-09更新）",
+  "readDate": "2026-11-17",
+  "doi": "10.48550/arXiv.2607.22698",
+  "url": "https://arxiv.org/abs/2607.22698v2",
+  "tags": [
+    "LiDAR",
+    "雾",
+    "多模态融合",
+    "数据集",
+    "合成数据",
+    "radar",
+    "3D检测评测",
+    "天气退化"
+  ],
+  "summary": "同场景清洁与三档标定雾的多模态合成数据及检测对照；v2新增雷达分支消融，保留混合训练例外、恢复质量与检测排序差异及纯合成/标注边界。",
+  "stages": {
+    "first-pass": "first-pass.html"
+  },
+  "reviews": {
+    "first-pass": {
+      "status": "source-checked",
+      "noteStatus": "organized",
+      "checkedAt": "2026-11-17",
+      "evidence": [
+        "读取v2全文19页含D1–D12；核对主文与补充图表。与v1对照确认新增雷达消融。",
+        "保留test-subset选best-FDS条件、Mixed-S24%vs单密度20%近似预算，数据仍称将发布，不混用旧稿AOD-Net结果。"
+      ]
+    }
+  },
+  "readingQuality": {
+    "version": 1,
+    "classification": {
+      "confirmedCategory": "in-field",
+      "rationale": "直接研究标定雾下LiDAR退化及camera–LiDAR–radar检测鲁棒性；数据与评测属于恶劣天气感知范围，非因未提出去噪网络而排除。",
+      "source": "用户恶劣天气LiDAR/跨天气感知范围；FogDrive v2 Sec.3.2、4.1、4.3。",
+      "reviewedAt": "2026-11-17"
+    },
+    "graphics": {
+      "status": "included",
+      "items": [
+        {
+          "figureId": "fig3",
+          "kind": "paper-crop",
+          "label": "Figure 3",
+          "pdfPage": 4,
+          "sourceUrl": "https://arxiv.org/pdf/2607.22698v2#page=4",
+          "analysisId": "analysis-fig3"
+        },
+        {
+          "figureId": "table4",
+          "kind": "paper-crop",
+          "label": "Table 4",
+          "pdfPage": 7,
+          "sourceUrl": "https://arxiv.org/pdf/2607.22698v2#page=7",
+          "analysisId": "analysis-table4"
+        },
+        {
+          "figureId": "table5",
+          "kind": "paper-crop",
+          "label": "Table 5",
+          "pdfPage": 7,
+          "sourceUrl": "https://arxiv.org/pdf/2607.22698v2#page=7",
+          "analysisId": "analysis-table5"
+        },
+        {
+          "figureId": "table6",
+          "kind": "paper-crop",
+          "label": "Table 6",
+          "pdfPage": 8,
+          "sourceUrl": "https://arxiv.org/pdf/2607.22698v2#page=8",
+          "analysisId": "analysis-table6"
+        }
+      ]
+    },
+    "rightsReview": {
+      "basis": "arXiv v2条目明确CC BY 4.0；四份必要局部图表逐图归因、链接固定版本并说明裁剪，未上传整篇PDF。",
+      "reviewedAt": "2026-11-17"
+    },
+    "visualReview": {
+      "desktop": true,
+      "mobile": true,
+      "zoom": true,
+      "reviewedAt": "2026-11-17"
+    }
   }
+},
+{
+  "slug": "hitch-2026",
+  "title": "HITCH: Teaching a Vision-Language Model to Operate a Humanoid through a Whole-Body Harness",
+  "year": 2026,
+  "venue": "arXiv v1（预印本）",
+  "category": "out-of-field",
+  "tags": [
+    "拓展阅读",
+    "人形机器人",
+    "VLM",
+    "移动操作",
+    "全身控制"
+  ],
+  "readingQuality": {
+    "version": 1,
+    "classification": {
+      "confirmedCategory": "out-of-field",
+      "rationale": "人形移动操作与VLM全身接口，不含恶劣天气或LiDAR抗扰实验；按原任务收录周二拓展阅读。",
+      "source": "论文I、III、IV，PDF pp.1–9；用户领域范围",
+      "reviewedAt": "2026-11-17"
+    },
+    "graphics": {
+      "status": "included",
+      "items": [
+        {
+          "figureId": "fig2",
+          "kind": "paper-crop",
+          "label": "Figure 2",
+          "pdfPage": 3,
+          "sourceUrl": "https://arxiv.org/pdf/2611.08039v1#page=3",
+          "analysisId": "analysis-fig2",
+          "cropPdfPoints": [
+            46,
+            49,
+            565,
+            345
+          ],
+          "renderScale": 3
+        },
+        {
+          "figureId": "table2",
+          "kind": "paper-crop",
+          "label": "Table II",
+          "pdfPage": 7,
+          "sourceUrl": "https://arxiv.org/pdf/2611.08039v1#page=7",
+          "analysisId": "analysis-table2",
+          "cropPdfPoints": [
+            310,
+            320,
+            564,
+            458
+          ],
+          "renderScale": 3
+        },
+        {
+          "figureId": "table7",
+          "kind": "paper-crop",
+          "label": "Table VII",
+          "pdfPage": 13,
+          "sourceUrl": "https://arxiv.org/pdf/2611.08039v1#page=13",
+          "analysisId": "analysis-table7",
+          "cropPdfPoints": [
+            310,
+            50,
+            564,
+            255
+          ],
+          "renderScale": 3
+        }
+      ]
+    },
+    "rightsReview": {
+      "basis": "官方arXiv记录及HTML为永久非独占传播许可，不是CC。仅为方法说明、数值和协议边界分析必要摘录三项局部（Fig2/TableII/TableVII），具作者归因、来源、相邻评论，不公开全文或整页图集，不宣称原图再授权。",
+      "reviewedAt": "2026-11-17"
+    },
+    "visualReview": {
+      "desktop": true,
+      "mobile": true,
+      "zoom": true,
+      "reviewedAt": "2026-11-17"
+    }
+  },
+  "name": "HITCH",
+  "authors": [
+    "Qingzhou Lu",
+    "Chenxin Liu",
+    "Xinming Wang",
+    "Liu Cao",
+    "Yanjiang Guo",
+    "Mengdi Xu",
+    "Jianyu Chen"
+  ],
+  "readDate": "2026-11-17",
+  "doi": "10.48550/arXiv.2611.08039",
+  "url": "https://arxiv.org/abs/2611.08039v1",
+  "summary": "以主动三维测量与准确全身执行接口承接低频VLM，再学五基础任务的可观测教师轨迹；核对少样本收益、跨任务退化、改动评测协议和有限实机覆盖。",
+  "stages": {
+    "first-pass": "first-pass.html"
+  },
+  "reviews": {
+    "first-pass": {
+      "status": "source-checked",
+      "noteStatus": "organized",
+      "checkedAt": "2026-11-17",
+      "evidence": [
+        "完整核读13页v1正文、参考文献和附录A–F，核对Figures 1–6与Tables I–VII；未读代码或复现实验。",
+        "保留相机、指令、45/60秒预算和SIMPLE最佳checkpoint选择边界；区分重新训练去感知、执行器教师实验与实机两任务。"
+      ]
+    }
+  }
+}
 ]

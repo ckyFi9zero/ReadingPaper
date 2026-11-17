@@ -2187,6 +2187,150 @@ challenges:
     basis: existing-note
     original_pdf_review_status: source-checked
   insights:
+  - id: insight-paired-severity-controls
+    name: 固定几何，再分雾级比较训练与模态
+    techniques:
+    - 同场景配对
+    - 分级雾
+    - scene-level split
+    - radar ablation
+    status: inferred
+    observable_failures:
+    - 作者指出真实天气难以独立控制严重度，纯相机或单等级小规模数据不能同时比较训练多样性、去雾后检测及多模态互补；该前作概括不是独立穷尽检索。
+    transfer_boundary: Sec.4.1对每个训练×测试组合在该测试子集选择best-FDS checkpoint，不能称独立验证选模的盲测泛化；Mixed-S约24%对单等级20%并非严格等量。纯仿真、固定rig、仅三类四轮车辆；雷达不施雾且无RCS，前向120°仅覆盖43.4%范围内GT框。图像质量指标与检测结论限所测任务；浓雾BEVFusion单等级Dense优于混合，不能说混合始终最佳。
+    source_papers:
+    - fogdrive-2026
+    evidence:
+    - paper: fogdrive-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: fogdrive-2026
+      stage: first-pass
+      anchor: section-07
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    principle:
+      text: 先固定场景几何与标注，再分严重度记录不同训练策略和模态的收益；重建相似度、下游检测与定位质量分别判读。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: fogdrive-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 需要将天气严重度、训练策略和模态收益分开比较，而不把不同场景上的总体分数作直接归因时。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: fogdrive-2026
+          stage: first-pass
+          anchor: section-03
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: 666场景按场景级70/15/15划分；清洁及约165/100/50m能见度配对。TransFusion-L/BEVFusion比较Light、Dense、Mixed-S和Mixed-L；YOLOv8-m比较清洁/雾输入及三种去雾配置；雷达点[x,y,z,vr,r]以pillar
+          scatter进入共同BEV并拼接。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: fogdrive-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 场景级分割把清洁和雾变体放在同一split，避免同场景跨split；雷达分支采用先训C+L8epochs、冻结后训分支与fuser5epochs、再全模型8epochs的日程（Sec.4.3）。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: fogdrive-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 需要配对渲染、标注和多配置训练；2.74TiB数据及固定rig/仿真模型是条件。Mixed-S与单等级预算不严格相同，测试选checkpoint影响独立评测解释。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: fogdrive-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: Sec.4.1对每个训练×测试组合在该测试子集选择best-FDS checkpoint，不能称独立验证选模的盲测泛化；Mixed-S约24%对单等级20%并非严格等量。纯仿真、固定rig、仅三类四轮车辆；雷达不施雾且无RCS，前向120°仅覆盖43.4%范围内GT框。图像质量指标与检测结论限所测任务；浓雾BEVFusion单等级Dense优于混合，不能说混合始终最佳。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: fogdrive-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: Table4六个mAP列中五列由混合配置取优，浓雾BEVFusion为Dense 0.7761，Mixed-L仅0.7242。Table5浓雾DCP PSNR12.56、mAP0.438；微调DehazeFormer-S
+          PSNR22.78、mAP0.415；直接雾训练mAP0.647。Table6 C+L→C+L+R在轻/中/浓雾为0.7683→0.7779、0.7609→0.7734、0.6547→0.6631，增益不随雾增强单调扩大。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: fogdrive-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: 配对使天气对照更可解释，并不自动建立严格因果实验；Table4的预算差异和测试选模保留。Table6是该雷达模型/训练日程的报告，不说明真实雷达或浓雾获益必然更大。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: fogdrive-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: fogdrive-2026
+      location: arXiv:2607.22698v2；Secs.3.2–3.7 pp.3–5（生成/标签/分割）；Secs.4.1–4.3 pp.6–8、Tables4–6（分级对照）；Sec.5 p.8、D10–D12（边界与配置）。
+      evidence:
+      - paper: fogdrive-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: fogdrive-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: fogdrive-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 尚未复现训练/评测；上述设置之外的泛化、独立机制归因与工程成本不由已有成绩保证。
+      basis: not-assessed
+      status: unverified
+      evidence: []
   - id: insight-weather
     name: 共享主干，再受控补入天气差异
     techniques:
@@ -8738,6 +8882,149 @@ challenges:
       basis: existing-note
       original_pdf_review_status: source-checked
   insights:
+  - id: insight-measure-before-body-command
+    name: 把慢决策拆成测量调用与全身命令
+    techniques:
+    - 主动像素测量
+    - whole-body harness
+    - HEFT
+    - 可观测教师
+    - planner references
+    status: inferred
+    observable_failures:
+    - 低频VLM每次命令执行完才再次观测，靠图像估距离或追踪偏差反复修正代价大；教师若使用学生看不到的对象信息，动作不能从学生输入解释（III-A）。
+    transfer_boundary: 评测更换相机并改写指令，使用45s/60s模拟时长；部分模型选择SIMPLE成功率最高checkpoint。去感知配置重新训练，不是仅推理时遮挡。HA仅四任务，加入SIMPLE专用数据后HA成功率可下降；实机只搬箱13/20、导航6/10。平地planner不支持全部运动，行走后旧量测位置不可靠；没有天气感知或普遍机器人泛化证据。
+    source_papers:
+    - hitch-2026
+    evidence:
+    - paper: hitch-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: hitch-2026
+      stage: first-pass
+      anchor: section-07
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    principle:
+      text: 把慢速语义决策与几何量测、准确身体执行分开，并让示范在相同信息和调用接口下产生；不把准确控制器等同于已学会任务决策。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: hitch-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: VLM一轮耗时较长且命令执行后才复观测，需要精确伸手、蹲伏和移动的组合时。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: hitch-2026
+          stage: first-pass
+          anchor: section-03
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: 像素坐标归一至[0,1000]并由深度反投影到每次观测重设的O系；planner以关节/速度/自碰撞约束求IK，HEFT跟踪并在教师planner参考上继续训练。教师只用自身量测与身体可达图；冻结视觉编码器、微调语言模型，损失仅作用教师响应。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: hitch-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 观测O系每轮重设，命令期间固定；行走后早期量测不再可靠。教师使用可达图但目标位置来自自身测量；tracker训练补入planner参考及随机力，实机深度以LingBot-Depth补全并标定相机。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: hitch-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: 需要RGB-D、相机和身体标定、全身planner/可学习tracker、五基础任务2500成功轨迹及27B语言模型微调；高频50Hz属于tracker而非VLM。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: hitch-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 评测更换相机并改写指令，使用45s/60s模拟时长；部分模型选择SIMPLE成功率最高checkpoint。去感知配置重新训练，不是仅推理时遮挡。HA仅四任务，加入SIMPLE专用数据后HA成功率可下降；实机只搬箱13/20、导航6/10。平地planner不支持全部运动，行走后旧量测位置不可靠；没有天气感知或普遍机器人泛化证据。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: hitch-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: TableI教师240 episodes成功97.9%，原HEFT94.2%、SONIC27.9%、AMO12.9%；不是VLM任务成功率。TableII base-only SIMPLE51.1%、HA42.5%；加每任务10条SIMPLE后98.9%/28.8%。去感知并重训base-only为2.8%/27.5%。实机搬箱13/20、导航6/10。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: hitch-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: 执行器、基础任务迁移与去感知重训是不同对照；教师信息约束和接口训练的总体合理性不等于各项已获独立因果证明。不同相机、指令及预算阻止直接官方榜单横比。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: hitch-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: hitch-2026
+      location: arXiv:2611.08039v1；III-A–E pp.3–6 / Fig.2（观测、执行、教师、训练）；IV-A–G pp.6–8 / TablesI–III（评测）；附录A–F pp.10–13（接口、训练、时长和提示）。
+      evidence:
+      - paper: hitch-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: hitch-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: hitch-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 尚未复现训练/评测；上述设置之外的泛化、独立机制归因与工程成本不由已有成绩保证。
+      basis: not-assessed
+      status: unverified
+      evidence: []
   - id: insight-task-frame-interface
     name: 把任务目标稳定责任交给高频低层
     techniques:
