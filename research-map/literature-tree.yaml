@@ -2853,3 +2853,54 @@ nodes:
     basis: existing-note
     original_pdf_review_status: source-checked
   parent: pipeline-measure-command-humanoid
+- id: pipeline-regional-weather-distillation
+  kind: pipeline
+  name: 区域恢复与跨天气结构蒸馏
+  novelty_class: 2
+  confidence: provisional
+  first_work_status: not-assessed
+  description: PointPillars清洁教师预训练后冻结；学生在pillar/BEV潜在特征而非原始点坐标中恢复结构。RASR按距离先验与学习logits分配区域，经近/中/远不同深度子网和残差门控融合；SASD对有效BEV区域施加距离/不确定性权重、多尺度特征、关系矩阵与全局结构蒸馏。推理保留学生与检测头。
+  source_papers:
+  - rasr-sasd3d-2026
+  evidence:
+  - paper: rasr-sasd3d-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: task-3d-object-detection
+- id: module-rasr-regional-recovery
+  kind: module
+  name: 区域恢复与门控保留
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 近中远子网深度不同，学习区域logits叠加强距离先验，融合恢复特征与原始雨特征。
+  source_papers:
+  - rasr-sasd3d-2026
+  evidence:
+  - paper: rasr-sasd3d-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-regional-weather-distillation
+- id: module-sasd-spatial-distillation
+  kind: module
+  name: 有效区域的可靠性加权蒸馏
+  novelty_class: 3
+  confidence: provisional
+  first_work_status: not-assessed
+  description: 要求同场景粗BEV对应；多尺度局部/关系/全局约束，mask与不确定性权重降低无效位置影响。
+  source_papers:
+  - rasr-sasd3d-2026
+  evidence:
+  - paper: rasr-sasd3d-2026
+    stage: first-pass
+    anchor: section-05
+    status: source-checked
+    basis: existing-note
+    original_pdf_review_status: source-checked
+  parent: pipeline-regional-weather-distillation

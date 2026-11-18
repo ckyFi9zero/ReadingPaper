@@ -1025,6 +1025,154 @@ challenges:
       basis: not-assessed
       status: unverified
       evidence: []
+  - id: insight-region-recovery-budget
+    observable_failures:
+    - 'RASR-SASD3D作者解释：Fig.5(a)区域④最右侧仍有漏检，作者归因于RASR错误恢复远处点云结构（Sec.4.2.3，PDF p.18）；这是作者对可视化个例的解释，不是独立机制消融。'
+    - 'RASR-SASD3D Table8：NRD-10 val、BEV AP@IoU0.5近/中/远分别由42.5/38.1/21.4变为43.7/39.6/23.4（PDF p.19）；分距效果不同，且完整系统远距仍低于近距。该表不是RASR单模块因果证明。'
+    name: 按距离分配恢复强度并保留原始特征
+    techniques:
+    - 距离先验
+    - 区域恢复深度
+    - 残差门控
+    - pillar特征
+    status: inferred
+    transfer_boundary: 作者Sec.5承认清洁教师依赖、强雨/遮挡/极稀疏恢复困难，雪雾与跨传感器仍待验证，训练及计算有额外成本。WOD-R由LISA合成并重新训练评测，不能当零样本迁移或真实雨验证；已有10
+      sweeps输入不等于本文验证了新增时序融合模块。 Table4/9 NRD-10基线mAP/NDS为0.596/0.605，Table10同称基线却为0.609/0.610，未解释差异，故不把Table10与主表串成统一增益链。Table4的NDS
+      0.605→0.647为4.2百分点，正文写4.3%；Table9重雨SASD单独NDS 0.499→0.549为5.0百分点，正文写4.8%。保留表值及冲突，不自行修正文献。
+    source_papers:
+    - rasr-sasd3d-2026
+    evidence:
+    - paper: rasr-sasd3d-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: rasr-sasd3d-2026
+      stage: first-pass
+      anchor: section-07
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    principle:
+      text: 恢复操作本身可能损伤稀疏有效结构，因此把处理强度作为区域变量，并让原始特征保留支路与恢复支路共同参与输出；不是把远处稀疏直接判为噪声。
+      basis: analyst-inference
+      status: inferred
+      evidence:
+      - paper: rasr-sasd3d-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    playbook:
+      use_when:
+        text: 输入LiDAR退化随距离不均匀、统一特征恢复可能过处理远处稀疏结构时；本证据限定合成雨检测。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: rasr-sasd3d-2026
+          stage: first-pass
+          anchor: section-04
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      mechanism:
+        text: RA学习三类区域logits，叠加20/50m one-hot距离先验的log项（λgeo=1、ε=1e−6）；近区三dense residual blocks，中区两conv，远区单层映射，融合后通过门控与原始Frain残差组合。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: rasr-sasd3d-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      engineering_tricks:
+        text: 恢复在潜在pillar/BEV特征而非点坐标中进行；强log距离惩罚带明显归纳偏置，Softmax可微不等于已验证边界平滑收益。原文区域文字将50m同时纳入中/远，但Eq6定义中区<50m。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: rasr-sasd3d-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      assumptions_cost:
+        text: LISA模拟nuScenes的10/30 mm/h雨；10个LiDAR sweeps累积、32线配置、10类检测、24 epochs。clean、NRD-10、NRD-30分别训练测试，非晴天训练直接测雨。论文test指标为本地有标注划分而非官方隐藏测试服务器，完整划分ID未在正文说明。
+          Sec.3.3.4称同log/场景级而非严格逐帧配对；Sec.3.4明确仍需同场景、同ego坐标或几何配准及有效BEV mask。完全不同布局的unpaired样本不直接使用dense恢复/逐位置蒸馏；不能概括为不需对齐。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: rasr-sasd3d-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      failure_boundary:
+        text: 作者Sec.5承认清洁教师依赖、强雨/遮挡/极稀疏恢复困难，雪雾与跨传感器仍待验证，训练及计算有额外成本。WOD-R由LISA合成并重新训练评测，不能当零样本迁移或真实雨验证；已有10 sweeps输入不等于本文验证了新增时序融合模块。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: rasr-sasd3d-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      reported_effect:
+        text: Table8 NRD-10 val、BEV AP@IoU0.5近/中/远：42.5/38.1/21.4→43.7/39.6/23.4；这是完整RASR-SASD3D比较，不是RASR单模块。Table9
+          NRD-10 val：基线0.596/0.605，RASR单独0.622/0.624，SASD单独0.614/0.618，组合0.643/0.647。Table11在RASR基线上逐加RADW、SRD、GSD为0.629/0.630、0.638/0.640、0.643/0.647，是累计配置对照。
+        basis: note-summary
+        status: source-checked
+        evidence:
+        - paper: rasr-sasd3d-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+      evidence_scope:
+        text: Table4/9 NRD-10基线mAP/NDS为0.596/0.605，Table10同称基线却为0.609/0.610，未解释差异，故不把Table10与主表串成统一增益链。Table4的NDS
+          0.605→0.647为4.2百分点，正文写4.3%；Table9重雨SASD单独NDS 0.499→0.549为5.0百分点，正文写4.8%。保留表值及冲突，不自行修正文献。 距离分组整体收益不能证明水膜伪影已独立消除，也不能把累计RA/RNR/RAF配置当成各分支深度的独立消融。
+        basis: analyst-inference
+        status: inferred
+        evidence:
+        - paper: rasr-sasd3d-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+    source_locations:
+    - paper: rasr-sasd3d-2026
+      location: Sec.3.3/Fig3，PDF pp.8–11；Table8 p.19；Tables9–11 pp.19–20；Limitations pp.21–22。
+      evidence:
+      - paper: rasr-sasd3d-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: rasr-sasd3d-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: rasr-sasd3d-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+    open_questions:
+      text: 距离分界、各子网深度、门控与不确定性估计的独立必要性，Table10基线差异及真实天气跨传感器效果仍待核验。
+      basis: not-assessed
+      status: unverified
+      evidence: []
   why_hard:
     text: 距离引起的正常采样变稀与噪声离群混在同一个密度统计中，固定尺度容易系统性处罚远处点。
     basis: analyst-inference
@@ -3097,12 +3245,16 @@ challenges:
     - 有效 GT 对齐
     - SSI
     - 梯度约束
+    - 清洁LiDAR教师
+    - 有效BEV mask
+    - 距离与不确定性权重
     status: inferred
-    transfer_boundary: 阅读依据为 arXiv:2603.14701v2 主文 PDF 20 页；文中引用 Appendix A/B/C，但本轮取得的文件不含这些附录，不能补造完整划分与复现协议。PDF
-      Sec.4（p.12）与作者模型卡的裁剪口径存在差异，见初读限制章节；未在本轮通过实现消除。合成配对 AURORA 与真实 DENSE 条件分别记录，DENSE
-      不含雪天且没有区域配对指标。深度恢复不是逐点雪身份分类，原文未验证下游检测或跨传感器普适性。
+    transfer_boundary: 阅读依据为 arXiv:2603.14701v2 主文 PDF 20 页；文中引用 Appendix A/B/C，但本轮取得的文件不含这些附录，不能补造完整划分与复现协议。PDF Sec.4（p.12）与作者模型卡的裁剪口径存在差异，见初读限制章节；未在本轮通过实现消除。合成配对
+      AURORA 与真实 DENSE 条件分别记录，DENSE 不含雪天且没有区域配对指标。深度恢复不是逐点雪身份分类，原文未验证下游检测或跨传感器普适性。 RASR-SASD3D：作者Sec.5承认清洁教师依赖、强雨/遮挡/极稀疏恢复困难，雪雾与跨传感器仍待验证，训练及计算有额外成本。WOD-R由LISA合成并重新训练评测，不能当零样本迁移或真实雨验证；已有10
+      sweeps输入不等于本文验证了新增时序融合模块。 Sec.3.3.4称同log/场景级而非严格逐帧配对；Sec.3.4明确仍需同场景、同ego坐标或几何配准及有效BEV mask。完全不同布局的unpaired样本不直接使用dense恢复/逐位置蒸馏；不能概括为不需对齐。
     source_papers:
     - aurora-kitti-2026
+    - rasr-sasd3d-2026
     evidence:
     - paper: aurora-kitti-2026
       stage: first-pass
@@ -3122,6 +3274,24 @@ challenges:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+    - paper: rasr-sasd3d-2026
+      stage: first-pass
+      anchor: section-05
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: rasr-sasd3d-2026
+      stage: first-pass
+      anchor: section-07
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
+    - paper: rasr-sasd3d-2026
+      stage: first-pass
+      anchor: section-08
+      status: source-checked
+      basis: existing-note
+      original_pdf_review_status: source-checked
     principle:
       text: 训练时额外可用的信息可以约束受损学生，而不必成为部署输入；教师选择、训练域与单模块归因需要分开核对。
       basis: analyst-inference
@@ -3133,9 +3303,15 @@ challenges:
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+      - paper: rasr-sasd3d-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
     playbook:
       use_when:
-        text: 有配对清洁/受损训练样本及深度监督、部署只能得到退化 RGB–LiDAR 时。
+        text: 有配对清洁/受损训练样本及深度监督、部署只能得到退化 RGB–LiDAR 时。 RASR-SASD3D：有清洁训练参考及3D框、同场景粗BEV对应，部署只输入雨天LiDAR时。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3145,22 +3321,33 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: rasr-sasd3d-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       mechanism:
-        text: DDCD 以受天气退化的 RGB 与稀疏 LiDAR 投影深度作为学生输入。训练时从对应清洁 RGB 离线预计算冻结单目深度教师输出；以有效
-          GT 拟合尺度/偏置并使用 masked alignment，再由 scale-and-shift invariant 与梯度项传递结构先验，联合监督学生密集深度；教师与清洁
-          RGB 不进入测试输入（Sec.3.3–3.5，pp.7–10，Fig.5）。
+        text: DDCD 以受天气退化的 RGB 与稀疏 LiDAR 投影深度作为学生输入。训练时从对应清洁 RGB 离线预计算冻结单目深度教师输出；以有效 GT 拟合尺度/偏置并使用 masked alignment，再由
+          scale-and-shift invariant 与梯度项传递结构先验，联合监督学生密集深度；教师与清洁 RGB 不进入测试输入（Sec.3.3–3.5，pp.7–10，Fig.5）。 RASR-SASD3D：PointPillars清洁教师预训练后冻结；学生在pillar/BEV潜在特征而非原始点坐标中恢复结构。RASR按距离先验与学习logits分配区域，经近/中/远不同深度子网和残差门控融合；SASD对有效BEV区域施加距离/不确定性权重、多尺度特征、关系矩阵与全局结构蒸馏。推理保留学生与检测头。
         basis: note-summary
         status: source-checked
         evidence:
         - paper: aurora-kitti-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rasr-sasd3d-2026
           stage: first-pass
           anchor: section-05
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
       engineering_tricks:
-        text: 冻结教师输出离线预计算；仅在有效 GT 位置进行对齐，避免把无 GT 像素当0深度。归一化、SSI与梯度项分别保留名称，未有独立对照不称每项必要。主文与作者模型卡裁剪口径冲突见
-          section-08。
+        text: 冻结教师输出离线预计算；仅在有效 GT 位置进行对齐，避免把无 GT 像素当0深度。归一化、SSI与梯度项分别保留名称，未有独立对照不称每项必要。主文与作者模型卡裁剪口径冲突见 section-08。
+          RASR-SASD3D：同坐标BEV mask、投影后归一化、距离基权重0.3/0.7/1.0叠加不确定性；近区权重公式还含sigmoid(1−P)，不是把三类直接设成固定常数。
         basis: note-summary
         status: source-checked
         evidence:
@@ -3170,8 +3357,15 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: rasr-sasd3d-2026
+          stage: first-pass
+          anchor: section-05
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       assumptions_cost:
-        text: 需要配对清洁图像、GT、教师推理预计算及学生训练；清洁教师训练先验不等于无监督、伪标签已纠错或教师无误。
+        text: 需要配对清洁图像、GT、教师推理预计算及学生训练；清洁教师训练先验不等于无监督、伪标签已纠错或教师无误。 RASR-SASD3D：Sec.3.3.4称同log/场景级而非严格逐帧配对；Sec.3.4明确仍需同场景、同ego坐标或几何配准及有效BEV
+          mask。完全不同布局的unpaired样本不直接使用dense恢复/逐位置蒸馏；不能概括为不需对齐。 需训练清洁教师和带3D框监督学生；4×RTX4090、batch32/24 epochs，论文未给完整推理延迟对照。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3181,14 +3375,26 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: rasr-sasd3d-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       failure_boundary:
-        text: 阅读依据为 arXiv:2603.14701v2 主文 PDF 20 页；文中引用 Appendix A/B/C，但本轮取得的文件不含这些附录，不能补造完整划分与复现协议。PDF
-          Sec.4（p.12）与作者模型卡的裁剪口径存在差异，见初读限制章节；未在本轮通过实现消除。合成配对 AURORA 与真实 DENSE 条件分别记录，DENSE
-          不含雪天且没有区域配对指标。深度恢复不是逐点雪身份分类，原文未验证下游检测或跨传感器普适性。
+        text: 阅读依据为 arXiv:2603.14701v2 主文 PDF 20 页；文中引用 Appendix A/B/C，但本轮取得的文件不含这些附录，不能补造完整划分与复现协议。PDF Sec.4（p.12）与作者模型卡的裁剪口径存在差异，见初读限制章节；未在本轮通过实现消除。合成配对
+          AURORA 与真实 DENSE 条件分别记录，DENSE 不含雪天且没有区域配对指标。深度恢复不是逐点雪身份分类，原文未验证下游检测或跨传感器普适性。 RASR-SASD3D：作者Sec.5承认清洁教师依赖、强雨/遮挡/极稀疏恢复困难，雪雾与跨传感器仍待验证，训练及计算有额外成本。WOD-R由LISA合成并重新训练评测，不能当零样本迁移或真实雨验证；已有10
+          sweeps输入不等于本文验证了新增时序融合模块。
         basis: note-summary
         status: source-checked
         evidence:
         - paper: aurora-kitti-2026
+          stage: first-pass
+          anchor: section-08
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
+        - paper: rasr-sasd3d-2026
           stage: first-pass
           anchor: section-08
           status: source-checked
@@ -3196,7 +3402,8 @@ challenges:
           original_pdf_review_status: source-checked
       reported_effect:
         text: Tables7–8：BP-Net 天气重训练4945.43→2103.33 mm，DDCD1801.93 mm；教师V3在合成1711.78优于1801.93，但DENSE3950.11差于2761.97
-          mm。
+          mm。 RASR-SASD3D：Table9 NRD-10 val：基线0.596/0.605，RASR单独0.622/0.624，SASD单独0.614/0.618，组合0.643/0.647。Table11在RASR基线上逐加RADW、SRD、GSD为0.629/0.630、0.638/0.640、0.643/0.647，是累计配置对照。
+          Table12 NRD-10 val：无扰动direct/spatial-adaptive mAP为0.636/0.643；教师平移1m为0.565/0.620，旋转2°为0.552/0.615，丢30%pillar为0.570/0.622。自适应仍下降，不是任意未配准场景保证。
         basis: note-summary
         status: source-checked
         evidence:
@@ -3206,8 +3413,16 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: rasr-sasd3d-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       evidence_scope:
         text: Table10的 B→C 同时改变教师输入与Norm，不能单独归因；同Norm的B→完整DDCD才约束输入比较。C→完整DDCD并非所有指标改善，iMAE1.64→1.96。完整监督与骨干优势不混算。
+          RASR-SASD3D：Table4/9 NRD-10基线mAP/NDS为0.596/0.605，Table10同称基线却为0.609/0.610，未解释差异，故不把Table10与主表串成统一增益链。Table4的NDS
+          0.605→0.647为4.2百分点，正文写4.3%；Table9重雨SASD单独NDS 0.499→0.549为5.0百分点，正文写4.8%。保留表值及冲突，不自行修正文献。 Table12支持有限错配下相对收益，Table11仅累计配置；不与AURORA的深度RMSE跨任务排名。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -3217,10 +3432,15 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: rasr-sasd3d-2026
+          stage: first-pass
+          anchor: section-07
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
     source_locations:
     - paper: aurora-kitti-2026
-      location: arXiv:2603.14701v2 Sec.3.5、Fig.5（pp.8–9）；Secs.4、5.2–5.3、Tables7–10（pp.12、16–17）；缺失Appendix
-        A/B/C与裁剪差异见初读section-08。
+      location: arXiv:2603.14701v2 Sec.3.5、Fig.5（pp.8–9）；Secs.4、5.2–5.3、Tables7–10（pp.12、16–17）；缺失Appendix A/B/C与裁剪差异见初读section-08。
       evidence:
       - paper: aurora-kitti-2026
         stage: first-pass
@@ -3240,8 +3460,29 @@ challenges:
         status: source-checked
         basis: existing-note
         original_pdf_review_status: source-checked
+    - paper: rasr-sasd3d-2026
+      location: Sensors 26(22)7223：Secs.3.2–3.4 pp.7–14；Tables4/9/11/12 pp.16/19–21；Sec.4.5、5 pp.21–22。
+      evidence:
+      - paper: rasr-sasd3d-2026
+        stage: first-pass
+        anchor: section-05
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: rasr-sasd3d-2026
+        stage: first-pass
+        anchor: section-07
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
+      - paper: rasr-sasd3d-2026
+        stage: first-pass
+        anchor: section-08
+        status: source-checked
+        basis: existing-note
+        original_pdf_review_status: source-checked
     open_questions:
-      text: 缺失附录中的精确完整划分/实现协议，以及主文与模型卡的裁剪冲突，仍待取得材料；SSI与梯度独立必要性未在本轮原文范围建立。
+      text: 缺失附录中的精确完整划分/实现协议，以及主文与模型卡的裁剪冲突，仍待取得材料；SSI与梯度独立必要性未在本轮原文范围建立。 RASR-SASD3D：Table10基线与主表差异、局部test划分ID、配准/mask具体实现、真实雨及跨传感器部署仍待核验。
       basis: not-assessed
       status: unverified
       evidence: []
