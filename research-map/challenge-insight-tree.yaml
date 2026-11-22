@@ -5917,7 +5917,7 @@ challenges:
           basis: existing-note
           original_pdf_review_status: partial
       failure_boundary:
-        text: SSR 对 fog/dirt 不保证同等效力，WADS→CADC 需调 k；RPS 也依赖低强度/近距/低高度先验。无人工标签不等于无偏监督。 SnowRemovalNet 学生F1 CADC98.10/WADS97.23仍低于离线标签器98.61/98.01；教师概率不能等同物理真值。论文报告学生对稀疏树叶与建筑误删，不能据此认定已纠正教师偏差（Tables2–3；Fig.9）。
+        text: SSR 对 fog/dirt 不保证同等效力，WADS→CADC 需调 k；RPS 也依赖低强度/近距/低高度先验。无人工标签不等于无偏监督。 SnowRemovalNet 学生F1 CADC98.10/WADS97.23仍低于离线标签器98.61/98.01；教师概率不能等同物理真值。论文报告学生对稀疏树叶与建筑误删，不能据此认定已纠正教师偏差（Tables2–3；Fig.9）。 SnowRemovalNet 专题：验证不用训练掩码，仅第三阶段按验证损失选 checkpoint；未报告按概率区间核验标签正确率。
         basis: note-summary
         status: source-checked
         evidence:
@@ -5939,11 +5939,17 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: source-checked
+        - paper: snowremovalnet-2026
+          revisit: snowremovalnet-20261121
+          anchor: part3
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       evidence_scope:
         text: SSR 与学习器主表可比较，3D-UnOutDet Table V 有标签/后端设计对照；RPS Table VIII 比较标签源，Table VII 是累计组件配置，不能把相邻差当任意组合独立贡献。
           SnowRemovalNet：该消融只检验概率监督训练组合，不能把增益独立归于软标签、课程或权重。C-GLP标签器来自前作，本篇不是其首创；离线到在线的共同路线不说明各论文教师偏差相同。 SnowRemovalNet
           点级主表仅对应指定测试样本：CADC 47,132 个标注点，WADS Table 3 为一个测试帧；不是全数据集均值（Secs.5.1、5.6）。 本次3D-UnOutDet回看将Table I中SSR→学生mIoU的7.28个百分点差值与纠错机制分开：主表及Table
-          V后端配置对照不单独量化学生修复/复制教师错误的比例，作者的特征学习解释不升级为已隔离因果。
+          V后端配置对照不单独量化学生修复/复制教师错误的比例，作者的特征学习解释不升级为已隔离因果。 SnowRemovalNet 专题（阅读者由 Eq.1–3 推导）：0.25–0.75 标签权重恒为0.5；固定小批量且有效权重和为正时，单点 logit 梯度还取决于预测和软目标之差，不能直接等同网络参数更新。
         basis: analyst-inference
         status: inferred
         evidence:
@@ -5971,6 +5977,12 @@ challenges:
           status: source-checked
           basis: existing-note
           original_pdf_review_status: partial
+        - paper: snowremovalnet-2026
+          revisit: snowremovalnet-20261121
+          anchor: part2
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
       reported_effect:
         text: 3d-unoutdet-2025：WADS 上 3D-UnOutDet mIoU 89.04%，SSR 81.76%，监督 3D-OutDet 90.00%；总耗时 82 ms（Table I）。；rpsnownet-2026：WADS
           上 DMROR mIoU 88.06%、897 ms；RPSnowNet 88.92%、15 ms。CADC 逐点去雪为定性，检测另有 box 定量（Table III）。 SnowRemovalNet 硬标签变体同时关闭课程和不确定加权，CADC/WADS
