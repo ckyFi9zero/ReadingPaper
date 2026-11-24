@@ -147,15 +147,15 @@ class ResearchMapTests(unittest.TestCase):
         paper = copy.deepcopy(next(p for p in papers if p['category'] == 'in-field'))
         paper.update(slug='pending-fixture-2026', name='Pending fixture')
         papers.append(paper)
-        data['pending']['papers'] = [{
+        data['pending']['papers'].insert(0, {
             'paper': paper['slug'], 'status': 'pending', 'registered_at': '2026-10-30',
             'reason': 'Test-only source awaiting a factual map',
-        }]
+        })
         return data, papers
 
     def test_unregistered_in_field_paper_is_not_silently_omitted(self):
         bad, papers = self.pending_fixture()
-        bad['pending']['papers'] = []
+        del bad['pending']['papers'][0]
         with self.assertRaisesRegex(ValueError, 'Missing classified coverage.*pending-fixture-2026'):
             research_map.validate(bad, ROOT, papers)
 
@@ -163,7 +163,7 @@ class ResearchMapTests(unittest.TestCase):
         data, papers = self.pending_fixture()
         papers[-1]['category'] = 'out-of-field'
         research_map.validate(data, ROOT, papers)
-        data['pending']['papers'] = []
+        del data['pending']['papers'][0]
         with self.assertRaisesRegex(ValueError, 'Missing classified coverage.*pending-fixture-2026'):
             research_map.validate(data, ROOT, papers)
 
@@ -214,7 +214,7 @@ class ResearchMapTests(unittest.TestCase):
         with mock.patch.object(research_map, 'load', return_value=data):
             outputs = research_map.render(ROOT, papers, shell)
         for output in outputs.values():
-            self.assertIn('地图待整理 · 1 篇论文', output)
+            self.assertIn(f"地图待整理 · {len(data['pending']['papers'])} 篇论文", output)
             self.assertIn('papers/pending-fixture-2026/index.html', output)
             self.assertNotIn('id="paper-pending-fixture-2026"', output)
         self.assertNotIn('pending-fixture-2026', data['facts'])

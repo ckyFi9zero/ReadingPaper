@@ -1,2 +1,6 @@
 version: 1
-papers: []
+papers:
+  - paper: z-sight-2026
+    status: pending
+    registered_at: '2026-11-24'
+    reason: 初读已核对原文；原任务的跨论文事实层和方法树尚未独立整理，暂不新增机制卡或声称与恶劣天气感知存在已验证的迁移关系。
