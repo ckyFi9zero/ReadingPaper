@@ -222,6 +222,56 @@
         "scope": "实际浏览器检查1440px桌面与390px移动iframe：导航锚点、公式换行、两项原图放大、关闭与表格滚动；未作真实手机设备测试。",
         "reviewedAt": "2026-11-21"
       }
+    },
+    {
+      "id": "fog-fwl-20261124",
+      "paper": "fog-fwl-2026",
+      "date": "2026-11-24",
+      "title": "重雾下从 Top-1 加到 Top-3，究竟找回了什么？",
+      "file": "revisits/fog-fwl-20261124.html",
+      "anchor": "part0",
+      "sourceScope": "核对 arXiv v1 六页、Secs. III-D/E 与 V、Tables II–III 及 Fig.1 冲突；区分表中观察、候选集合推导与未测结果。未读代码、未复现。",
+      "graphics": [
+        {
+          "figureId": "fog-fwl-20261124-table3",
+          "label": "Table III",
+          "pdfPage": 5,
+          "sourceUrl": "https://arxiv.org/pdf/2611.16742v1#page=5",
+          "kind": "paper-crop",
+          "cropPdfPoints": [
+            48,
+            148,
+            301,
+            239
+          ],
+          "renderScale": 4
+        },
+        {
+          "figureId": "fog-fwl-20261124-table2",
+          "label": "Table II",
+          "pdfPage": 5,
+          "sourceUrl": "https://arxiv.org/pdf/2611.16742v1#page=5",
+          "kind": "paper-crop",
+          "cropPdfPoints": [
+            59,
+            56,
+            293,
+            139
+          ],
+          "renderScale": 4
+        }
+      ],
+      "rightsReview": {
+        "basis": "arXiv v1 正文 HTML 与版本页明确 CC BY 4.0；两项作者原表无第三方独立图注，保留标题、表内容及比例，标记裁剪和归属。",
+        "reviewedAt": "2026-11-24"
+      },
+      "visualReview": {
+        "desktop": true,
+        "mobile": true,
+        "zoom": true,
+        "scope": "桌面正文与 Table III 放大；390 CSS px 容器内无页面横向溢出，Table II 放大支持内容区横向滚动、关闭后返回。",
+        "reviewedAt": "2026-11-24"
+      }
     }
   ]
 }

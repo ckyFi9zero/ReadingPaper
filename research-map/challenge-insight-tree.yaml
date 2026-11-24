@@ -5512,9 +5512,16 @@ challenges:
           original_pdf_review_status: source-checked
       evidence_scope:
         text: Top-k改变的是候选输入覆盖，不是训练模型或组件对照。标签缺失于Top-3支持峰后观测受限，却不证明所有这些标签均可从含噪原波形可靠恢复；不可换算检测AP提升。
+          专题补充：严格限于给定峰集合和同一射线命中口径时，覆盖率才是选择器上限。Hard 由 Top-1 到 Top-3 增 23.3 个百分点是候选覆盖增量；不能用帧数对逐射线比例加权，不能推出下游召回。
         basis: analyst-inference
         status: inferred
         evidence:
+        - paper: fog-fwl-2026
+          revisit: fog-fwl-20261124
+          anchor: part2
+          status: source-checked
+          basis: existing-note
+          original_pdf_review_status: source-checked
         - paper: fog-fwl-2026
           stage: first-pass
           anchor: table3
