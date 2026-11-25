@@ -91,3 +91,7 @@ ReadingPaper 以论文为单位保存阅读记录，将独立的 HTML 笔记组�
 ## 2026-11-24 Z-sight 周二拓展初读
 
 新增 [Z-sight v1 初读](papers/z-sight-2026/first-pass.html)，核对 21 页 arXiv 原文与四项必要 CC BY 4.0 原图表局部。记录原生表征、实机六任务、同训练条件消融与固定权重干预，区分视频生成、候选动作规划和观测条件预测。保留随机场景成绩与模型计时边界；未复现实验。
+
+## 2026-11-25 Beyond the Camera 领域内初读
+
+新增 [Beyond the Camera v2 初读](papers/beyond-the-camera-2026/first-pass.html)，依据 11 页 arXiv v2 原文及两张 CC BY 4.0 必要图表局部，区分压缩匹配持久性、全量与近距深度误差、真实重雪样本不足和置黑探针限制。新增研究地图待整理记录；复用原任务相关的评测问题，不声称已增加 Challenge–Insight 机制卡或迁移结论。

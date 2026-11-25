@@ -4,3 +4,7 @@ papers:
     status: pending
     registered_at: '2026-11-24'
     reason: 初读已核对原文；原任务的跨论文事实层和方法树尚未独立整理，暂不新增机制卡或声称与恶劣天气感知存在已验证的迁移关系。
+  - paper: beyond-the-camera-2026
+    status: pending
+    registered_at: '2026-11-25'
+    reason: 初读对齐了持久性基线和预测的压缩路径；已核对当前树但尚缺相同预测任务内第二来源及事实层和方法树的独立整理，不新增使用卡，不声称压缩匹配已在逐点去噪中验证。
