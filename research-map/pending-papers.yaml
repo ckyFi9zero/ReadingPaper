@@ -8,3 +8,7 @@ papers:
     status: pending
     registered_at: '2026-11-25'
     reason: 初读对齐了持久性基线和预测的压缩路径；已核对当前树但尚缺相同预测任务内第二来源及事实层和方法树的独立整理，不新增使用卡，不声称压缩匹配已在逐点去噪中验证。
+  - paper: motion-oriented-latent-2026
+    status: pending
+    registered_at: '2026-11-26'
+    reason: 原文已初读；既有 VLA 运动隐监督节点的跨论文对照和单因素证据待独立整理，暂不据整体涨分增设机制卡或宣称天气迁移。

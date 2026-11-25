@@ -95,3 +95,7 @@ ReadingPaper 以论文为单位保存阅读记录，将独立的 HTML 笔记组�
 ## 2026-11-25 Beyond the Camera 领域内初读
 
 新增 [Beyond the Camera v2 初读](papers/beyond-the-camera-2026/first-pass.html)，依据 11 页 arXiv v2 原文及两张 CC BY 4.0 必要图表局部，区分压缩匹配持久性、全量与近距深度误差、真实重雪样本不足和置黑探针限制。新增研究地图待整理记录；复用原任务相关的评测问题，不声称已增加 Challenge–Insight 机制卡或迁移结论。
+
+## 2026-11-26 领域内专题回看与周四机器人拓展
+
+已有 [SnowRemovalNet 里程计专题回看](revisits/snowremovalnet-odometry-20261126.html) 单独说明固定 VGICP、全序列平移相对误差和重叠分段 ATE 的区别；已存在的初读和训练置信度专题不变。新增 [Motion-Oriented Latent Reasoning](papers/motion-oriented-latent-2026/first-pass.html) 拓展初读；比较分组消融和同一实机平台的四条件，不作天气迁移判断。

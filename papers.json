@@ -1986,5 +1986,89 @@
 },
   {"slug":"rasr-sasd3d-2026","category":"in-field","name":"RASR-SASD3D","title":"RASR-SASD3D: A Region-Adaptive Structure Recovery and Spatial-Adaptive Structure Distillation Method for LiDAR-Based 3D Object Detection in Rainy Weather","authors":["Yehui Ding","Yuntao Shi"],"year":2026,"venue":"Sensors","readDate":"2026-11-18","doi":"10.3390/s26227223","url":"https://www.mdpi.com/1424-8220/26/22/7223","tags":["LiDAR","雨","3D检测","知识蒸馏","特征恢复","空间对齐","模拟退化"],"summary":"区域差异化检测特征恢复与晴雨结构蒸馏；核对模拟雨、粗配准前提、模块消融、错位压力测试及表文冲突，不作真实天气或零样本泛化保证。","stages":{"first-pass":"first-pass.html"},"reviews":{"first-pass":{"status":"source-checked","noteStatus":"organized","checkedAt":"2026-11-18","evidence":["完整核读官方24页出版PDF、Figures1–6和Tables1–13；未读代码或复现。","区分同场景粗对应和完全无配对；记录Table4 NDS文字差异、Table10 baseline差异及WOD-R重训边界。"]}},"readingQuality":{"version":1,"classification":{"confirmedCategory":"in-field","rationale":"直接研究雨退化LiDAR三维目标检测、区域特征恢复及跨天气结构蒸馏；模拟雨检测评测属于恶劣天气3D感知主线，非以逐点去噪作为唯一判据。","source":"用户天气LiDAR/下游检测范围；论文§3、4.1.2、4.4、4.5（PDF pp6–21）。","reviewedAt":"2026-11-18"},"graphics":{"status":"included","items":[{"figureId":"fig2","kind":"paper-crop","label":"Figure 2","pdfPage":7,"sourceUrl":"https://www.mdpi.com/1424-8220/26/22/7223/pdf#page=7","analysisId":"analysis-fig2"},{"figureId":"table4","kind":"paper-crop","label":"Table 4","pdfPage":16,"sourceUrl":"https://www.mdpi.com/1424-8220/26/22/7223/pdf#page=16","analysisId":"analysis-table4"},{"figureId":"table9","kind":"paper-crop","label":"Table 9","pdfPage":19,"sourceUrl":"https://www.mdpi.com/1424-8220/26/22/7223/pdf#page=19","analysisId":"analysis-table9"},{"figureId":"table12","kind":"paper-crop","label":"Table 12","pdfPage":21,"sourceUrl":"https://www.mdpi.com/1424-8220/26/22/7223/pdf#page=21","analysisId":"analysis-table12"}]},"rightsReview":{"basis":"出版PDF第1页明确CC BY4.0，四项必要原图表局部逐图归因并说明裁剪；无全文PDF、整页图集或私有资料，未改内部内容，不转授基础数据许可。","reviewedAt":"2026-11-18"},"visualReview":{"desktop":true,"mobile":true,"zoom":true,"reviewedAt":"2026-11-18","scope":"云浏览器1180px桌面及390×844 iframe响应式（非真机），四图逐一加载/放大/关闭，手机表格原尺寸横向滚动已验证；页面无横向溢出。"}}},
   {"slug":"z-sight-2026","category":"out-of-field","name":"Z-sight","title":"Z-sight: Unifying Vision-Language-Action and Latent World Modeling","authors":["Junjie Ye","Yiqi Zhao","Muchen Xu","Celina Shiyu Wang","Hao Dong","Ruohai Ge","Rong Xue","Benjamin J Kolligs","Aditya Dutt","Sasanka Nagavalli","Nassim A. Samad","Gaurav S. Sukhatme","Jyotirmoy V. Deshmukh","Yue Wang","Yuliang Guo"],"year":2026,"venue":"arXiv","readDate":"2026-11-24","doi":"10.48550/arXiv.2611.24940","url":"https://arxiv.org/abs/2611.24940v1","tags":["具身智能","VLA","全身移动操作","世界模型","Flow Matching","预测特征"],"summary":"在 VLM 的原生视觉 token 空间生成未来，用同一采样日程联合去噪动作；保留 G1 六任务、噪声标签干预、随机场景反例与计时边界。","stages":{"first-pass":"first-pass.html"},"reviews":{"first-pass":{"status":"source-checked","noteStatus":"organized","checkedAt":"2026-11-24","evidence":["核对官方 arXiv v1 21 页正文与附录 A–G，关键图证 Figure 3/7 与 Table 3/6。","区分真实任务与模拟、预测与规划、整体比较和消融表设置；未运行代码或复现。"]}},"readingQuality":{"version":1,"classification":{"confirmedCategory":"out-of-field","rationale":"原任务是在语言指令下通过未来视觉特征辅助人形全身移动操作或桌面操作，既非天气感知，也不处理受损激光雷达扫描。","source":"Z-sight v1 §§1、3–4，PDF pp.1–10，Figure 3 与 Figure 7；周二拓展配额。","reviewedAt":"2026-11-24"},"graphics":{"status":"included","items":[{"figureId":"fig3","kind":"paper-crop","label":"Figure 3","pdfPage":4,"sourceUrl":"https://arxiv.org/pdf/2611.24940v1#page=4","analysisId":"analysis-fig3"},{"figureId":"fig7","kind":"paper-crop","label":"Figure 7","pdfPage":7,"sourceUrl":"https://arxiv.org/pdf/2611.24940v1#page=7","analysisId":"analysis-fig7"},{"figureId":"table3","kind":"paper-crop","label":"Table 3","pdfPage":8,"sourceUrl":"https://arxiv.org/pdf/2611.24940v1#page=8","analysisId":"analysis-table3"},{"figureId":"table6","kind":"paper-crop","label":"Table 6","pdfPage":9,"sourceUrl":"https://arxiv.org/pdf/2611.24940v1#page=9","analysisId":"analysis-table6"}]},"rightsReview":{"basis":"arXiv 官方条目链接 CC BY 4.0；四项仅裁剪图表与原注，归因并保持图内内容，不含第三方数据缩略图、全 PDF 或私有资料。","reviewedAt":"2026-11-24"},"visualReview":{"desktop":true,"mobile":true,"zoom":true,"reviewedAt":"2026-11-24","scope":"桌面十二节结构和四图逐个放大加载、关闭通过；390 CSS px 容器里正文无横向溢出，经实验导航打开 Figure 7，原尺寸的内容区横向滚动且可关闭返回。"}}},
-  {"slug":"beyond-the-camera-2026","category":"in-field","name":"Beyond the Camera","title":"Beyond the Camera: A Tri-Modal Driving World Model for Future RGB, Thermal, and LiDAR Forecasting in Adverse Weather","year":2026,"venue":"arXiv v2（预印本）","readDate":"2026-11-25","url":"https://arxiv.org/abs/2611.22669v2","doi":"10.48550/arXiv.2611.22669","tags":["雨","雪","雾","LiDAR 深度预测","多传感器融合","评测协议"],"summary":"在真实雨雾雪上联合预测 RGB、热像和相机对齐 LiDAR 深度，用压缩匹配持久性区分整体收益、近距反例与相机代价。","stages":{"first-pass":"first-pass.html"},"reviews":{"first-pass":{"status":"source-checked","noteStatus":"organized","checkedAt":"2026-11-25","evidence":["核对 arXiv v2 的 11 页 PDF，§§1–9、Fig. 2、Table 1–6 及附录；未运行模型。"]}},"readingQuality":{"version":1,"classification":{"confirmedCategory":"in-field","rationale":"真实雨、雾、大小雪中以实测 LiDAR 回波深度评估多模态预测和表示退化；并非逐点去雪。","source":"用户研究范围；arXiv v2 §§3.2、4.1–4.3 与 5.1 的实测回波和分天气 LiDAR 协议。","reviewedAt":"2026-11-25"},"graphics":{"status":"included","items":[{"figureId":"fig-2","kind":"paper-crop","label":"Figure 2","pdfPage":4,"sourceUrl":"https://arxiv.org/pdf/2611.22669v2#page=4","analysisId":"analysis-fig-2"},{"figureId":"table-2","kind":"paper-crop","label":"Table 2","pdfPage":6,"sourceUrl":"https://arxiv.org/pdf/2611.22669v2#page=6","analysisId":"analysis-table-2"}]},"rightsReview":{"basis":"arXiv v2 CC BY 4.0；仅纳入两张和方法/评测解释直接相关的原图表局部，标作者、局部裁剪、页码、许可和原文，不上传整页或 PDF。","reviewedAt":"2026-11-25"},"visualReview":{"desktop":true,"mobile":true,"zoom":true,"reviewedAt":"2026-11-25","scope":"Firefox 1440 px 桌面和 390 px 窄屏实际渲染，两图原尺寸均打开；非真机。"}}}
+  {"slug":"beyond-the-camera-2026","category":"in-field","name":"Beyond the Camera","title":"Beyond the Camera: A Tri-Modal Driving World Model for Future RGB, Thermal, and LiDAR Forecasting in Adverse Weather","year":2026,"venue":"arXiv v2（预印本）","readDate":"2026-11-25","url":"https://arxiv.org/abs/2611.22669v2","doi":"10.48550/arXiv.2611.22669","tags":["雨","雪","雾","LiDAR 深度预测","多传感器融合","评测协议"],"summary":"在真实雨雾雪上联合预测 RGB、热像和相机对齐 LiDAR 深度，用压缩匹配持久性区分整体收益、近距反例与相机代价。","stages":{"first-pass":"first-pass.html"},"reviews":{"first-pass":{"status":"source-checked","noteStatus":"organized","checkedAt":"2026-11-25","evidence":["核对 arXiv v2 的 11 页 PDF，§§1–9、Fig. 2、Table 1–6 及附录；未运行模型。"]}},"readingQuality":{"version":1,"classification":{"confirmedCategory":"in-field","rationale":"真实雨、雾、大小雪中以实测 LiDAR 回波深度评估多模态预测和表示退化；并非逐点去雪。","source":"用户研究范围；arXiv v2 §§3.2、4.1–4.3 与 5.1 的实测回波和分天气 LiDAR 协议。","reviewedAt":"2026-11-25"},"graphics":{"status":"included","items":[{"figureId":"fig-2","kind":"paper-crop","label":"Figure 2","pdfPage":4,"sourceUrl":"https://arxiv.org/pdf/2611.22669v2#page=4","analysisId":"analysis-fig-2"},{"figureId":"table-2","kind":"paper-crop","label":"Table 2","pdfPage":6,"sourceUrl":"https://arxiv.org/pdf/2611.22669v2#page=6","analysisId":"analysis-table-2"}]},"rightsReview":{"basis":"arXiv v2 CC BY 4.0；仅纳入两张和方法/评测解释直接相关的原图表局部，标作者、局部裁剪、页码、许可和原文，不上传整页或 PDF。","reviewedAt":"2026-11-25"},"visualReview":{"desktop":true,"mobile":true,"zoom":true,"reviewedAt":"2026-11-25","scope":"Firefox 1440 px 桌面和 390 px 窄屏实际渲染，两图原尺寸均打开；非真机。"}}},
+  {
+    "slug": "motion-oriented-latent-2026",
+    "category": "out-of-field",
+    "name": "Motion-Oriented Latent Reasoning",
+    "title": "More Than Picturing the Future: Motion-Oriented Latent Reasoning for Generalizable Robot Manipulation",
+    "authors": [
+      "Xin Zhang",
+      "Yushuo Hou",
+      "Anqi Zhao",
+      "Moyun Liu",
+      "Xingwei Zhao",
+      "Bo Tao",
+      "Jiawei Du",
+      "Joey Tianyi Zhou"
+    ],
+    "year": 2026,
+    "venue": "arXiv",
+    "readDate": "2026-11-26",
+    "doi": "10.48550/arXiv.2611.29339",
+    "url": "https://arxiv.org/abs/2611.29339v1",
+    "tags": [
+      "VLA",
+      "具身智能",
+      "机器人操作",
+      "隐空间推理",
+      "分布外泛化"
+    ],
+    "summary": "用语义隐变量引导四步全景、交互区域和机器人状态预测；对照模拟分布偏移、实机换背景与不等 token 数消融。",
+    "stages": {
+      "first-pass": "first-pass.html"
+    },
+    "reviews": {
+      "first-pass": {
+        "status": "source-checked",
+        "noteStatus": "organized",
+        "checkedAt": "2026-11-26",
+        "evidence": [
+          "核读 arXiv v1 正文、Tables 1–4、Figs. 1–6 及附录 A–D，核对实机条件、消融与局限；预印本，未复现。",
+          "Table 3 分组、Table 4 实机；区分实机右臂控制与设备外形。"
+        ]
+      }
+    },
+    "readingQuality": {
+      "version": 1,
+      "classification": {
+        "confirmedCategory": "out-of-field",
+        "rationale": "原任务是语言条件下的桌面机械臂操作和分布偏移评估，不处理 LiDAR 或天气退化，归周四领域外拓展。",
+        "source": "arXiv v1 §§1、3–4，PDF pp.1–8。",
+        "reviewedAt": "2026-11-26"
+      },
+      "graphics": {
+        "status": "included",
+        "items": [
+          {
+            "figureId": "table3",
+            "kind": "paper-crop",
+            "label": "Table 3",
+            "pdfPage": 6,
+            "sourceUrl": "https://arxiv.org/pdf/2611.29339v1#page=6",
+            "analysisId": "analysis-table3"
+          },
+          {
+            "figureId": "table4",
+            "kind": "paper-crop",
+            "label": "Table 4",
+            "pdfPage": 7,
+            "sourceUrl": "https://arxiv.org/pdf/2611.29339v1#page=7",
+            "analysisId": "analysis-table4"
+          }
+        ]
+      },
+      "rightsReview": {
+        "basis": "arXiv 条目为非独占分发许可，不是开放再许可；仅用论文作者的 Table 3、4 两块小范围定量证据作相邻的实质性比较与评论，保留署名、图表标题、定位和原文链接，不转载全文或场景图片。",
+        "reviewedAt": "2026-11-26"
+      },
+      "visualReview": {
+        "desktop": true,
+        "mobile": true,
+        "zoom": true,
+        "reviewedAt": "2026-11-26",
+        "scope": "本地 Chromium 分别实测 1440 CSS px 与 390 CSS px；确认目录锚点、图表加载、原尺寸放大和关闭。"
+      }
+    }
+  }
 ]

@@ -272,6 +272,42 @@
         "scope": "桌面正文与 Table III 放大；390 CSS px 容器内无页面横向溢出，Table II 放大支持内容区横向滚动、关闭后返回。",
         "reviewedAt": "2026-11-24"
       }
+    },
+    {
+      "id": "snowremovalnet-odometry-20261126",
+      "paper": "snowremovalnet-2026",
+      "date": "2026-11-26",
+      "title": "去雪后里程计更准：论文比较的到底是什么？",
+      "file": "revisits/snowremovalnet-odometry-20261126.html",
+      "anchor": "part0",
+      "sourceScope": "重核出版版 pp.15–16、§5.4.2 与 Table 5。区分全序列 RPE 与重叠子窗口对齐 ATE；未复现。",
+      "graphics": [
+        {
+          "figureId": "snowremovalnet-odometry-20261126-table5",
+          "label": "Table 5",
+          "pdfPage": 16,
+          "sourceUrl": "https://www.mdpi.com/1424-8220/26/20/6604/pdf#page=16",
+          "kind": "paper-crop",
+          "cropPdfPoints": [
+            165,
+            264,
+            568,
+            391
+          ],
+          "renderScale": 3
+        }
+      ],
+      "rightsReview": {
+        "basis": "官方 PDF p.1 为 CC BY 4.0。仅裁剪 Table 5（原表及表注），注明作者、页序与许可，不包含整页。",
+        "reviewedAt": "2026-11-26"
+      },
+      "visualReview": {
+        "desktop": true,
+        "mobile": true,
+        "zoom": true,
+        "reviewedAt": "2026-11-26",
+        "scope": "本地 Chromium 分别实测 1440 CSS px 与 390 CSS px；确认目录锚点、图表加载、原尺寸放大和关闭。"
+      }
     }
   ]
 }
