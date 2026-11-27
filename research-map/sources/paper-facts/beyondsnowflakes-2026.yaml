@@ -420,3 +420,12 @@ analysis:
       status: source-checked
       basis: existing-note
       original_pdf_review_status: source-checked
+
+revisit_reviews:
+- revisit: beyondsnowflakes-weather-bins-20261127
+  reviewed_at: '2026-11-27'
+  source_url: https://arxiv.org/abs/2610.13891v1
+  original_pdf_review_status: source-checked
+  scope: 独立专题核对同箱过滤和跨箱样本构成、两种相关性单位；示例及评测建议为阅读者解释，未复现。
+  locations: Sec.III-B–E pp.3–4；Sec.IV-A / Fig.4 p.4；Sec.IV-C–E / Table III pp.5–7。
+  source_sha256: d2890a94219151cbcbb1779010b89fc6486feee16e639ee922ed743b38f8b734

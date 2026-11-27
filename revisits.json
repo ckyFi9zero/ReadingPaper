@@ -308,6 +308,42 @@
         "reviewedAt": "2026-11-26",
         "scope": "本地 Chromium 分别实测 1440 CSS px 与 390 CSS px；确认目录锚点、图表加载、原尺寸放大和关闭。"
       }
+    },
+    {
+      "id": "beyondsnowflakes-weather-bins-20261127",
+      "paper": "beyondsnowflakes-2026",
+      "date": "2026-11-27",
+      "title": "重雪箱的检测分数更高，为什么不能说雪有帮助？",
+      "file": "revisits/beyondsnowflakes-weather-bins-20261127.html",
+      "anchor": "part0",
+      "sourceScope": "arXiv:2610.13891v1，8 页，重点核对 §§III-B–E、IV-A–E、Fig. 4 与 Table III。区分同箱过滤对照、跨箱构成变化及两种分析单位；未复现。",
+      "graphics": [
+        {
+          "figureId": "beyondsnowflakes-weather-bins-20261127-table3",
+          "label": "Table III",
+          "pdfPage": 6,
+          "sourceUrl": "https://arxiv.org/pdf/2610.13891v1#page=6",
+          "kind": "paper-crop",
+          "cropPdfPoints": [
+            309,
+            200,
+            565,
+            317
+          ],
+          "renderScale": 4
+        }
+      ],
+      "rightsReview": {
+        "basis": "arXiv 非独占分发，未发现 CC 授权；只保留评论统计口径所需的 Table III 原表及表注局部，注明作者、出处及裁剪，不复制整页或 PDF。",
+        "reviewedAt": "2026-11-27"
+      },
+      "visualReview": {
+        "desktop": true,
+        "mobile": true,
+        "zoom": true,
+        "reviewedAt": "2026-11-27",
+        "scope": "Chromium 1440/390 CSS px，实际查看正文及 Table III；窄屏原尺寸可横滚，Esc 可关闭"
+      }
     }
   ]
 }

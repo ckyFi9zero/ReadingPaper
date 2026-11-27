@@ -5166,10 +5166,16 @@ challenges:
           original_pdf_review_status: source-checked
       evidence_scope:
         text: WADS 与 CADC 的结果支持分条件检查，不组成跨数据集排行榜。雪箱与点数相关、RF 认为点数重要，尚不能确认所有天气损伤路径已分离；过滤不等于受控去掉空中雪的完美物理干预。本文提出背景平滑、点数膨胀和反射变化假设，引用
-          [52] 的支持不冒充本轮独立验证。
+          [52] 的支持不冒充本轮独立验证。 条件比较不是天气总效应：等GT数量不能平衡对象难度；同箱固定对象比较过滤效果，跨箱需检查构成与共同覆盖。
         basis: analyst-inference
         status: inferred
         evidence:
+        - paper: beyondsnowflakes-2026
+          revisit: beyondsnowflakes-weather-bins-20261127
+          anchor: protocol
+          status: inferred
+          basis: analyst-inference
+          original_pdf_review_status: source-checked
         - paper: beyondsnowflakes-2026
           stage: first-pass
           anchor: result-correlations

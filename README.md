@@ -99,3 +99,7 @@ ReadingPaper 以论文为单位保存阅读记录，将独立的 HTML 笔记组�
 ## 2026-11-26 领域内专题回看与周四机器人拓展
 
 已有 [SnowRemovalNet 里程计专题回看](revisits/snowremovalnet-odometry-20261126.html) 单独说明固定 VGICP、全序列平移相对误差和重叠分段 ATE 的区别；已存在的初读和训练置信度专题不变。新增 [Motion-Oriented Latent Reasoning](papers/motion-oriented-latent-2026/first-pass.html) 拓展初读；比较分组消融和同一实机平台的四条件，不作天气迁移判断。
+
+## 2026-11-27 领域内专题回看
+
+新增 [Beyond the Snowflakes 独立专题](revisits/beyondsnowflakes-weather-bins-20261127.html)：区分同箱输入对照与跨箱样本构成、解释等目标数不等于等难度；复核 arXiv v1 的 Fig. 4 和 Table III，摘录必要原表局部且标明来源。武器库在既有混杂诊断卡追加条件比较边界和专题锚点，不新增论文或改变既有初读。
