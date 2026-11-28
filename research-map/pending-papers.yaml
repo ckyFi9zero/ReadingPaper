@@ -12,3 +12,7 @@ papers:
     status: pending
     registered_at: '2026-11-26'
     reason: 原文已初读；既有 VLA 运动隐监督节点的跨论文对照和单因素证据待独立整理，暂不据整体涨分增设机制卡或宣称天气迁移。
+  - paper: heightfusion-plus-plus-2026
+    status: pending
+    registered_at: '2026-11-28'
+    reason: 初读已核对 Figs. 12/17 和分类结果；待由公开数据记录核清 Fig. 17 散点与 11 个片段的统计粒度，以及按天气重训或共享权重的比较口径，再决定如何并入既有混杂评测卡。暂不增加天气因果证据或机制卡。
